@@ -4373,6 +4373,18 @@ class AppLocalizationsId extends AppLocalizations {
   String get translation_target_language => 'Bahasa sasaran';
 
   @override
+  String get translation_model => 'Model terjemahan';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Penggunaan kuota: $multiplier×';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Model terjemahan ini tidak tersedia. Pilih model lain atau coba lagi nanti.';
+
+  @override
   String get translation_clear_cache => 'Hapus cache gambar yang diterjemahkan';
 
   @override
@@ -5344,7 +5356,7 @@ class AppLocalizationsId extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'Halaman web berubah. Aktifkan terjemahan lagi.';
+      'Gagal mentransfer gambar dari halaman web. Coba lagi atau muat ulang halaman.';
 
   @override
   String get translation_connection_failed =>

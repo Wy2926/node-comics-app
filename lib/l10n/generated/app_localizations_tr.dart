@@ -4377,6 +4377,18 @@ class AppLocalizationsTr extends AppLocalizations {
   String get translation_target_language => 'Hedef dil';
 
   @override
+  String get translation_model => 'Çeviri modeli';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Kota tüketimi: $multiplier×';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Bu çeviri modeli kullanılamıyor. Başka bir model seçin veya daha sonra tekrar deneyin.';
+
+  @override
   String get translation_clear_cache => 'Çevrilen resim önbelleğini temizle';
 
   @override
@@ -5351,7 +5363,7 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'Web sayfası değişti. Çeviriyi tekrar etkinleştirin.';
+      'Web sayfasındaki görsel aktarılamadı. Tekrar deneyin veya sayfayı yenileyin.';
 
   @override
   String get translation_connection_failed =>

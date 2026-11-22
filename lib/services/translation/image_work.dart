@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:isolate';
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 import 'dart:typed_data';
 
@@ -12,9 +13,11 @@ import 'package:mangayomi/utils/avif.dart';
 import 'contracts.dart';
 import 'identity.dart';
 
-// Persisted protocol tag: keep existing operations readable and recoverable.
-const translationInputProfile = 'mobile-short-edge-1800-png-v1';
+const legacyTranslationInputProfile = 'mobile-short-edge-1800-png-v1';
+const translationInputProfile = 'mobile-short-edge-1800-webp90-jpeg30-v2';
 const translationEncoderVersion = 'image-4.10.1';
+const _shortEdge = 1800, _reencodeBytes = 1024 * 1024, _jpegMaxEdge = 65500;
+const webpMaxEdge = 16383;
 
 class PreparedTranslationImage {
   const PreparedTranslationImage({
@@ -121,7 +124,8 @@ Future<int> _normalizeNative(
     bytes.setRange(chunk.start, length, bytes, chunk.end);
     bytes = Uint8List.sublistView(bytes, 0, length);
     final header = ByteData.sublistView(bytes);
-    if (header.getUint32(0) == 0x52494646) { // RIFF
+    if (header.getUint32(0) == 0x52494646) {
+      // RIFF
       header.setUint32(4, length - 8, Endian.little);
       if (header.getUint32(12) == 0x56503858) {
         bytes[20] &= ~0x08; // VP8X EXIF flag
@@ -179,15 +183,21 @@ class TranslationImageWork {
     File original,
     TranslationCancellation cancel, {
     String? sourceSha,
+    String inputProfile = translationInputProfile,
   }) => _queue.run(() async {
     cancel.check();
+    final compress = switch (inputProfile) {
+      translationInputProfile => true,
+      legacyTranslationInputProfile => false,
+      _ => throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED'),
+    };
     await temporary.create(recursive: true);
-    final path = '${temporary.path}/${translationUuid()}.png';
+    final path = '${temporary.path}/${translationUuid()}.input';
     final sourcePath = original.path;
     late Map<String, Object> result;
     try {
       try {
-        result = await _prepareInWorker(sourcePath, path, sourceSha);
+        result = await _prepareInWorker(sourcePath, path, sourceSha, compress);
       } on _NeedsNativePixels catch (input) {
         cancel.check();
         final orientation = await _normalizeNative(original, path, input);
@@ -196,7 +206,9 @@ class TranslationImageWork {
           path,
           path,
           null,
+          compress,
           orientation: orientation,
+          avif: input.avif,
         );
         result['sourceSha256'] = sourceSha ?? await imageDigest(original);
       }
@@ -299,9 +311,13 @@ class TranslationImageWork {
 Future<Map<String, Object>> _prepareInWorker(
   String input,
   String output,
-  String? sourceSha, {
+  String? sourceSha,
+  bool compress, {
   int? orientation,
-}) => Isolate.run(() => _prepare(input, output, sourceSha, orientation));
+  bool avif = false,
+}) => Isolate.run(
+  () => _prepare(input, output, sourceSha, compress, orientation, avif),
+);
 Future<void> _compositeInWorker(Map<String, Object> args) =>
     Isolate.run(() => _composite(args));
 
@@ -329,9 +345,14 @@ Future<void> _decodeResultInWorker(
 });
 
 class _NeedsNativePixels implements Exception {
-  const _NeedsNativePixels([this.orientation, this.exifChunk]);
+  const _NeedsNativePixels({
+    this.orientation,
+    this.exifChunk,
+    this.avif = false,
+  });
   final int? orientation;
   final _ExifChunk? exifChunk;
+  final bool avif;
 }
 
 typedef _ExifChunk = ({int start, int end, int orientation});
@@ -397,16 +418,44 @@ int _exifOrientation(ByteData data) {
   return 1;
 }
 
+({Uint8List bytes, String mime}) _lossyInput(img.Image pixels) {
+  pixels.exif = img.ExifData();
+  pixels.iccProfile = null;
+  if (math.max(pixels.width, pixels.height) <= webpMaxEdge) {
+    return (
+      bytes: img.encodeWebP(
+        pixels,
+        lossless: false,
+        quality: 90,
+        singleFrame: true,
+      ),
+      mime: 'image/webp',
+    );
+  }
+  if (pixels.hasAlpha) {
+    // JPEG has no alpha; composite once on white, including partially transparent edges.
+    final white = img.Image(width: pixels.width, height: pixels.height)
+      ..clear(img.ColorRgb8(255, 255, 255));
+    pixels = img.compositeImage(white, pixels);
+  }
+  return (
+    bytes: img.encodeJpg(pixels, quality: 30, chroma: img.JpegChroma.yuv420),
+    mime: 'image/jpeg',
+  );
+}
+
 Future<Map<String, Object>> _prepare(
   String sourcePath,
   String output,
   String? knownSha,
+  bool compress,
   int? nativeOrientation,
+  bool avif,
 ) async {
   final file = File(sourcePath);
   final bytes = await file.readAsBytes();
   final decoder = img.findDecoderForData(bytes);
-  if (decoder == null) throw const _NeedsNativePixels();
+  if (decoder == null) throw _NeedsNativePixels(avif: isAvifImage(bytes));
   final info = decoder.startDecode(bytes);
   if (info == null) throw const TranslationFailure('INVALID_IMAGE');
   final chunk =
@@ -418,7 +467,10 @@ Future<Map<String, Object>> _prepare(
   if (nativeOrientation == null &&
       (info is img.PngInfo && info.iccpData != null ||
           info is img.WebPInfo && info.iccp != null)) {
-    throw _NeedsNativePixels(orientation, orientation == 1 ? null : chunk);
+    throw _NeedsNativePixels(
+      orientation: orientation,
+      exifChunk: orientation == 1 ? null : chunk,
+    );
   }
   final decoded = decoder.decodeFrame(0);
   if (decoded == null || decoded.width <= 0 || decoded.height <= 0) {
@@ -428,36 +480,64 @@ Future<Map<String, Object>> _prepare(
   final jpegExif = decoder is img.JpegDecoder ? img.decodeJpgExif(bytes) : null;
   if (nativeOrientation == null && decoded.iccProfile != null) {
     throw _NeedsNativePixels(
-      jpegExif?.imageIfd.orientation ?? decoded.exif.imageIfd.orientation ?? 1,
+      orientation:
+          jpegExif?.imageIfd.orientation ??
+          decoded.exif.imageIfd.orientation ??
+          1,
     );
   }
-  final sourceSha = knownSha ?? await imageDigest(file);
-  var actual = file, mime = _mime(decoder);
-  var width = decoded.width, height = decoded.height;
+  final sourceSha = knownSha ?? sha256.convert(bytes).toString();
+  var upload = (bytes: bytes, mime: _mime(decoder));
+  var pixels = decoded;
   // JPEG decoding already bakes orientation and clears its EXIF orientation.
   // Freeze those normalized pixels, rather than uploading the old byte layout.
   final hasExif = jpegExif != null || !decoded.exif.isEmpty;
-  if (hasExif ||
+  final normalize =
+      hasExif ||
       decoded.iccProfile != null ||
       info.numFrames > 1 ||
-      !const {'image/png', 'image/jpeg', 'image/webp'}.contains(mime)) {
-    final normalized =
-        img.bakeOrientation(decoded).convert(format: img.Format.uint8)
-          ..iccProfile = null;
-    width = normalized.width;
-    height = normalized.height;
-    actual = await File(output)
-        .writeAsBytes(img.encodePng(normalized), flush: true);
-    mime = 'image/png';
+      !const {'image/png', 'image/jpeg', 'image/webp'}.contains(upload.mime);
+  if (normalize) {
+    pixels = img.bakeOrientation(decoded).convert(format: img.Format.uint8)
+      ..iccProfile = null;
   }
+  final short = math.min(pixels.width, pixels.height);
+  final resize = compress && short > _shortEdge;
+  if (resize) {
+    if (pixels.hasPalette) pixels = pixels.convert();
+    pixels = img.copyResize(
+      pixels,
+      width: (pixels.width * _shortEdge / short).round(),
+      height: (pixels.height * _shortEdge / short).round(),
+      interpolation: img.Interpolation.average,
+    );
+  }
+  final encodable = math.max(pixels.width, pixels.height) <= _jpegMaxEdge;
+  if (compress && encodable && (resize || avif)) {
+    upload = _lossyInput(pixels);
+  } else {
+    if (normalize || resize) {
+      upload = (bytes: img.encodePng(pixels), mime: 'image/png');
+    }
+    if (compress && encodable && upload.bytes.length > _reencodeBytes) {
+      try {
+        final candidate = _lossyInput(pixels);
+        if (candidate.bytes.length < upload.bytes.length) upload = candidate;
+      } on img.ImageException {
+        // An optional encoder failure must not reject an already valid input.
+      }
+    }
+  }
+  final changed = !identical(upload.bytes, bytes);
+  if (changed) await File(output).writeAsBytes(upload.bytes, flush: true);
   return {
-    'path': actual.path,
-    'sha256': actual == file ? sourceSha : await imageDigest(actual),
+    'path': changed ? output : sourcePath,
+    'sha256': changed ? sha256.convert(upload.bytes).toString() : sourceSha,
     'sourceSha256': sourceSha,
-    'width': width,
-    'height': height,
-    'byteSize': await actual.length(),
-    'mime': mime,
+    'width': pixels.width,
+    'height': pixels.height,
+    'byteSize': upload.bytes.length,
+    'mime': upload.mime,
   };
 }
 

@@ -7,6 +7,17 @@ import 'package:mangayomi/services/nodelane_requests.dart';
 import '../../contracts.dart';
 import 'protocol.dart';
 
+class NodeLaneHttpFailure extends TranslationFailure {
+  const NodeLaneHttpFailure(super.code, this.status, {super.retryAfter});
+  final int status;
+  bool get rejectedSubmission =>
+      (status >= 400 &&
+          status < 500 &&
+          status != 408 &&
+          code != 'OUTCOME_UNKNOWN') ||
+      code == 'TRANSLATION_MODEL_UNAVAILABLE';
+}
+
 /// No source-client interceptors, cookie jar, logging or automatic retries.
 class NodeLaneHttp {
   NodeLaneHttp(this.base, {this.token, bool allowLocalTestServer = false}) {
@@ -110,10 +121,16 @@ class NodeLaneHttp {
       );
       try {
         return await _jsonResponse(response, cancel);
-      } on TranslationFailure catch (error) {
-        if (error.code != 'INPUT_NOT_NORMALIZED') rethrow;
-        // The 422 is an upload error, not a task snapshot. Reconcile the same UUID.
-        return await json('GET', '/v1/translations/$id', cancellation: cancel);
+      } on NodeLaneHttpFailure catch (error) {
+        if (!const {409, 410, 413, 422}.contains(error.status)) rethrow;
+        // Upload rejection may race a terminal snapshot or another successful upload.
+        final state = await json(
+          'GET',
+          '/v1/translations/$id',
+          cancellation: cancel,
+        );
+        if (state['state'] == 'needs_input') rethrow;
+        return state;
       }
     } finally {
       remove();
@@ -284,21 +301,30 @@ class NodeLaneHttp {
         seconds = HttpDate.parse(retry).difference(DateTime.now()).inSeconds;
       } catch (_) {}
     }
-    final error = value?['error'];
+    final error = value?['error'] ?? value?['detail'];
     final bodyRetry = error is Map ? error['retry_after_seconds'] : null;
     if (bodyRetry is num && bodyRetry.isFinite && bodyRetry > 0) {
       seconds = bodyRetry.ceil();
     }
     final code = error is Map ? error['code'] : null;
     final mapped = switch (response.statusCode) {
+      403 when code == 'TRANSLATION_MODEL_NOT_ALLOWED' =>
+        'TRANSLATION_MODEL_UNAVAILABLE',
+      422 when code == 'TRANSLATION_MODEL_INVALID' =>
+        'TRANSLATION_MODEL_UNAVAILABLE',
+      503 when code == 'TRANSLATION_MODEL_UNAVAILABLE' =>
+        'TRANSLATION_MODEL_UNAVAILABLE',
+      _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
       401 || 403 => 'AUTH_REQUIRED',
       429 => 'RATE_LIMITED',
       410 when code == 'RESULT_EXPIRED' => 'RESULT_EXPIRED',
       410 => 'TRANSLATION_UNAVAILABLE',
       409 when code == 'CLIENT_UPGRADE_REQUIRED' => 'CLIENT_UPGRADE_REQUIRED',
+      409 when code == 'RESULT_NOT_AVAILABLE' => 'RESULT_UNAVAILABLE',
+      409 => 'OUTCOME_UNKNOWN',
+      413 => 'UNSUPPORTED_IMAGE',
       422 when code == 'INPUT_NOT_NORMALIZED' => 'INPUT_NOT_NORMALIZED',
       402 => 'QUOTA_EXHAUSTED',
-      _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
       _ when code == 'LANGUAGE_UNSUPPORTED' => 'UNSUPPORTED_LANGUAGE',
       _ when code == 'RESULT_UNAVAILABLE' => 'RESULT_UNAVAILABLE',
       _ when code == 'RESULT_FORMAT_UNAVAILABLE' => 'RESULT_FORMAT_UNAVAILABLE',
@@ -306,10 +332,12 @@ class NodeLaneHttp {
         'TRANSLATION_MODE_UNAVAILABLE',
       _ when code is String && nodeLaneNonRetryableErrors.contains(code) =>
         code,
+      >= 400 && < 500 when response.statusCode != 408 => 'REMOTE_FAILED',
       _ => 'NETWORK',
     };
-    throw TranslationFailure(
+    throw NodeLaneHttpFailure(
       mapped,
+      response.statusCode,
       retryAfter: seconds == null
           ? null
           : Duration(seconds: seconds.clamp(1, 86400)),

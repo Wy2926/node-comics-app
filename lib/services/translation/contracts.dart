@@ -46,8 +46,7 @@ class TranslationCancellation {
 }
 
 class OriginalImageLease {
-  OriginalImageLease(this.file, {void Function()? release})
-    : _release = release;
+  OriginalImageLease(this.file, {this._release});
   final File file;
   void Function()? _release;
   void release() {
@@ -71,9 +70,17 @@ class TranslationTarget {
 }
 
 class TranslationOptions {
-  const TranslationOptions({this.language = 'zh-Hans'});
+  const TranslationOptions({this.language = 'zh-Hans', this.modelId});
   final String language;
+  final String? modelId;
 }
+
+typedef TranslationModel = ({String id, String name});
+typedef TranslationModelOption = ({
+  TranslationModel model,
+  bool available,
+  num? quotaMultiplier,
+});
 
 enum TranslationPhase {
   idle,
@@ -102,8 +109,8 @@ class DisplayImageLease {
     required this.width,
     required this.height,
     this.mime = 'image/png',
-    void Function()? release,
-  }) : _release = release;
+    this._release,
+  });
   final File file;
   final int width;
   final int height;
@@ -129,6 +136,8 @@ class PageTranslationState {
   final TranslationResultRef? result;
   final bool noText;
   final Set<TranslationAction> actions;
+  bool get hasIssue =>
+      phase == TranslationPhase.failed || phase == TranslationPhase.uncertain;
 }
 
 /// Only the composition root imports a concrete channel. A complete-image
@@ -158,7 +167,6 @@ abstract interface class ChannelRuntime {
     TranslationResultRef result,
     TranslationCancellation cancellation,
   );
-  Future<void> clearResults();
   Future<void> dispose();
 }
 
@@ -174,7 +182,8 @@ class TranslationFailure implements Exception {
       'SOURCE_MISSING' => l10n.translation_source_missing,
       'RESOURCE_LIMIT' => l10n.translation_resource_limit,
       'STORAGE_FULL' => l10n.translation_storage_full,
-      'INVALID_IMAGE' || 'INPUT_NOT_NORMALIZED' => l10n.translation_invalid_image,
+      'INVALID_IMAGE' ||
+      'INPUT_NOT_NORMALIZED' => l10n.translation_invalid_image,
       'UNSUPPORTED_IMAGE' => l10n.translation_unsupported_image,
       'INVALID_RESULT' => l10n.translation_invalid_result,
       'RESULT_UNAVAILABLE' => l10n.translation_result_unavailable,
@@ -189,6 +198,7 @@ class TranslationFailure implements Exception {
       'RATE_LIMITED' => l10n.translation_rate_limited,
       'QUOTA_EXHAUSTED' => l10n.translation_quota_exhausted,
       'UNSUPPORTED_LANGUAGE' => l10n.translation_unsupported_language,
+      'TRANSLATION_MODEL_UNAVAILABLE' => l10n.translation_model_unavailable,
       'CLIENT_UPGRADE_REQUIRED' => l10n.translation_upgrade_required,
       'REMOTE_FAILED' => l10n.translation_remote_failed,
       'BRIDGE_INVALID' => l10n.translation_bridge_invalid,

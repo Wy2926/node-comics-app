@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/more/settings/settings_search.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
 import 'package:mangayomi/modules/translation/translation_language_picker.dart';
+import 'package:mangayomi/modules/translation/translation_model_picker.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/more/settings/mobile_settings_layout.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
@@ -67,6 +68,9 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
               l.settings_translation_scope,
             ))
           const TranslationLanguageRow(),
+        if (group.key == l.settings_reading_translation &&
+            matches(l.translation_model, l.settings_translation_scope))
+          const TranslationModelRow(),
         for (final item in group.value)
           if (matches(item.title, item.keywords))
             _destination(item.title, item.icon, item.route),

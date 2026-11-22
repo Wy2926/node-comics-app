@@ -6,6 +6,7 @@ import 'package:image/image.dart' as img;
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/image_work.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/http.dart';
+import 'package:mangayomi/services/translation/channels/nodelane/protocol.dart';
 import 'package:mangayomi/services/translation/source_file.dart';
 // Use path_provider's existing platform seam, as in the other storage fixtures.
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
@@ -18,6 +19,14 @@ class _TemporaryPath extends PathProviderPlatform {
 }
 
 void main() {
+  test('tiles are needed only when either edge exceeds the WebP range', () {
+    const caps = {
+      'representations': ['overlay-tiles-v1'],
+    };
+    expect(nodeLaneResultFormat(caps, 16383, 16383), isNull);
+    expect(nodeLaneResultFormat(caps, 16384, 8), 'overlay-tiles-v1');
+    expect(nodeLaneResultFormat(caps, 8, 16384), 'overlay-tiles-v1');
+  });
   test('tagged inputs freeze upright sRGB pixels, alpha and the uploaded hash', () async {
     // Synthetic 16x8 swatches: the left half is (64,128,192), the right white.
     // A linear RGB ICC makes the left half (137,188,225) in sRGB.
@@ -187,55 +196,81 @@ void main() {
     }
   });
   test(
-    'large and long originals retain their size without admission caps',
+    'large pages freeze a proportional WebP at a short edge of 1800',
     () async {
       final directory = await Directory.systemTemp.createTemp(
         'nodelane-image-size-',
       );
-      try {
-        final work = TranslationImageWork(directory);
-        for (final (width, height) in [(1801, 2400), (8, 20000)]) {
-          final source = await File('${directory.path}/$width.png')
-              .writeAsBytes(
-                img.encodePng(
-                  img.Image(width: width, height: height, numChannels: 3),
-                ),
-              );
-          final prepared = await work.prepare(
-            source,
-            TranslationCancellation(),
+      addTearDown(() => directory.delete(recursive: true));
+      final source = await File('${directory.path}/source.png')
+          .writeAsBytes(img.encodePng(img.Image(width: 1801, height: 2400)));
+      final prepared = await TranslationImageWork(directory)
+          .prepare(source, TranslationCancellation());
+      final header = await readImageHeader(prepared.file);
+      expect(
+        (header.mime, header.width, header.height),
+        ('image/webp', 1800, 2399),
+      );
+      expect((prepared.width, prepared.height), (header.width, header.height));
+    },
+  );
+
+  test(
+    '1 MiB is a compression threshold, not an admission or upscaling threshold',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('nodelane-threshold-');
+      addTearDown(() => dir.delete(recursive: true));
+      final work = TranslationImageWork(dir);
+      final source = File('${dir.path}/source.png');
+      final pixels = img.Image(width: 16, height: 8, numChannels: 4)
+        ..clear(img.ColorRgba8(80, 160, 35, 128))
+        ..textData = {'padding': ''};
+      final overhead = img.encodePng(pixels).length;
+      for (final size in [1024 * 1024, 1024 * 1024 + 1]) {
+        pixels.textData!['padding'] = 'a' * (size - overhead);
+        await source.writeAsBytes(img.encodePng(pixels));
+        expect(await source.length(), size);
+        final input = await work.prepare(source, TranslationCancellation());
+        expect((input.width, input.height), (16, 8));
+        if (size == 1024 * 1024) {
+          expect(input.file.path, source.path);
+        } else {
+          final bytes = await input.file.readAsBytes();
+          expect(bytes.length, lessThan(size));
+          expect(
+            img.WebPDecoder().startDecode(bytes)!.format,
+            img.WebPFormat.lossy,
           );
-          expect((prepared.width, prepared.height), (width, height));
-          expect(prepared.file.path, source.path);
-          expect(prepared.sha256, await imageDigest(source));
-          final patch = await File('${directory.path}/patch').writeAsBytes(
-            img.encodePng(img.Image(width: 1, height: 1, numChannels: 4)),
-          );
-          final result = await work.composite(
-            input: prepared.file,
-            patch: patch,
-            width: width,
-            height: height,
-            patchMime: 'image/png',
-            patches: [
-              (
-                x: 0,
-                y: 0,
-                width: 1,
-                height: 1,
-                offset: 0,
-                length: await patch.length(),
-                sha256: await imageDigest(patch),
-              ),
-            ],
-            cancellation: TranslationCancellation(),
-          );
-          final header = await readImageHeader(result);
-          expect((header.width, header.height), (width, height));
+          expect(img.decodeWebP(bytes)!.getPixel(4, 4).a, 128);
         }
-      } finally {
-        await directory.delete(recursive: true);
       }
+      final strip = img.Image(width: 8, height: 65501);
+      await source.writeAsBytes(img.encodePng(strip, level: 0));
+      expect(await source.length(), greaterThan(1024 * 1024));
+      final input = await work.prepare(source, TranslationCancellation());
+      expect(input.file.path, source.path);
+      expect(input.height, 65501);
+    },
+  );
+
+  test(
+    'an already compact halftone page is not replaced by a larger WebP',
+    () async {
+      final dir = await Directory.systemTemp.createTemp('nodelane-halftone-');
+      addTearDown(() => dir.delete(recursive: true));
+      final pixels = img.Image(width: 1440, height: 2100, numChannels: 1);
+      var seed = 1;
+      for (final p in pixels) {
+        seed = (1664525 * seed + 1013904223) & 0xffffffff;
+        p.r = (seed >> 29) * 36;
+      }
+      final source = await File('${dir.path}/source.png')
+          .writeAsBytes(img.encodePng(pixels));
+      expect(await source.length(), greaterThan(1024 * 1024));
+      final input = await TranslationImageWork(dir)
+          .prepare(source, TranslationCancellation());
+      expect(input.file.path, source.path);
+      expect(input.sha256, input.sourceSha256);
     },
   );
 

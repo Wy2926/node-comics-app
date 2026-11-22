@@ -4274,6 +4274,18 @@ class AppLocalizationsKo extends AppLocalizations {
   String get translation_target_language => '대상 언어';
 
   @override
+  String get translation_model => '번역 모델';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return '할당량 소모: $multiplier배';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      '이 번역 모델을 사용할 수 없습니다. 다른 모델을 선택하거나 나중에 다시 시도하세요.';
+
+  @override
   String get translation_clear_cache => '번역된 이미지 캐시 지우기';
 
   @override
@@ -5208,7 +5220,8 @@ class AppLocalizationsKo extends AppLocalizations {
       '이 페이지의 번역에 실패했습니다. 수동으로 다시 시도할 수 있습니다.';
 
   @override
-  String get translation_bridge_invalid => '웹페이지가 변경되었습니다. 번역을 다시 활성화하세요.';
+  String get translation_bridge_invalid =>
+      '웹페이지의 이미지를 전송하지 못했습니다. 다시 시도하거나 페이지를 새로고침하세요.';
 
   @override
   String get translation_connection_failed => '연결에 실패했습니다. 다시 시도해 주세요.';

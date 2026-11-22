@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -87,15 +88,16 @@ void main() {
   final puts = <(String, Map<String, dynamic>)>[];
   final gets = <String>[];
   final remote = <String, Map<String, dynamic>>{};
-  bool dropCreate = false, absentCreate = false, dropUpload = false;
-  int uploads = 0;
-  String? terminalFailure;
-  bool expiredResult = false;
-  bool smallReportedLimits = false;
-  bool tilesAvailable = true, modeLanguages = true, modeEnabled = true;
+  Stopwatch? rateLimitWait;
+  late bool dropCreate, absentCreate, dropUpload;
+  late int uploads, downloads;
+  String? terminalFailure, reuseOwned;
+  late bool expiredResult, tilesAvailable, echoModel, requireUpload;
+  late Map<String, Object> classic;
+  List<Map<String, dynamic>>? models;
+  (int, String)? rejectCreate;
   Map<String, dynamic>? translatedResult;
   List<int>? artifactBytes;
-  int downloads = 0;
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -119,13 +121,20 @@ void main() {
     puts.clear();
     gets.clear();
     remote.clear();
+    rateLimitWait = null;
     uploads = 0;
     terminalFailure = null;
+    reuseOwned = null;
     expiredResult = false;
-    smallReportedLimits = false;
     tilesAvailable = true;
-    modeLanguages = true;
-    modeEnabled = true;
+    classic = {
+      'id': 'classic',
+      'enabled': true,
+      'languages': ['zh-Hans'],
+    };
+    models = null;
+    rejectCreate = null;
+    echoModel = requireUpload = true;
     translatedResult = null;
     artifactBytes = null;
     downloads = 0;
@@ -145,22 +154,15 @@ void main() {
       if (path == '/v1/capabilities') {
         body = {
           'result_protocol': 'overlay-v1',
+          'translation_models': ?models,
           'representations': [
             'original',
             'full-image-v1',
             'overlay-v1',
             if (tilesAvailable) 'overlay-tiles-v1',
           ],
-          'modes': [
-            {
-              'id': 'classic',
-              'enabled': modeEnabled,
-              if (modeLanguages) 'languages': ['zh-Hans'],
-            },
-          ],
-          'limits': smallReportedLimits
-              ? {'max_bytes': 1, 'max_dimension': 1}
-              : {},
+          'modes': [classic],
+          'limits': {'max_bytes': 1, 'max_dimension': 1},
         };
       } else if (path.endsWith('/events')) {
         request.response.headers.contentType = ContentType(
@@ -187,6 +189,26 @@ void main() {
             await utf8.decoder.bind(request).join(),
           ) as Map<String, dynamic>;
           puts.add((id, body));
+          if (rateLimitWait case final wait?) {
+            expect(
+              wait.elapsed,
+              greaterThanOrEqualTo(const Duration(seconds: 1)),
+            );
+          }
+          if (rejectCreate case (final status, final code)) {
+            request.response.statusCode = status;
+            if (status == 429) {
+              rateLimitWait = Stopwatch()..start();
+              request.response.headers.set(HttpHeaders.retryAfterHeader, '1');
+            }
+            request.response.write(
+              jsonEncode({
+                'error': {'code': code},
+              }),
+            );
+            await request.response.close();
+            return;
+          }
           final image =
               body['image'] ??
               remote[body['retry_of'] ?? body['regenerate_of']]!['image'];
@@ -194,11 +216,18 @@ void main() {
             'id': id,
             'mode': 'classic',
             'target_language': 'zh-Hans',
+            if (echoModel) 'requested_model_id': body['model_id'],
             'image_sha256': image['sha256'],
             'image': image,
-            'state': 'needs_input',
+            'state': requireUpload ? 'needs_input' : 'queued',
             'execution_resolved': false,
           };
+          if (reuseOwned != null) {
+            final owned = remote[reuseOwned]!;
+            expect(body['image_sha256'], owned['image_sha256']);
+            expect(body['requested_model_id'], owned['requested_model_id']);
+            body = {...owned, 'id': id};
+          }
           if (!absentCreate) remote[id] = body;
           if (dropCreate) {
             dropCreate = false;
@@ -271,7 +300,7 @@ void main() {
     await db.close(deleteFromDisk: true);
     await directory.delete(recursive: true);
   });
-  ChannelRuntime runtime([String user = 'account-a']) {
+  OfficialRuntime runtime([String user = 'account-a', String? modelId]) {
     final value = NodeLaneChannel(
       base: Uri.parse('http://127.0.0.1:${server.port}'),
       userId: user,
@@ -279,39 +308,346 @@ void main() {
       repository: repository,
       images: TranslationImageWork(Directory('${directory.path}/temporary')),
       allowLocalTestServer: true,
-    ).createRuntime(const TranslationOptions());
+    ).createRuntime(TranslationOptions(modelId: modelId));
     runtimes.add(value);
     return value;
   }
 
+  Future<void> stop(ChannelRuntime value) async {
+    await value.dispose();
+    runtimes.remove(value);
+  }
+
+  void serveFullImage(
+    List<int> bytes,
+    String mime, {
+    String kind = 'translated',
+  }) {
+    translatedResult = {
+      'kind': kind,
+      'representation': 'full-image-v1',
+      'width': 2,
+      'height': 2,
+      'artifact': {
+        'mime': mime,
+        'byte_size': bytes.length,
+        'sha256': sha256.convert(bytes).toString(),
+      },
+    };
+    artifactBytes = bytes;
+  }
+
+  // Seed the persisted v1 layout independently of today's receipt serializer.
+  Future<Map<String, dynamic>> seedLegacy(
+    String scope, {
+    String? failure,
+    File? upload,
+  }) async {
+    final source = (target.source as _Source).file;
+    final input = upload ?? source, id = translationUuid();
+    final header = await readImageHeader(input);
+    final inputSha = await imageDigest(input);
+    final sha = upload == null ? inputSha : await imageDigest(source);
+    final binding = 'binding:${translationKey([scope, sha, 'zh-Hans'])}';
+    final image = {
+      'sha256': inputSha,
+      'byte_size': await input.length(),
+      'content_type': header.mime,
+      'normalization_version': 1,
+    };
+    final snapshot = remote[id] = {
+      'id': id,
+      'mode': 'classic',
+      'target_language': 'zh-Hans',
+      'image': image,
+      'image_sha256': inputSha,
+      'state': failure == null ? 'succeeded' : 'failed',
+      'execution_resolved': true,
+      'error': {'code': failure ?? 'RESULT_EXPIRED'},
+    };
+    final frozen = {
+      'version': 1,
+      'id': id,
+      'key': binding,
+      'scope': scope,
+      'language': 'zh-Hans',
+      'sourceSha': sha,
+      'inputSha': inputSha,
+      'inputKey': translationKey('v1-input'),
+      'inputProfile': 'mobile-short-edge-1800-png-v1',
+      'encoderVersion': 'image-4.10.1',
+      'width': header.width,
+      'height': header.height,
+      'mime': header.mime,
+      'request': {
+        'mode': 'classic',
+        'target_language': 'zh-Hans',
+        'image': image,
+      },
+      'sent': true,
+      'accepted': true,
+      'snapshot': snapshot,
+    };
+    await repository.writeBatch([
+      ('operation:$scope:$id', scope, 'completed', frozen),
+      (binding, scope, 'binding', {'id': id}),
+      ('image-bindings:$scope', scope, 'metadata', {'version': 1}),
+    ]);
+    return frozen;
+  }
+
+  test('after a model switch a verified-absent UUID replays its frozen model and format; only regeneration uses the new choice', () async {
+    await (target.source as _Source).file.writeAsBytes(
+      img.encodePng(img.Image(width: 8, height: 16384)),
+    );
+    models = [
+      {'id': 'selected', 'name': 'Selected', 'available': true},
+    ];
+    dropCreate = absentCreate = true;
+    final first = runtime('account-a', 'selected')
+      ..setWindow('reader', [target]);
+    await _until(
+      () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+    );
+    final intent = puts.last;
+    expect(intent.$2['model_id'], 'selected');
+    expect(intent.$2['result_format'], 'overlay-tiles-v1');
+    await stop(first);
+
+    models = null;
+    tilesAvailable = false;
+    absentCreate = false;
+    echoModel = false;
+    final next = runtime('account-a', 'replacement')
+      ..setWindow('web', [target]);
+    await _until(() => next.stateFor(target.page).noText);
+    expect(puts.last.$1, intent.$1);
+    expect(puts.last.$2, intent.$2);
+    expect(gets, [intent.$1]);
+    expect(puts, hasLength(2));
+    expect(uploads, 1);
+    models = [
+      {'id': 'replacement', 'available': true},
+    ];
+    serveFullImage(tileWebp, 'image/webp');
+    await next.perform(target, TranslationAction.regenerate);
+    await _until(
+      () => puts.length == 3 && next.stateFor(target.page).result != null,
+    );
+    expect(puts.last.$2, {
+      'regenerate_of': intent.$1,
+      'model_id': 'replacement',
+    });
+    expect(puts.last.$1, isNot(intent.$1));
+    final oldPreference = runtime('account-a', 'selected')
+      ..setWindow('reader', [target]);
+    await _until(() => oldPreference.stateFor(target.page).result != null);
+    expect(
+      oldPreference.stateFor(target.page).result!.operationId,
+      puts.last.$1,
+    );
+    expect(puts, hasLength(3));
+  });
+
   test(
-    'service capability sizes do not become client admission gates',
+    'missing or rejected model reports unavailability without falling back',
     () async {
-      smallReportedLimits = true;
-      final value = runtime()..setWindow('browser', [target]);
-      await _until(() => value.stateFor(target.page).noText);
+      models = [];
+      final value = runtime('account-a', 'selected')
+        ..setWindow('web', [target]);
+      final unavailable = const TranslationFailure(
+        'TRANSLATION_MODEL_UNAVAILABLE',
+      ).message;
+      await _until(() => value.stateFor(target.page).message == unavailable);
+      expect(puts, isEmpty);
+      models = [
+        {'id': 'selected', 'name': 'Selected', 'available': false},
+      ];
+      rejectCreate = (403, 'TRANSLATION_MODEL_NOT_ALLOWED');
+      await value.perform(target, TranslationAction.retry);
+      await _until(
+        () =>
+            puts.isNotEmpty &&
+            value.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      expect(value.stateFor(target.page).message, unavailable);
+      expect(value.stateFor(target.page).actions, {TranslationAction.retry});
+      expect(puts.single.$2['model_id'], 'selected');
+      expect(uploads, 0);
+    },
+  );
+
+  test('a quota 403 is a definitive rejection; restart does not resubmit and manual retry keeps its UUID', () async {
+    rejectCreate = (403, 'DAILY_QUOTA_EXHAUSTED');
+    final first = runtime()..setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).actions.isNotEmpty);
+    expect(
+      first.stateFor(target.page).message,
+      const TranslationFailure('QUOTA_EXHAUSTED').message,
+    );
+    expect(first.stateFor(target.page).actions, {TranslationAction.retry});
+    await stop(first);
+    rejectCreate = null;
+    final next = runtime()..setWindow('web', [target]);
+    await _until(
+      () => next.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(puts, hasLength(1));
+    await next.perform(target, TranslationAction.retry);
+    await _until(() => next.stateFor(target.page).noText);
+    expect(puts.last.$1, puts.first.$1);
+    expect(puts.last.$2, puts.first.$2);
+    expect(gets, isEmpty);
+  });
+
+  test('an expired entitlement still lets the service return the owned result on a fresh device', () async {
+    models = [
+      {'id': 'paid', 'name': 'Paid', 'available': true},
+    ];
+    final first = runtime('account-a', 'paid')..setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).noText);
+    reuseOwned = puts.single.$1;
+    final receipt = (await repository.read(
+      'operation:${first.scope}:$reuseOwned',
+    ))!;
+    await stop(first);
+    await repository.remove(receipt['key'] as String);
+    models!.single['available'] = classic['enabled'] = false;
+    final next = runtime('account-a', 'paid')..setWindow('web', [target]);
+    await _until(() => next.stateFor(target.page).noText);
+    expect(puts, hasLength(2));
+    expect(puts.last.$1, isNot(reuseOwned));
+    expect(puts.last.$2, puts.first.$2);
+    expect(uploads, 1);
+  });
+
+  test('a confirmed 429 waits and resends the same intent without treating other local failures as transient', () async {
+    rejectCreate = (429, 'IMAGE_RATE_LIMITED');
+    final broken = _Source((target.source as _Source).file)
+      ..failure = 'SOURCE_MISSING';
+    final other = TranslationTarget(
+      const TranslationPage('broken', '1'),
+      broken,
+    );
+    final value = runtime()..setWindow('reader', [other, target]);
+    await _until(
+      () =>
+          value.stateFor(target.page).message ==
+          const TranslationFailure('RATE_LIMITED').message,
+    );
+    expect(broken.reads, 1);
+    rejectCreate = null;
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts, hasLength(2));
+    expect(puts.last.$1, puts.first.$1);
+    expect(gets, isEmpty);
+    expect(broken.reads, 1);
+  });
+
+  test(
+    'replacing the runtime respects the outstanding admission Retry-After',
+    () async {
+      rejectCreate = (429, 'IMAGE_RATE_LIMITED');
+      final first = runtime()..setWindow('reader', [target]);
+      final limited = const TranslationFailure('RATE_LIMITED').message;
+      await _until(() => first.stateFor(target.page).message == limited);
+      await stop(first);
+      rejectCreate = null;
+      final next = runtime()..setWindow('web', [target]);
+      await _until(() => next.stateFor(target.page).message == limited);
       expect(puts, hasLength(1));
-      expect(uploads, 1);
+      await _until(() => next.stateFor(target.page).noText);
+      expect(puts.last.$1, puts.first.$1);
+      expect(puts, hasLength(2));
     },
   );
 
   test(
-    'optional mode languages are compatible with the extension contract',
+    'small compliant PNG, JPEG and WebP inputs are sent byte-for-byte',
     () async {
-      modeLanguages = false;
-      final value = runtime()..setWindow('reader', [target]);
-      await _until(() => value.stateFor(target.page).noText);
-      expect(puts, hasLength(1));
+      final pixels = img.Image(width: 13, height: 23)
+        ..setPixelRgb(5, 7, 40, 160, 220);
+      final value = runtime();
+      for (final (mime, bytes) in [
+        ('image/png', img.encodePng(img.Image(width: 8, height: 20000))),
+        ('image/jpeg', img.encodeJpg(pixels, quality: 73)),
+        ('image/webp', tileWebp),
+      ]) {
+        final source = target.source as _Source;
+        await source.file.writeAsBytes(bytes);
+        final page = TranslationPage(mime, 'original');
+        value.setWindow('reader', [TranslationTarget(page, source)]);
+        await _until(() => value.stateFor(page).noText);
+        expect(puts.last.$2, isNot(contains('model_id')));
+        expect(puts.last.$2['image']['content_type'], mime);
+        expect(
+          await File('${directory.path}/received').readAsBytes(),
+          orderedEquals(bytes),
+        );
+      }
     },
   );
+
+  for (final (width, height, mime) in [
+    (640, 600, 'image/webp'),
+    (24, 20000, 'image/jpeg'),
+  ]) {
+    test(
+      'missing or corrupt $mime input is rebuilt and uploaded under its frozen UUID',
+      () async {
+        final source = (target.source as _Source).file;
+        final pixels = img.Image(width: width, height: height, numChannels: 4)
+          ..clear(img.ColorRgba8(15, 60, 150, 128));
+        final bytes = img.encodePng(pixels, level: 0);
+        expect(bytes.length, greaterThan(1024 * 1024));
+        await source.writeAsBytes(bytes);
+        dropCreate = true;
+        final first = runtime()..setWindow('reader', [target]);
+        await _until(
+          () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+        );
+        final (id, body) = puts.single;
+        final receipt = OfficialReceipt.fromJson(
+          (await repository.read('operation:${first.scope}:$id'))!,
+        );
+        expect(body['image']['content_type'], mime);
+        expect((receipt.width, receipt.height), (width, height));
+        expect(receipt.sourceSha, await imageDigest(source));
+        expect(receipt.inputSha, isNot(receipt.sourceSha));
+        final cached = repository.file('input', receipt.inputKey);
+        if (mime == 'image/jpeg') {
+          await cached.writeAsBytes([0, 1, 2]);
+        } else {
+          await cached.delete();
+        }
+        await stop(first);
+
+        final next = runtime()..setWindow('web', [target]);
+        await _until(() => next.stateFor(target.page).noText);
+        final received = await File('${directory.path}/received').readAsBytes();
+        expect(received.length, lessThan(bytes.length));
+        expect(await imageDigest(cached), receipt.inputSha);
+        expect(await source.readAsBytes(), orderedEquals(bytes));
+        if (mime == 'image/jpeg') {
+          // Half-transparent (15,60,150) on a white JPEG canvas.
+          final pixel = img.decodeJpg(received)!.getPixel(10, 10);
+          expect(pixel.r, closeTo(135, 5));
+          expect(pixel.g, closeTo(157, 5));
+          expect(pixel.b, closeTo(202, 5));
+        }
+        expect(puts, hasLength(1));
+        expect(uploads, 1);
+        expect(gets, [id]);
+      },
+    );
+  }
 
   test('long input negotiates tiles before creating an intent and can retry when available', () async {
     tilesAvailable = false;
     await (target.source as _Source).file.writeAsBytes(
       img.encodePng(img.Image(width: 8, height: 20000)),
     );
-    final value = runtime() as OfficialRuntime;
-    value.setWindow('reader', [target]);
+    final value = runtime()..setWindow('reader', [target]);
     await _until(
       () => value.stateFor(target.page).phase == TranslationPhase.failed,
     );
@@ -329,25 +665,24 @@ void main() {
     expect(uploads, 1);
   });
 
-  test(
-    'disabled mode is a service failure and recovers after policy refresh',
-    () async {
-      modeEnabled = false;
-      final value = runtime()..setWindow('reader', [target]);
-      await _until(
-        () => value.stateFor(target.page).phase == TranslationPhase.failed,
-      );
-      expect(
-        value.stateFor(target.page).message,
-        const TranslationFailure('TRANSLATION_MODE_UNAVAILABLE').message,
-      );
-      expect(puts, isEmpty);
-      modeEnabled = true;
-      await value.perform(target, TranslationAction.retry);
-      await _until(() => value.stateFor(target.page).noText);
-      expect(puts, hasLength(1));
-    },
-  );
+  test('mode refresh recovers even when language hints are absent and advertised sizes are smaller than the image', () async {
+    classic['enabled'] = false;
+    final value = runtime()..setWindow('reader', [target]);
+    await _until(
+      () => value.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(
+      value.stateFor(target.page).message,
+      const TranslationFailure('TRANSLATION_MODE_UNAVAILABLE').message,
+    );
+    expect(puts, isEmpty);
+    classic
+      ..['enabled'] = true
+      ..remove('languages');
+    await value.perform(target, TranslationAction.retry);
+    await _until(() => value.stateFor(target.page).noText);
+    expect(puts, hasLength(1));
+  });
 
   test('cache eviction targets never reject a large or pinned input', () async {
     final large = File('${directory.path}/large');
@@ -448,8 +783,7 @@ void main() {
         ),
       ),
     );
-    await first.dispose();
-    runtimes.remove(first);
+    await stop(first);
     final next = runtime()..setWindow('browser', [target]);
     await _until(() => next.stateFor(target.page).noText);
     expect(puts, hasLength(1));
@@ -464,7 +798,7 @@ void main() {
     expect(puts[0].$1, isNot(puts[1].$1));
   });
   test('missing saved operation remains uncertain instead of starting a preparation retry', () async {
-    final value = runtime() as OfficialRuntime;
+    final value = runtime();
     final sha = await imageDigest((target.source as _Source).file);
     final key = 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}';
     await repository.write(key, value.scope, 'binding', {
@@ -479,52 +813,15 @@ void main() {
     expect(uploads, 0);
   });
   test('cold cached display and single-image regeneration work without enabling automatic translation', () async {
-    final first = runtime() as OfficialRuntime;
-    first.setWindow('reader', [target]);
-    await _until(() => first.stateFor(target.page).noText);
-    await Future<void>.delayed(const Duration(milliseconds: 25));
-    final id = puts.single.$1;
-    final operation = 'operation:${first.scope}:$id';
-    final receipt = OfficialReceipt.fromJson(
-      (await repository.read(operation))!,
-    );
-    final sha = translationKey('fixture-overlay');
-    receipt.snapshot!['result'] = {
-      'kind': 'translated',
-      'representation': 'overlay-v1',
-      'normalization_version': 1,
-      'input_sha256': receipt.inputSha,
-      'width': receipt.width,
-      'height': receipt.height,
-      'composite': 'source-atop',
-      'bbox': {'x': 0, 'y': 0, 'width': 1, 'height': 1},
-      'artifact': {
-        'mime': 'image/webp',
-        'path': '/v1/translations/$id/result',
-        'byte_size': 1,
-        'sha256': sha,
-      },
-    };
-    receipt.resultKey = translationKey([
-      first.scope,
-      id,
-      sha,
-      'mobile-png-composite-v1',
-    ]);
+    serveFullImage(tileWebp, 'image/webp');
+    final first = runtime()..setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).result != null);
+    final result = first.stateFor(target.page).result!;
+    final cached = await first.readResult(result, TranslationCancellation());
+    cached.release();
+    await stop(first);
+    translatedResult = null;
     final source = target.source as _Source;
-    final cached = await repository.publish(
-      'result',
-      receipt.resultKey!,
-      source.file,
-    );
-    await repository.write(
-      operation,
-      first.scope,
-      'completed',
-      receipt.toJson(),
-    );
-    await first.dispose();
-    runtimes.remove(first);
     source.reads = 0;
     final next = runtime();
     final untouched = TranslationTarget(
@@ -546,7 +843,8 @@ void main() {
     expect(source.reads, 0);
     view.configure(showTranslation: true);
     await _until(() => view.images.isNotEmpty);
-    expect(view.images[target.page.identity]!.file.path, cached.path);
+    expect(view.images[target.page.identity]!.file.path, cached.file.path);
+    expect(downloads, 1);
     expect(source.reads, 1);
     expect(puts, hasLength(1));
     expect(gets, isEmpty);
@@ -557,19 +855,17 @@ void main() {
     expect(view.images, hasLength(1));
     await view.perform(target, TranslationAction.regenerate);
     await _until(() => puts.length == 2 && next.stateFor(target.page).noText);
-    expect(puts.last.$2, {'regenerate_of': id});
+    expect(puts.last.$2, {'regenerate_of': result.operationId});
     expect(view.enabled, isFalse);
     expect(next.stateFor(untouched.page).phase, TranslationPhase.idle);
   });
   test(
     'late cache restoration cannot replace the result of explicit regeneration',
     () async {
-      final first = runtime() as OfficialRuntime;
-      first.setWindow('reader', [target]);
+      final first = runtime()..setWindow('reader', [target]);
       await _until(() => first.stateFor(target.page).noText);
       final id = puts.single.$1;
-      await first.dispose();
-      runtimes.remove(first);
+      await stop(first);
 
       final held = _HeldReadRepository(
         repository,
@@ -595,103 +891,102 @@ void main() {
       expect(next.stateFor(target.page).actions, {TranslationAction.retry});
     },
   );
-  for (final (width, height) in [(8, 16383), (8, 16384), (16384, 8)]) {
-    test(
-      'verified absent $width x $height request replays its frozen format and UUID',
-      () async {
-        await (target.source as _Source).file.writeAsBytes(
-          img.encodePng(img.Image(width: width, height: height)),
-        );
-        dropCreate = true;
-        absentCreate = true;
-        final first = runtime()..setWindow('reader', [target]);
-        await _until(
-          () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
-        );
-        await first.dispose();
-        runtimes.remove(first);
-        absentCreate = false;
-        tilesAvailable = false;
-        final next = runtime()..setWindow('reader', [target]);
-        await _until(() => next.stateFor(target.page).noText);
-        expect(puts, hasLength(2));
-        expect(puts.first.$1, puts.last.$1);
-        expect(puts.first.$2, puts.last.$2);
-        expect(
-          puts.first.$2['result_format'],
-          width > 16383 || height > 16383 ? 'overlay-tiles-v1' : isNull,
-        );
-        expect(gets, [puts.first.$1]);
-      },
-    );
-  }
-
   for (final action in [
     TranslationAction.retry,
     TranslationAction.regenerate,
   ]) {
-    test('legacy long image $action upgrades only the new operation', () async {
-      final source = (target.source as _Source).file;
-      await source.writeAsBytes(
-        img.encodePng(img.Image(width: 8, height: 20000)),
-      );
-      final value = runtime() as OfficialRuntime;
-      final sha = await imageDigest(source);
-      final previous = OfficialReceipt(
-        id: translationUuid(),
-        key: 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}',
-        scope: value.scope,
-        language: 'zh-Hans',
-        inputKey: translationKey('legacy-input'),
-        inputSha: sha,
-        sourceSha: sha,
-        width: 8,
-        height: 20000,
-        mime: 'image/png',
-        request: {
-          'image': {
-            'sha256': sha,
-            'byte_size': await source.length(),
-            'content_type': 'image/png',
-            'normalization_version': 1,
-          },
-          'mode': 'classic',
-          'target_language': 'zh-Hans',
-        },
-        sent: true,
-        accepted: true,
-      );
-      previous.snapshot = {
-        'id': previous.id,
-        'state': action == TranslationAction.retry ? 'failed' : 'succeeded',
-        'execution_resolved': true,
-        'image': previous.request['image'],
-        'error': action == TranslationAction.retry
-            ? {'code': 'CLASSIC_OUTPUT_TOO_LARGE'}
-            : null,
-      };
-      remote[previous.id] = previous.snapshot!;
-      await repository.publish('input', previous.inputKey, source);
-      final operation = 'operation:${value.scope}:${previous.id}';
-      final frozen = previous.toJson();
-      await repository.write(operation, value.scope, 'completed', frozen);
-      await repository.write(previous.key, value.scope, 'binding', {
-        'id': previous.id,
-      });
-      value.setWindow('reader', [target], automatic: false);
-      await value.restore([target]);
-      expect(puts, isEmpty);
-      await value.perform(target, action);
-      await _until(() => value.stateFor(target.page).noText);
-      expect(puts.single.$1, isNot(previous.id));
-      expect(puts.single.$2, {
-        action == TranslationAction.retry ? 'retry_of' : 'regenerate_of':
-            previous.id,
-        'result_format': 'overlay-tiles-v1',
-      });
-      expect(await repository.read(operation), frozen);
-    });
+    test(
+      'legacy long image $action inherits its result format even when tiles are not advertised',
+      () async {
+        tilesAvailable = false;
+        final source = (target.source as _Source).file;
+        final pixels = img.Image(width: 24, height: 20000);
+        File? upload;
+        if (action == TranslationAction.retry) {
+          // v1 froze this BMP as PNG; the current profile would compress it to JPEG.
+          final random = Random(42);
+          for (final pixel in pixels) {
+            pixel.setRgb(
+              random.nextInt(256),
+              random.nextInt(256),
+              random.nextInt(256),
+            );
+          }
+          final bmp = img.encodeBmp(pixels);
+          await source.writeAsBytes(bmp);
+          upload = await File('${directory.path}/v1.png')
+              .writeAsBytes(img.encodePng(img.decodeBmp(bmp)!));
+        } else {
+          await source.writeAsBytes(img.encodePng(pixels, level: 0));
+        }
+        expect(await (upload ?? source).length(), greaterThan(1024 * 1024));
+        final value = runtime();
+        final frozen = await seedLegacy(
+          value.scope,
+          upload: upload,
+          failure: action == TranslationAction.retry
+              ? 'CLASSIC_OUTPUT_TOO_LARGE'
+              : null,
+        );
+        final id = frozen['id'];
+        value.setWindow('reader', [target], automatic: false);
+        await value.restore([target]);
+        expect(puts, isEmpty);
+        await value.perform(target, action);
+        await _until(() => value.stateFor(target.page).noText);
+        expect(puts.single.$1, isNot(id));
+        expect(puts.single.$2, {
+          action == TranslationAction.retry ? 'retry_of' : 'regenerate_of': id,
+        });
+        expect(await repository.read('operation:${value.scope}:$id'), frozen);
+        expect(
+          await imageDigest(File('${directory.path}/received')),
+          frozen['inputSha'],
+        );
+      },
+    );
   }
+
+  test('unavailable local encoder cannot block parent submission; an input mismatch requires explicit recovery', () async {
+    final first = runtime()..setWindow('reader', [target]);
+    await _until(() => first.stateFor(target.page).noText);
+    final id = puts.single.$1,
+        key = 'operation:${first.scope}:${puts.single.$1}';
+    final saved = (await repository.read(key))!;
+    final originalHash = saved['sourceSha'];
+    saved['encoderVersion'] = 'other-device-encoder';
+    // An older device uploaded different normalized bytes. Its cached input is gone.
+    saved['inputSha'] = translationKey('unreproducible');
+    remote[id]!['image']['sha256'] = saved['inputSha'];
+    await repository.write(key, first.scope, 'completed', saved);
+    await repository.file('input', saved['inputKey'] as String).delete();
+    await stop(first);
+    final next = runtime()..setWindow('web', [target], automatic: false);
+    await next.restore([target]);
+    requireUpload = false;
+    await next.perform(target, TranslationAction.regenerate);
+    await _until(
+      () => next.stateFor(target.page).phase == TranslationPhase.queued,
+    );
+    final newId = puts.last.$1;
+    expect(puts.last.$2, {'regenerate_of': id});
+    expect(uploads, 1);
+    remote[newId]!['state'] = 'needs_input';
+    await next.perform(target, TranslationAction.verify);
+    await _until(
+      () => next.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(next.stateFor(target.page).actions, {TranslationAction.retry});
+    await next.perform(target, TranslationAction.retry);
+    await _until(
+      () =>
+          gets.where((id) => id == newId).length == 2 &&
+          next.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(puts, hasLength(2));
+    expect(uploads, 1);
+    expect(await imageDigest((target.source as _Source).file), originalHash);
+  });
 
   for (final tiled in [false, true]) {
     test(
@@ -720,8 +1015,7 @@ void main() {
           },
         };
         artifactBytes = bytes.toList()..[bytes.length - 1] ^= 1;
-        final first = runtime() as OfficialRuntime;
-        first.setWindow('reader', [target]);
+        final first = runtime()..setWindow('reader', [target]);
         await _until(() => first.stateFor(target.page).result != null);
         final ref = first.stateFor(target.page).result!;
         await expectLater(
@@ -748,13 +1042,10 @@ void main() {
         final display = await first.readResult(ref, TranslationCancellation());
         final output = img.decodePng(await display.file.readAsBytes())!;
         expect((output.width, output.height), (8, height));
-        expect(output.getPixel(0, 0).r, closeTo(150, 1));
-        expect(output.getPixel(0, 0).a, 128);
         expect(output.getPixel(1, tiled ? height - 1 : 1).b, 200);
         final cachedPath = display.file.path;
         display.release();
-        await first.dispose();
-        runtimes.remove(first);
+        await stop(first);
         artifactBytes = null;
         final next = runtime();
         next.setWindow('reader', [target], automatic: false);
@@ -776,20 +1067,8 @@ void main() {
     final pixels = img.Image(width: 2, height: 2, numChannels: 4)
       ..setPixelRgba(0, 0, 20, 40, 60, 128);
     final bytes = img.encodePng(pixels);
-    translatedResult = {
-      'kind': 'partial',
-      'representation': 'full-image-v1',
-      'width': 2,
-      'height': 2,
-      'artifact': {
-        'mime': 'image/png',
-        'byte_size': bytes.length,
-        'sha256': sha256.convert(bytes).toString(),
-      },
-    };
-    artifactBytes = bytes;
-    final first = runtime() as OfficialRuntime;
-    first.setWindow('reader', [target]);
+    serveFullImage(bytes, 'image/png', kind: 'partial');
+    final first = runtime()..setWindow('reader', [target]);
     await _until(() => first.stateFor(target.page).result != null);
     final ref = first.stateFor(target.page).result!;
     final operation = 'operation:${first.scope}:${ref.operationId}';
@@ -797,9 +1076,12 @@ void main() {
       (await repository.read(operation))!,
     );
     await repository.file('input', receipt.inputKey).delete();
-    await first.dispose();
-    runtimes.remove(first);
-    final next = runtime() as OfficialRuntime;
+    await stop(first);
+    final stored = (await repository.read(operation))!
+      ..['inputProfile'] = 'unknown-profile'
+      ..remove('encoderVersion');
+    await repository.write(operation, first.scope, 'completed', stored);
+    final next = runtime('account-a', 'not-in-catalog');
     final display = await next.readResult(ref, TranslationCancellation());
     expect((display.width, display.height, display.mime), (2, 2, 'image/png'));
     final decoded = img.decodePng(await display.file.readAsBytes())!;
@@ -826,93 +1108,118 @@ void main() {
     'NodeLane failed-image retry uses a new UUID and preserves retry_of',
     () async {
       terminalFailure = 'REMOTE_FAILED';
-      final value = runtime()..setWindow('reader', [target]);
+      models = [
+        {'id': 'selected', 'name': 'Selected', 'available': true},
+      ];
+      final value = runtime('account-a', 'selected')
+        ..setWindow('reader', [target]);
       await _until(
         () => value.stateFor(target.page).phase == TranslationPhase.failed,
       );
-      await Future<void>.delayed(const Duration(milliseconds: 25));
       terminalFailure = null;
       await value.perform(target, TranslationAction.retry);
       await _until(() => value.stateFor(target.page).noText);
       expect(puts, hasLength(2));
-      expect(puts.last.$2, {'retry_of': puts.first.$1});
+      expect(puts.last.$2, {'retry_of': puts.first.$1, 'model_id': 'selected'});
       expect(puts.first.$1, isNot(puts.last.$1));
     },
   );
 
-  test('upload 422 checks the same UUID and does not resend identical bytes', () async {
-    terminalFailure = 'INPUT_NOT_NORMALIZED';
-    final value = runtime()..setWindow('reader', [target]);
+  test('after a terminal failure, explicitly retrying a different model submits a fresh descriptor', () async {
+    models = [
+      for (final id in ['a', 'b']) {'id': id, 'name': id, 'available': true},
+    ];
+    terminalFailure = 'REMOTE_FAILED';
+    final first = runtime('account-a', 'a')..setWindow('reader', [target]);
     await _until(
-      () => value.stateFor(target.page).phase == TranslationPhase.failed,
+      () => first.stateFor(target.page).phase == TranslationPhase.failed,
     );
-    expect(gets, [puts.single.$1]);
-    expect(value.stateFor(target.page).actions, {TranslationAction.retry});
-    await expectLater(
-      value.perform(target, TranslationAction.retry),
-      throwsA(isA<TranslationFailure>().having((e) => e.code, 'code', 'INVALID_IMAGE')),
+    await stop(first);
+    terminalFailure = null;
+    final next = runtime('account-a', 'b')..setWindow('reader', [target]);
+    await _until(
+      () => next.stateFor(target.page).phase == TranslationPhase.failed,
     );
     expect(puts, hasLength(1));
-    expect(uploads, 1);
+    await next.perform(target, TranslationAction.retry);
+    await _until(() => next.stateFor(target.page).noText);
+    expect(puts, hasLength(2));
+    expect(puts.last.$2, {...puts.first.$2, 'model_id': 'b'});
+    expect(puts.last.$1, isNot(puts.first.$1));
   });
 
+  test('verification can resolve a withdrawn failed snapshot without creating a retry', () async {
+    terminalFailure = 'TRANSLATION_UNAVAILABLE';
+    final first = runtime()..setWindow('reader', [target]);
+    await _until(
+      () => first.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    final id = puts.single.$1;
+    final key = 'operation:${first.scope}:$id';
+    final data = (await repository.read(key))!;
+    data['snapshot']['execution_resolved'] = false;
+    await repository.write(key, first.scope, 'active', data);
+    await stop(first);
+    final next = runtime()..setWindow('reader', [target], automatic: false);
+    await next.restore([target]);
+    expect(next.stateFor(target.page).actions, {TranslationAction.verify});
+    await next.perform(target, TranslationAction.verify);
+    await _until(
+      () => next.stateFor(target.page).phase == TranslationPhase.failed,
+    );
+    expect(gets, [id]);
+    expect(puts, hasLength(1));
+    expect(next.stateFor(target.page).actions, isEmpty);
+  });
+
+  test(
+    'upload 422 checks the same UUID and does not resend identical bytes',
+    () async {
+      terminalFailure = 'INPUT_NOT_NORMALIZED';
+      final value = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => value.stateFor(target.page).phase == TranslationPhase.failed,
+      );
+      expect(gets, [puts.single.$1]);
+      expect(value.stateFor(target.page).actions, {TranslationAction.retry});
+      await expectLater(
+        value.perform(target, TranslationAction.retry),
+        throwsA(
+          isA<TranslationFailure>().having(
+            (e) => e.code,
+            'code',
+            'INVALID_IMAGE',
+          ),
+        ),
+      );
+      expect(puts, hasLength(1));
+      expect(uploads, 1);
+    },
+  );
+
   test('explicit retry of a legacy rejected upload freezes the corrected bytes once', () async {
-    final value = runtime() as OfficialRuntime;
+    final value = runtime();
     final source = (target.source as _Source).file;
     await File('test/fixtures/translation/rotated-linear.jpg')
         .copy(source.path);
-    final sha = await imageDigest(source);
-    final old = OfficialReceipt(
-      id: translationUuid(),
-      key: 'binding:${translationKey([value.scope, sha, 'zh-Hans'])}',
-      scope: value.scope,
-      language: 'zh-Hans',
-      inputKey: translationKey('old-input'),
-      inputSha: sha,
-      sourceSha: sha,
-      width: 16,
-      height: 8,
-      mime: 'image/jpeg',
-      request: {
-        'mode': 'classic',
-        'target_language': 'zh-Hans',
-        'image': {
-          'sha256': sha,
-          'byte_size': await source.length(),
-          'content_type': 'image/jpeg',
-          'normalization_version': 1,
-        },
-      },
-      sent: true,
-      accepted: true,
-      snapshot: {
-        'state': 'failed',
-        'error': {'code': 'INPUT_NOT_NORMALIZED'},
-      },
-    );
-    final key = 'operation:${value.scope}:${old.id}';
-    await repository.publish('input', old.inputKey, source);
-    await repository.writeBatch([
-      (key, value.scope, 'completed', old.toJson()),
-      (old.key, value.scope, 'binding', {'id': old.id}),
-      (
-        'image-bindings:${value.scope}',
-        value.scope,
-        'metadata',
-        {'version': 1},
-      ),
-    ]);
+    final old = await seedLegacy(value.scope, failure: 'INPUT_NOT_NORMALIZED');
+    await repository.publish('input', old['inputKey'] as String, source);
     value.setWindow('reader', [target], automatic: false);
     await value.restore([target]);
     expect(puts, isEmpty);
     await value.perform(target, TranslationAction.retry);
     await _until(() => value.stateFor(target.page).noText);
     final (id, body) = puts.single;
-    expect(id, isNot(old.id));
-    expect(body['image']['sha256'], isNot(sha));
+    expect(id, isNot(old['id']));
+    expect(body['image']['sha256'], isNot(old['inputSha']));
+    final uploaded = await readImageHeader(File('${directory.path}/received'));
+    expect(
+      (uploaded.mime, uploaded.width, uploaded.height),
+      ('image/png', 8, 16),
+    );
     expect(body, isNot(contains('retry_of')));
     expect(uploads, 1);
-    expect(await repository.read(key), old.toJson());
+    expect(await repository.read('operation:${value.scope}:${old['id']}'), old);
   });
 
   test(
@@ -923,7 +1230,6 @@ void main() {
       await _until(
         () => value.stateFor(target.page).phase == TranslationPhase.failed,
       );
-      await Future<void>.delayed(const Duration(milliseconds: 25));
       expect(value.stateFor(target.page).actions, isEmpty);
       expect(value.stateFor(target.page).message, contains('Split it'));
       await expectLater(
@@ -954,7 +1260,6 @@ void main() {
         ),
       );
       expect(puts, hasLength(1));
-      await Future<void>.delayed(const Duration(milliseconds: 25));
       expiredResult = false;
       await value.perform(target, TranslationAction.regenerate);
       await _until(() => value.stateFor(target.page).noText);
@@ -991,24 +1296,21 @@ void main() {
     expect(gets, isEmpty);
     expect(source.reads, 3);
   });
-  test('lost upload response verifies completion; explicit regenerate alone creates new UUID', () async {
-    dropUpload = true;
-    final first = runtime()..setWindow('reader', [target]);
-    await _until(
-      () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
-    );
-    await first.dispose();
-    runtimes.remove(first);
-    final next = runtime()..setWindow('reader', [target]);
-    await _until(() => next.stateFor(target.page).noText);
-    expect(uploads, 1);
-    expect(puts, hasLength(1));
-    await Future<void>.delayed(const Duration(milliseconds: 25));
-    await next.perform(target, TranslationAction.regenerate);
-    await _until(() => puts.length == 2 && next.stateFor(target.page).noText);
-    expect(puts.last.$2, {'regenerate_of': puts.first.$1});
-    expect(puts.last.$1, isNot(puts.first.$1));
-  });
+  test(
+    'lost upload response verifies the completed UUID without resending bytes',
+    () async {
+      dropUpload = true;
+      final first = runtime()..setWindow('reader', [target]);
+      await _until(
+        () => first.stateFor(target.page).phase == TranslationPhase.uncertain,
+      );
+      await stop(first);
+      final next = runtime()..setWindow('reader', [target]);
+      await _until(() => next.stateFor(target.page).noText);
+      expect(uploads, 1);
+      expect(gets, [puts.single.$1]);
+    },
+  );
 
   test(
     'different elements with the same content share one submission and upload',
@@ -1029,11 +1331,9 @@ void main() {
   );
 
   test('slot receipts are reindexed by hash without discarding UUIDs or resubmitting', () async {
-    final first = runtime() as OfficialRuntime;
-    first.setWindow('browser', [target]);
+    final first = runtime()..setWindow('browser', [target]);
     await _until(() => first.stateFor(target.page).noText);
-    await first.dispose();
-    runtimes.remove(first);
+    await stop(first);
     final operation = 'operation:${first.scope}:${puts.single.$1}';
     final data = (await repository.read(operation))!;
     final contentKey = data['key'] as String;

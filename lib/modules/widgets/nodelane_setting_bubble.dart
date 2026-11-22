@@ -13,12 +13,14 @@ class SettingOption<T> {
     this.subtitle,
     this.icon,
     this.leading,
+    this.enabled = true,
   });
   final T value;
   final String label;
   final String? subtitle;
   final IconData? icon;
   final Widget? leading;
+  final bool enabled;
 }
 
 /// The option itself distinguishes a nullable default from cancellation.
@@ -33,7 +35,7 @@ Future<SettingOption<T>?> showSettingChoice<T>(
 }) => NodeLaneBubbleFlow.edit<SettingOption<T>>(
   anchor,
   title: title,
-  body: (_, finish) => _Choices(
+  body: (_, finish) => SettingChoices(
     current: current,
     options: options,
     searchable: searchable,
@@ -43,11 +45,12 @@ Future<SettingOption<T>?> showSettingChoice<T>(
   ),
 );
 
-class _Choices<T> extends StatefulWidget {
-  const _Choices({
+class SettingChoices<T> extends StatefulWidget {
+  const SettingChoices({
+    super.key,
     required this.current,
     required this.options,
-    required this.searchable,
+    this.searchable = false,
     this.description,
     this.emptyMessage,
     required this.choose,
@@ -58,10 +61,10 @@ class _Choices<T> extends StatefulWidget {
   final String? description, emptyMessage;
   final ValueChanged<SettingOption<T>> choose;
   @override
-  State<_Choices<T>> createState() => _ChoicesState<T>();
+  State<SettingChoices<T>> createState() => _ChoicesState<T>();
 }
 
-class _ChoicesState<T> extends State<_Choices<T>> {
+class _ChoicesState<T> extends State<SettingChoices<T>> {
   final _search = TextEditingController();
   @override
   void dispose() {
@@ -141,6 +144,7 @@ class _ChoicesState<T> extends State<_Choices<T>> {
                   subtitle: option.subtitle,
                   icon: option.icon,
                   leading: option.leading,
+                  enabled: option.enabled,
                   selected: option.value == widget.current,
                   trailing: Icon(
                     option.value == widget.current

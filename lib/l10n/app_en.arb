@@ -1828,6 +1828,16 @@
   },
   "translation_title": "Manga translation",
   "translation_target_language": "Target language",
+  "translation_model": "Translation model",
+  "translation_model_quota": "Quota cost: {multiplier}×",
+  "@translation_model_quota": {
+    "placeholders": {
+      "multiplier": {
+        "type": "num"
+      }
+    }
+  },
+  "translation_model_unavailable": "This translation model is unavailable. Choose another model or try again later.",
   "translation_clear_cache": "Clear translated image cache",
   "translation_saved_read_failed": "Could not load the saved translation",
   "translation_read_failed": "Could not load the translated image",
@@ -2260,7 +2270,7 @@
   "translation_unsupported_language": "The service does not support this target language.",
   "translation_upgrade_required": "The translation protocol is incompatible. Update the app.",
   "translation_remote_failed": "Translation failed for this page. You can retry manually.",
-  "translation_bridge_invalid": "The web page changed. Enable translation again.",
+  "translation_bridge_invalid": "The web image transfer failed. Try again or reload the page.",
   "translation_connection_failed": "Connection failed. Please try again.",
   "translation_paused": "Translation paused. You can verify its progress.",
   "translation_preparing_ellipsis": "Preparing translation…",

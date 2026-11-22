@@ -11,6 +11,7 @@ import 'package:flutter_web_auth_2/flutter_web_auth_2.dart';
 import '../../contracts.dart';
 import 'http.dart';
 import 'account.dart';
+import 'protocol.dart';
 
 /// Credentials stay in the native vault. Browser pages only see display data.
 class NodeLaneSession {
@@ -30,6 +31,25 @@ class NodeLaneSession {
   int _epoch = 0;
   String? get userId => _value?['userId'] as String?;
   String get name => _value?['name'] as String? ?? '';
+
+  Future<List<TranslationModelOption>> readModels(
+    TranslationCancellation cancel,
+  ) async {
+    final epoch = _epoch, id = userId;
+    final api = NodeLaneHttp(base, token: id == null ? null : accessToken);
+    try {
+      final caps = await api.json(
+        'GET',
+        '/v1/capabilities',
+        cancellation: cancel,
+      );
+      cancel.check();
+      if (epoch != _epoch || id != userId) throw const TranslationCancelled();
+      return nodeLaneModels(caps);
+    } finally {
+      api.close();
+    }
+  }
 
   Future<NodeLaneAccount> readAccount(TranslationCancellation cancel) async {
     final epoch = _epoch, id = userId;

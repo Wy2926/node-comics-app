@@ -95,8 +95,10 @@
   const CHUNK = 128 * 1024;
   const probe = document.createElement('canvas'); probe.width = probe.height = 32;
   const encode = bytes => {
+    if (typeof bytes.toBase64 === 'function') return bytes.toBase64();
+    // Gecko's isolated world cannot use subarray() on some page-owned pixel buffers.
     let text = '';
-    for (let at = 0; at < bytes.length; at += 8192) text += String.fromCharCode(...bytes.subarray(at, at + 8192));
+    for (let at = 0; at < bytes.length; at++) text += String.fromCharCode(bytes[at]);
     return btoa(text);
   };
   function source(el) { return el instanceof HTMLCanvasElement ? 'canvas' : el.currentSrc || el.src || ''; }
@@ -275,7 +277,9 @@
             max-width:100%; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
             color:var(--ink); font:500 var(--fontSize)/1.3 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
             padding-left:var(--padding); overflow:hidden; }
-          .label { display:flex; align-items:center; gap:var(--gap); padding:var(--gap) var(--padding) var(--gap) 0; }
+          .label { display:flex; align-items:center; gap:var(--gap); padding:var(--gap) var(--padding) var(--gap) 0;
+            box-sizing:border-box; max-width:100%; }
+          [role=status] { white-space:pre-line; overflow-wrap:anywhere; }
           .icon { color:var(--accent); } .issue .icon { color:var(--error); }
           .working .icon { width:1em; height:1em; box-sizing:border-box; border:2px solid var(--line);
             border-top-color:var(--accent); border-radius:50%; animation:spin 1s linear infinite; }
@@ -483,10 +487,13 @@
       const value = input;
       if (!value?.blob || args.id !== value.id || args.offset !== value.offset) throw Error('BRIDGE_INVALID');
       record(value.id, value.revision);
-      const bytes = new Uint8Array(await value.blob.slice(value.offset, value.offset + CHUNK).arrayBuffer());
+      const slice = value.blob.slice(value.offset, value.offset + CHUNK);
+      let data;
+      try { data = encode(new Uint8Array(await slice.arrayBuffer())); }
+      catch (_) { throw Error('SOURCE_MISSING'); }
       record(value.id, value.revision);
       if (input !== value) throw Error('BRIDGE_INVALID');
-      value.offset += bytes.length; return encode(bytes);
+      value.offset += slice.size; return data;
     }
     if (operation === 'inputEnd') { const value = input; input = null; value?.abort?.abort(); if (value) record(value.id, value.revision); return true; }
     if (operation === 'resultClear') { drop(args.id); return true; }

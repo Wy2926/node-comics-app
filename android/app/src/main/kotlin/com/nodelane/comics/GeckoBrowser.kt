@@ -102,7 +102,8 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
         }
         val key = args as String
         var page: GeckoPage? = null
-        val view = GeckoView(context).apply { setViewBackend(GeckoView.BACKEND_TEXTURE_VIEW) }
+        // A nested TextureView can keep the previous frame after Gecko paints a translated image.
+        val view = GeckoView(context)
         val channel = MethodChannel(messenger, "$HOST/$viewId")
         channel.setMethodCallHandler { call, result ->
             try {

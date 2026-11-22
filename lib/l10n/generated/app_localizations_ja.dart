@@ -4270,6 +4270,18 @@ class AppLocalizationsJa extends AppLocalizations {
   String get translation_target_language => 'ターゲット言語';
 
   @override
+  String get translation_model => '翻訳モデル';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return '利用枠の消費倍率：$multiplier 倍';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'この翻訳モデルは利用できません。別のモデルを選ぶか、しばらくしてからもう一度お試しください。';
+
+  @override
   String get translation_clear_cache => '翻訳された画像キャッシュをクリアする';
 
   @override
@@ -5204,7 +5216,8 @@ class AppLocalizationsJa extends AppLocalizations {
   String get translation_remote_failed => 'このページの翻訳は失敗しました。手動で再試行できます。';
 
   @override
-  String get translation_bridge_invalid => 'Web ページが変更されました。翻訳を再度有効にします。';
+  String get translation_bridge_invalid =>
+      'ウェブページの画像を転送できませんでした。もう一度試すか、ページを再読み込みしてください。';
 
   @override
   String get translation_connection_failed => '接続に失敗しました。もう一度試してください。';

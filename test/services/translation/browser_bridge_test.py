@@ -64,7 +64,18 @@ const readInput = async item => {
   assert(atob(live.chunks[0].data).slice(1,4)==='PNG','Blob input must consistently use decoded PNG pixels');
   URL.revokeObjectURL(url);
   await rejects(async () => { try { await fetch(url); } catch (_) { throw Error('revoked'); } },'revoked');
-  const {meta,chunks}=await readInput(item);
+  // Gecko extension pixel buffers can expose bytes while disallowing subarray's species constructor.
+  const species=Object.getOwnPropertyDescriptor(Uint8Array.prototype,'constructor');
+  const modern=Object.getOwnPropertyDescriptor(Uint8Array.prototype,'toBase64');
+  let meta,chunks;
+  try {
+    Object.defineProperty(Uint8Array.prototype,'constructor',{configurable:true,get(){throw Error('foreign constructor');}});
+    Object.defineProperty(Uint8Array.prototype,'toBase64',{configurable:true,value:undefined});
+    ({meta,chunks}=await readInput(item));
+  } finally {
+    Object.defineProperty(Uint8Array.prototype,'constructor',species);
+    if(modern)Object.defineProperty(Uint8Array.prototype,'toBase64',modern);else delete Uint8Array.prototype.toBase64;
+  }
   assert(JSON.stringify(live)===JSON.stringify({meta,chunks}),'revocation changed the input bytes');
   assert(chunks.length>1,'fixture must cross chunk boundaries');
   const toBlob=HTMLCanvasElement.prototype.toBlob;
@@ -96,10 +107,11 @@ const readInput = async item => {
   assert(JSON.stringify(await readInput(item))===JSON.stringify({meta,chunks}),'translation replacement contaminated original pixels');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
   const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
-  const failed={...item,label:'翻译失败',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试',actionSemanticLabel:'重试此图片'};
+  const failed={...item,label:'翻译失败\n连接失败，请重试',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试',actionSemanticLabel:'重试此图片'};
   await call('state',{active:true,translated:true,theme,items:[failed]});
   const badge=document.querySelector('[data-nodelane-overlay="status"]');
   assert(badge,'image status missing');
+  assert(badge.shadowRoot.querySelector('[role=status]').innerText.includes('连接失败，请重试'),'touch users cannot see the failure reason');
   assert(badge.style.getPropertyValue('--surface')===theme.surface,'native theme tokens missing');
   assert(Math.abs(badge.getBoundingClientRect().left-img.getBoundingClientRect().left-8)<1,'badge not on image top-left');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'status changed reading position');

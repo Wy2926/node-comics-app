@@ -12,6 +12,7 @@ import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'translation_display_switch.dart';
 import 'translation_language_picker.dart';
+import 'translation_model_picker.dart';
 import 'translation_settings.dart';
 import 'translation_view_controller.dart';
 
@@ -64,18 +65,26 @@ class TranslationControlsContent extends ConsumerWidget {
         final complete = states
             .where((s) => s.phase == TranslationPhase.succeeded)
             .length;
-        final issues = states
-            .where(
-              (s) =>
-                  s.phase == TranslationPhase.failed ||
-                  s.phase == TranslationPhase.uncertain,
-            )
-            .length;
+        final issues = states.where((s) => s.hasIssue).toList();
+        final reasons = {
+          for (final issue in issues)
+            if (issue.message.isNotEmpty) issue.message,
+          ?controller.error,
+        };
         final controls = Padding(
           padding: NodeLaneTokens.modalContentPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              if (reasons.isNotEmpty) ...[
+                Text(
+                  reasons.join('\n'),
+                  style: t.readerSecondary.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+                const SizedBox(height: NodeLaneTokens.space12),
+              ],
               NodeLaneGroupSurface(
                 child: Padding(
                   padding: const EdgeInsets.all(NodeLaneTokens.space16),
@@ -118,6 +127,7 @@ class TranslationControlsContent extends ConsumerWidget {
               NodeLaneGroupSurface(
                 children: [
                   const TranslationLanguageRow(),
+                  const TranslationModelRow(),
                   NodeLaneRow(
                     title: context.l10n.translation_channel,
                     value: channelLabel,
@@ -135,20 +145,11 @@ class TranslationControlsContent extends ConsumerWidget {
                       : context.l10n.translation_progress(
                           complete,
                           states.length,
-                          issues,
+                          issues.length,
                         ),
                   style: t.readerSecondary,
                 ),
                 const SizedBox(height: NodeLaneTokens.space8),
-              ],
-              if (controller.error != null) ...[
-                const SizedBox(height: NodeLaneTokens.space12),
-                Text(
-                  controller.error!,
-                  style: t.readerSecondary.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
               ],
             ],
           ),

@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/services/translation/languages.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
+import 'translation_model_picker.dart';
+
 class TranslationSettings extends ConsumerStatefulWidget {
   const TranslationSettings({super.key});
   @override
@@ -64,6 +66,7 @@ class TranslationSettingsState extends ConsumerState<TranslationSettings> {
                     },
             ),
           ),
+          const TranslationModelRow(),
           ListTile(
             title: Text(context.l10n.translation_clear_cache),
             leading: const Icon(Icons.cleaning_services_outlined),

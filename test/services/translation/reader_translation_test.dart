@@ -58,8 +58,6 @@ class _LocalRuntime implements ChannelRuntime {
   }
 
   @override
-  Future<void> clearResults() async {}
-  @override
   Future<void> dispose() => _changes.close();
 }
 

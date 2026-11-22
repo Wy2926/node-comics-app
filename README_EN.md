@@ -23,7 +23,7 @@ NodeLane Comics is a comic reader and translator for iOS and Android. Keep your 
 
 - **Discover and collect**: Browse comic sources, search across sites, and add titles to your library.
 - **Read your way**: Choose continuous scrolling, single pages, or double pages, with your reading progress saved.
-- **Translate as you read**: Sign in to your NodeLane account to translate comic images and switch back to the originals at any time.
+- **Translate as you read**: Sign in to NodeLane, choose a translation model and target language in the translation panel, and switch back to the original images at any time.
 - **Browse in tabs**: Read web comics with the site's own page controls and switch between original and translated images. In 0.2.1, tap **Mark this spot** and use **Continue reading** on the browser start page to return to the same spot, even after closing the tab.
 
 ## Screenshots

@@ -4204,6 +4204,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_target_language => '目标语言';
 
   @override
+  String get translation_model => '翻译模型';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return '额度消耗：$multiplier 倍';
+  }
+
+  @override
+  String get translation_model_unavailable => '当前无法使用所选翻译模型，请更换模型或稍后重试。';
+
+  @override
   String get translation_clear_cache => '清理译图缓存';
 
   @override
@@ -5063,7 +5074,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_remote_failed => '本页翻译失败，可手动重试';
 
   @override
-  String get translation_bridge_invalid => '网页已变化，请重新开启翻译';
+  String get translation_bridge_invalid => '网页图片传输失败，请重试或刷新网页';
 
   @override
   String get translation_connection_failed => '连接失败，请重试';
@@ -9431,6 +9442,17 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_target_language => '目標語言';
 
   @override
+  String get translation_model => '翻譯模型';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return '額度消耗：$multiplier 倍';
+  }
+
+  @override
+  String get translation_model_unavailable => '目前無法使用所選翻譯模型，請更換模型或稍後再試。';
+
+  @override
   String get translation_clear_cache => '清理譯圖快取';
 
   @override
@@ -10291,7 +10313,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_remote_failed => '本頁翻譯失敗，可手動重試';
 
   @override
-  String get translation_bridge_invalid => '網頁已變化，請重新開啟翻譯';
+  String get translation_bridge_invalid => '網頁圖片傳輸失敗，請重試或重新整理網頁';
 
   @override
   String get translation_connection_failed => '連線失敗，請重試';

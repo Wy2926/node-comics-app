@@ -4360,6 +4360,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get translation_target_language => 'اللغة الهدف';
 
   @override
+  String get translation_model => 'نموذج الترجمة';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'مضاعف استهلاك الحصة: $multiplier×';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'نموذج الترجمة هذا غير متاح. اختر نموذجًا آخر أو حاول مجددًا لاحقًا.';
+
+  @override
   String get translation_clear_cache =>
       'مسح ذاكرة التخزين المؤقت للصورة المترجمة';
 
@@ -5315,7 +5327,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'تم تغيير صفحة الويب. تمكين الترجمة مرة أخرى.';
+      'تعذّر نقل صورة صفحة الويب. أعد المحاولة أو أعد تحميل الصفحة.';
 
   @override
   String get translation_connection_failed =>

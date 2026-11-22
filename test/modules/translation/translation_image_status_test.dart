@@ -101,6 +101,39 @@ void main() {
     },
   );
 
+  testWidgets(
+    'the image and web badge show the failure reason without a long press',
+    (tester) async {
+      final l10n = AppLocalizationsZh();
+      final reason = l10n.translation_source_missing;
+      runtime.states['first'] = PageTranslationState(
+        phase: TranslationPhase.failed,
+        message: reason,
+        actions: {TranslationAction.retry},
+      );
+      final status = TranslationImageStatus.forTarget(view, first, l10n);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('zh'),
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: SizedBox(
+              width: 220,
+              child: TranslationImageBadge(status: status),
+            ),
+          ),
+        ),
+      );
+      expect(find.text('${l10n.translation_failed}\n$reason'), findsOneWidget);
+      expect(
+        status.toJson(l10n)['label'],
+        '${l10n.translation_failed}\n$reason',
+      );
+      expect(find.text(l10n.retry), findsOneWidget);
+    },
+  );
+
   test(
     'single-image actions reject duplicates and ignore late account errors',
     () async {

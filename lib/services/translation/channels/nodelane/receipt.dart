@@ -15,8 +15,12 @@ class OfficialReceipt {
     required this.height,
     required this.mime,
     required this.request,
+    this.inputProfile = translationInputProfile,
+    this.encoderVersion = translationEncoderVersion,
     this.sent = false,
     this.accepted = false,
+    this.submitError,
+    this.inputError,
     this.snapshot,
     this.resultKey,
     this.resultWidth,
@@ -25,9 +29,12 @@ class OfficialReceipt {
   });
   final String id, key, scope, language;
   final String inputKey, inputSha, sourceSha, mime;
+  final String? inputProfile, encoderVersion;
   final int width, height;
   final Map<String, dynamic> request;
+  String? get modelId => request['model_id'] as String?;
   bool sent, accepted;
+  String? submitError, inputError;
   bool unavailable;
   Map<String, dynamic>? snapshot;
   String? resultKey;
@@ -35,8 +42,9 @@ class OfficialReceipt {
   int? resultWidth, resultHeight;
   int get displayWidth => resultWidth ?? result?['width'] as int? ?? width;
   int get displayHeight => resultHeight ?? result?['height'] as int? ?? height;
-  String get state =>
-      snapshot?['state'] as String? ?? (sent ? 'uncertain' : 'local');
+  String get state => submitError != null
+      ? 'failed'
+      : snapshot?['state'] as String? ?? (sent ? 'uncertain' : 'local');
   bool get active => !const {'succeeded', 'failed'}.contains(state);
   bool get unknown =>
       unavailable ||
@@ -45,18 +53,27 @@ class OfficialReceipt {
       (snapshot?['error'] is Map &&
           snapshot?['error']['code'] == 'TRANSLATION_UNAVAILABLE' &&
           snapshot?['execution_resolved'] != true);
+  bool get unresolved => active || unknown;
+  bool get needsUpload => state == 'needs_input' && inputError == null;
   Map<String, dynamic>? get result =>
       snapshot?['result'] as Map<String, dynamic>?;
   String? get errorCode =>
-      snapshot?['error'] is Map ? snapshot!['error']['code'] as String? : null;
+      submitError ??
+      (snapshot?['error'] is Map
+          ? snapshot!['error']['code'] as String?
+          : null);
   bool get resultExpired => errorCode == 'RESULT_EXPIRED';
   bool get canRetry =>
-      state == 'failed' && !nodeLaneNonRetryableErrors.contains(errorCode);
+      state == 'failed' &&
+      errorCode != 'TRANSLATION_UNAVAILABLE' &&
+      !nodeLaneNonRetryableErrors.contains(errorCode);
 
   void accept(Map<String, dynamic> value) {
     if (value['id'] != id ||
         value['mode'] != 'classic' ||
         value['target_language'] != language ||
+        (value['requested_model_id'] != null &&
+            value['requested_model_id'] != modelId) ||
         value['image_sha256'] != inputSha ||
         !const {
           'needs_input',
@@ -98,13 +115,14 @@ class OfficialReceipt {
     }
     accepted = true;
     unavailable = false;
+    if (value['state'] != 'needs_input') inputError = null;
     snapshot = value;
   }
 
   Map<String, dynamic> toJson() => {
     'version': 1,
-    'inputProfile': translationInputProfile,
-    'encoderVersion': translationEncoderVersion,
+    'inputProfile': inputProfile,
+    'encoderVersion': encoderVersion,
     'id': id,
     'key': key,
     'scope': scope,
@@ -118,6 +136,8 @@ class OfficialReceipt {
     'request': request,
     'sent': sent,
     'accepted': accepted,
+    'submitError': ?submitError,
+    'inputError': ?inputError,
     'unavailable': unavailable,
     'snapshot': snapshot,
     'resultKey': resultKey,
@@ -125,9 +145,7 @@ class OfficialReceipt {
     if (resultHeight != null) 'resultHeight': resultHeight,
   };
   factory OfficialReceipt.fromJson(Map<String, dynamic> value) {
-    if (value['version'] != 1 ||
-        value['inputProfile'] != translationInputProfile ||
-        value['encoderVersion'] != translationEncoderVersion) {
+    if (value['version'] != 1) {
       throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED');
     }
     return OfficialReceipt(
@@ -136,6 +154,8 @@ class OfficialReceipt {
       scope: value['scope'] as String,
       language: value['language'] as String,
       inputKey: value['inputKey'] as String,
+      inputProfile: value['inputProfile'] as String?,
+      encoderVersion: value['encoderVersion'] as String?,
       inputSha: value['inputSha'] as String,
       sourceSha: value['sourceSha'] as String,
       width: value['width'] as int,
@@ -144,6 +164,8 @@ class OfficialReceipt {
       request: Map<String, dynamic>.from(value['request'] as Map),
       sent: value['sent'] == true,
       accepted: value['accepted'] == true,
+      submitError: value['submitError'] as String?,
+      inputError: value['inputError'] as String?,
       unavailable: value['unavailable'] == true,
       snapshot: value['snapshot'] == null
           ? null

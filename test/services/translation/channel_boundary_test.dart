@@ -69,8 +69,6 @@ class _CompleteImageRuntime implements ChannelRuntime {
   }
 
   @override
-  Future<void> clearResults() async {}
-  @override
   Future<void> dispose() => updates.close();
 }
 

@@ -308,10 +308,11 @@ void main() {
       expect(find.byType(MobileNodeLaneAccountSummary), findsOneWidget);
       expect(find.text('Frequently used'), findsNothing);
       expect(find.text('Reading and translation'), findsOneWidget);
+      expect(find.text('Translation model'), findsOneWidget);
       container.read(hideItemsStateProvider.notifier).set(['/browser']);
       await tester.pumpAndSettle();
       await tester.scrollUntilVisible(
-        find.text('More tools'),
+        find.text('More tools').hitTestable(),
         300,
         scrollable: find.byType(Scrollable).first,
       );

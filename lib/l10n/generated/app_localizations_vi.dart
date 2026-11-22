@@ -4377,6 +4377,18 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translation_target_language => 'Ngôn ngữ đích';
 
   @override
+  String get translation_model => 'Mô hình dịch';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Mức tiêu hao hạn mức: $multiplier×';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Mô hình dịch này không khả dụng. Hãy chọn mô hình khác hoặc thử lại sau.';
+
+  @override
   String get translation_clear_cache => 'Xóa bộ đệm hình ảnh đã dịch';
 
   @override
@@ -5342,7 +5354,7 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'Trang web đã thay đổi. Bật dịch lại.';
+      'Không thể truyền ảnh từ trang web. Hãy thử lại hoặc tải lại trang.';
 
   @override
   String get translation_connection_failed =>

@@ -4408,6 +4408,18 @@ class AppLocalizationsRu extends AppLocalizations {
   String get translation_target_language => 'Целевой язык';
 
   @override
+  String get translation_model => 'Модель перевода';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Расход квоты: ×$multiplier';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Эта модель перевода недоступна. Выберите другую модель или попробуйте позже.';
+
+  @override
   String get translation_clear_cache =>
       'Очистить кэш переведенных изображений.';
 
@@ -5404,7 +5416,7 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'Веб-страница изменилась. Включите перевод снова.';
+      'Не удалось передать изображение со страницы. Повторите попытку или обновите страницу.';
 
   @override
   String get translation_connection_failed =>

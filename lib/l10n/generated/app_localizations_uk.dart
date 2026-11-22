@@ -4397,6 +4397,18 @@ class AppLocalizationsUk extends AppLocalizations {
   String get translation_target_language => 'Цільова мова';
 
   @override
+  String get translation_model => 'Модель перекладу';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Витрата квоти: ×$multiplier';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Ця модель перекладу недоступна. Виберіть іншу модель або спробуйте пізніше.';
+
+  @override
   String get translation_clear_cache => 'Очистити кеш перекладених зображень';
 
   @override
@@ -5381,7 +5393,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'Веб-сторінка змінена. Увімкніть переклад знову.';
+      'Не вдалося передати зображення зі сторінки. Спробуйте ще раз або оновіть сторінку.';
 
   @override
   String get translation_connection_failed =>

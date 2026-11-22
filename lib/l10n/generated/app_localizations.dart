@@ -7793,6 +7793,24 @@ abstract class AppLocalizations {
   /// **'Target language'**
   String get translation_target_language;
 
+  /// No description provided for @translation_model.
+  ///
+  /// In en, this message translates to:
+  /// **'Translation model'**
+  String get translation_model;
+
+  /// No description provided for @translation_model_quota.
+  ///
+  /// In en, this message translates to:
+  /// **'Quota cost: {multiplier}×'**
+  String translation_model_quota(num multiplier);
+
+  /// No description provided for @translation_model_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'This translation model is unavailable. Choose another model or try again later.'**
+  String get translation_model_unavailable;
+
   /// No description provided for @translation_clear_cache.
   ///
   /// In en, this message translates to:
@@ -9422,7 +9440,7 @@ abstract class AppLocalizations {
   /// No description provided for @translation_bridge_invalid.
   ///
   /// In en, this message translates to:
-  /// **'The web page changed. Enable translation again.'**
+  /// **'The web image transfer failed. Try again or reload the page.'**
   String get translation_bridge_invalid;
 
   /// No description provided for @translation_connection_failed.

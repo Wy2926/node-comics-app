@@ -25,7 +25,10 @@ class TranslationRepository {
 
   Future<Map<String, dynamic>?> read(String key) async {
     final entry = await database.translationEntrys.getByKey(key);
-    if (entry == null) return null;
+    return entry == null ? null : _payload(entry);
+  }
+
+  Map<String, dynamic> _payload(TranslationEntry entry) {
     try {
       return jsonDecode(entry.payload) as Map<String, dynamic>;
     } catch (_) {
@@ -36,14 +39,44 @@ class TranslationRepository {
 
   Future<List<Map<String, dynamic>>> entries(String scope, String kind) async {
     final entries = await database.translationEntrys
-        .filter()
+        .where()
         .scopeEqualTo(scope)
+        .filter()
         .kindEqualTo(kind)
+        .sortByUpdatedAtDesc()
+        .thenByKeyDesc()
         .findAll();
-    return entries
-        .map((e) => jsonDecode(e.payload) as Map<String, dynamic>)
-        .toList();
+    return entries.map(_payload).toList();
   }
+
+  /// Add the per-image lookup to existing heads without changing their creation order.
+  Future<void> indexBindings(
+    String scope,
+    Future<String?> Function(String id) groupFor,
+  ) => _writes.run(
+    () => database.writeTxn(() async {
+      final collection = database.translationEntrys;
+      final links = await collection
+          .where()
+          .scopeEqualTo(scope)
+          .filter()
+          .kindEqualTo('binding')
+          .findAll();
+      for (final link in links) {
+        final String? group;
+        try {
+          final id = _payload(link)['id'];
+          group = id is String ? await groupFor(id) : null;
+        } on TranslationFailure {
+          continue; // An unreadable old link must not block unrelated images.
+        }
+        if (group != null) {
+          link.scope = group;
+          await collection.put(link);
+        }
+      }
+    }),
+  );
 
   Future<void> write(
     String key,

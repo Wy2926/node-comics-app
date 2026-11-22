@@ -4366,6 +4366,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translation_target_language => 'Target language';
 
   @override
+  String get translation_model => 'Translation model';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Quota cost: $multiplier×';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'This translation model is unavailable. Choose another model or try again later.';
+
+  @override
   String get translation_clear_cache => 'Clear translated image cache';
 
   @override
@@ -5332,7 +5344,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'The web page changed. Enable translation again.';
+      'The web image transfer failed. Try again or reload the page.';
 
   @override
   String get translation_connection_failed =>

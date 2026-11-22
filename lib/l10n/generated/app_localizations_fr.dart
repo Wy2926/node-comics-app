@@ -4425,6 +4425,18 @@ class AppLocalizationsFr extends AppLocalizations {
   String get translation_target_language => 'Langue cible';
 
   @override
+  String get translation_model => 'Modèle de traduction';
+
+  @override
+  String translation_model_quota(num multiplier) {
+    return 'Consommation du quota : ×$multiplier';
+  }
+
+  @override
+  String get translation_model_unavailable =>
+      'Ce modèle de traduction est indisponible. Choisissez un autre modèle ou réessayez plus tard.';
+
+  @override
   String get translation_clear_cache => 'Effacer le cache des images traduites';
 
   @override
@@ -5412,7 +5424,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get translation_bridge_invalid =>
-      'La page Web a changé. Activez à nouveau la traduction.';
+      'Le transfert de l’image de la page a échoué. Réessayez ou rechargez la page.';
 
   @override
   String get translation_connection_failed =>

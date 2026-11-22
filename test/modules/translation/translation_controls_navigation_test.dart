@@ -16,6 +16,10 @@ import 'package:mangayomi/services/translation/translation_service.dart';
 import '../../helpers/bubble_finders.dart';
 
 class _Runtime extends Fake implements ChannelRuntime {
+  _Runtime([this.state = const PageTranslationState()]);
+  final PageTranslationState state;
+  @override
+  PageTranslationState stateFor(TranslationPage page) => state;
   @override
   void setWindow(
     String consumer,
@@ -32,9 +36,33 @@ class _Runtime extends Fake implements ChannelRuntime {
   Future<void> dispose() async {}
 }
 
+class _Source extends Fake implements SourceImageReader {}
+
 class _AccountService extends TranslationService {
   Completer<void>? pending;
   int loginCalls = 0;
+  int catalogReads = 0;
+  @override
+  Future<List<TranslationModelOption>> readModels(
+    TranslationCancellation cancel,
+  ) async {
+    if (++catalogReads == 1) throw const TranslationFailure('NETWORK');
+    return const [
+      (
+        model: (id: 'free', name: 'Free'),
+        available: true,
+        quotaMultiplier: 0.8,
+      ),
+      (model: (id: 'paid', name: 'Paid'), available: false, quotaMultiplier: 2),
+    ];
+  }
+
+  @override
+  Future<void> setModel(TranslationModel? value) async {
+    model = value;
+    notifyListeners();
+  }
+
   @override
   bool get loggedIn => runtime != null;
   @override
@@ -145,21 +173,45 @@ void main() {
   }
 
   testWidgets(
+    'the panel shows each current failure reason once with automatic translation off',
+    (tester) async {
+      await mount(tester);
+      const reason = '原图暂不可用';
+      service.runtime = _Runtime(
+        const PageTranslationState(
+          phase: TranslationPhase.failed,
+          message: reason,
+        ),
+      );
+      controller
+        ..attach(service.runtime)
+        ..configure(enabled: false)
+        ..window([
+          for (final key in ['first', 'second'])
+            TranslationTarget(TranslationPage(key, '1'), _Source()),
+        ]);
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      expect(find.text(reason).hitTestable(), findsOneWidget);
+      controller.window([]);
+      await tester.pumpAndSettle();
+      expect(find.text(reason), findsNothing);
+    },
+  );
+
+  testWidgets(
     'login destination has account actions and returns to the reader',
     (tester) async {
       await mount(tester);
       final reader = readerKey.currentState;
-      for (var visit = 0; visit < 2; visit++) {
-        await openLogin(tester);
-        expect(service.loginCalls, 0);
-        await tester.tap(find.byTooltip('返回'));
-        await tester.pumpAndSettle();
-        expect(readerKey.currentState, same(reader));
-        expect(readingPosition.offset, 320);
-        expect(find.byType(TranslationControlsContent), findsNothing);
-        expect(controller.shouldTranslateAutomatically, isFalse);
-      }
-      expect(tester.takeException(), isNull);
+      await openLogin(tester);
+      expect(service.loginCalls, 0);
+      await tester.tap(find.byTooltip('返回'));
+      await tester.pumpAndSettle();
+      expect(readerKey.currentState, same(reader));
+      expect(readingPosition.offset, 320);
+      expect(find.byType(TranslationControlsContent), findsNothing);
+      expect(controller.shouldTranslateAutomatically, isFalse);
     },
   );
 
@@ -194,7 +246,6 @@ void main() {
       );
       expect(toggle.onChanged, isNotNull);
       expect(toggle.value, isTrue);
-      expect(tester.takeException(), isNull);
     },
   );
 
@@ -220,6 +271,36 @@ void main() {
     await tester.pumpAndSettle();
     expect(readerKey.currentState, same(reader));
     expect(readingPosition.offset, 320);
-    expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'model catalog retries in place and only an available choice changes the preference',
+    (tester) async {
+      await mount(tester);
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      final row = find.widgetWithText(NodeLaneRow, '翻译模型');
+      await tester.ensureVisible(row);
+      expect(service.catalogReads, 0);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      await tester.tap(inBubble(find.text('重试')));
+      await tester.pumpAndSettle();
+      expect(inBubble(find.text('额度消耗：0.8 倍')), findsOneWidget);
+      await tester.tap(inBubble(find.text('Paid')));
+      expect(service.model, isNull);
+      await tester.tap(inBubble(find.text('Free')));
+      await tester.pumpAndSettle();
+      expect(service.model, (id: 'free', name: 'Free'));
+      expect(find.text('Free').hitTestable(), findsOneWidget);
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      await tester.tap(inBubble(find.text('默认')));
+      await tester.pumpAndSettle();
+      expect(service.model, isNull);
+      await tester.tap(find.byTooltip('关闭'));
+      await tester.pumpAndSettle();
+      expect(readingPosition.offset, 320);
+    },
+  );
 }

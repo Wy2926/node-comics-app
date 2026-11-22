@@ -41,6 +41,8 @@ class TranslationImageStatus {
   final String label, detail;
   final bool working, issue, visible;
   final TranslationAction? action;
+  String get visibleLabel =>
+      issue && detail.isNotEmpty && detail != label ? '$label\n$detail' : label;
 
   factory TranslationImageStatus.forTarget(
     TranslationViewController controller,
@@ -94,9 +96,7 @@ class TranslationImageStatus {
       label,
       detail: state.message,
       working: working,
-      issue:
-          state.phase == TranslationPhase.failed ||
-          state.phase == TranslationPhase.uncertain,
+      issue: state.hasIssue,
       action: action,
     );
   }
@@ -108,7 +108,7 @@ class TranslationImageStatus {
     _ => '',
   };
   Map<String, Object?> toJson(AppLocalizations l10n) => {
-    'label': label,
+    'label': visibleLabel,
     'visible': visible,
     'detail': detail,
     'working': working,
@@ -169,8 +169,8 @@ class TranslationImageBadge extends StatelessWidget {
                     const SizedBox(width: NodeLaneTokens.space8),
                     Flexible(
                       child: Text(
-                        status.label,
-                        maxLines: 2,
+                        status.visibleLabel,
+                        maxLines: status.issue ? 3 : 2,
                         overflow: TextOverflow.ellipsis,
                         style: t.secondary.copyWith(color: t.ink),
                       ),

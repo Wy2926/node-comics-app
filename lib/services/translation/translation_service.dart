@@ -16,9 +16,11 @@ import 'package:mangayomi/repositories/translation_repository.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 
 import 'contracts.dart';
+import 'identity.dart';
 import 'image_work.dart';
 import 'languages.dart';
 import 'channels/nodelane/channel.dart';
+import 'channels/nodelane/protocol.dart';
 import 'channels/nodelane/session.dart';
 import 'channels/nodelane/account.dart';
 
@@ -60,6 +62,7 @@ class TranslationService extends ChangeNotifier {
   String get channelLabel =>
       localizedMessage((l10n) => l10n.translation_official_channel);
   String language;
+  TranslationModel? model;
   bool busy = false;
   String? error;
   bool get loggedIn => _session.userId != null;
@@ -71,6 +74,13 @@ class TranslationService extends ChangeNotifier {
   bool accountAuthRequired = false;
   Future<void>? _accountRequest;
   TranslationCancellation? _accountCancellation;
+
+  String _modelPreferenceKey(String? user) =>
+      'model-preference:${translationKey([_session.base.toString(), user])}';
+
+  Future<List<TranslationModelOption>> readModels(
+    TranslationCancellation cancel,
+  ) => _session.readModels(cancel);
 
   /// Refreshing presentation data never replaces the reading runtime or tasks.
   Future<void> refreshAccount() => _accountRequest ??= _readAccount();
@@ -157,19 +167,30 @@ class TranslationService extends ChangeNotifier {
     await _replaceRuntime();
   }
 
-  Future<void> _replaceRuntime() async {
+  Future<void> _replaceRuntime({bool clearResults = false}) async {
     final old = runtime;
     runtime = null;
     notifyListeners();
     await old?.dispose();
+    if (clearResults) await _repository!.clearResults();
+    final savedModel = loggedIn
+        ? await _repository!.read(_modelPreferenceKey(accountId))
+        : null;
+    // A choice made before sign-in is the default until this account picks its own.
+    model = nodeLaneModel(
+      savedModel ?? await _repository?.read(_modelPreferenceKey(null)),
+    );
     if (loggedIn) {
-      runtime = NodeLaneChannel(
-        base: _session.base,
-        userId: _session.userId!,
-        accessToken: _session.accessToken,
-        repository: _repository!,
-        images: _images!,
-      ).createRuntime(TranslationOptions(language: language));
+      runtime =
+          NodeLaneChannel(
+            base: _session.base,
+            userId: _session.userId!,
+            accessToken: _session.accessToken,
+            repository: _repository!,
+            images: _images!,
+          ).createRuntime(
+            TranslationOptions(language: language, modelId: model?.id),
+          );
     }
     notifyListeners();
   }
@@ -198,14 +219,24 @@ class TranslationService extends ChangeNotifier {
     language = value;
     await _replaceRuntime();
   });
+  Future<void> setModel(TranslationModel? value) => _act(() async {
+    await initialize();
+    if (model?.id == value?.id) return;
+    final saved = {'id': ?value?.id, 'name': ?value?.name};
+    if (value != null && nodeLaneModel(saved) == null) {
+      throw const TranslationFailure('TRANSLATION_MODEL_UNAVAILABLE');
+    }
+    await _repository!.write(
+      _modelPreferenceKey(accountId),
+      'app',
+      'preferences',
+      saved,
+    );
+    await _replaceRuntime();
+  });
   Future<void> clearResults() => _act(() async {
     await initialize();
-    final old = runtime;
-    runtime = null;
-    notifyListeners();
-    await old?.dispose();
-    await _repository!.clearResults();
-    await _replaceRuntime();
+    await _replaceRuntime(clearResults: true);
   });
   Future<void> _act(Future<void> Function() body) async {
     if (busy) return;

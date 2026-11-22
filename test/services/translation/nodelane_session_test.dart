@@ -48,6 +48,19 @@ void main() {
       request.response.headers.contentType = ContentType.json;
       final Object body;
       switch (request.uri.path) {
+        case '/v1/capabilities':
+          body = {
+            'translation_models': [
+              {
+                'id': 'premium',
+                'name': 'Premium',
+                'available':
+                    request.headers.value('authorization') ==
+                    'Bearer renewed-access',
+                'quota_multiplier': 1.75,
+              },
+            ],
+          };
         case '/v1/auth/config':
           body = {
             'mode': 'oidc',
@@ -180,6 +193,26 @@ void main() {
     await signedOut.restore();
     expect(signedOut.userId, isNull);
   });
+
+  test(
+    'model availability follows the current account, including logout',
+    () async {
+      final session = NodeLaneSession(base);
+      Future<bool> available() async {
+        final model = (await session.readModels(TranslationCancellation()))
+            .single;
+        expect(model.model, (id: 'premium', name: 'Premium'));
+        expect(model.quotaMultiplier, 1.75);
+        return model.available;
+      }
+
+      expect(await available(), isFalse);
+      await session.login();
+      expect(await available(), isTrue);
+      await session.logout();
+      expect(await available(), isFalse);
+    },
+  );
 
   test('account overview uses authenticated reads and keeps entitlement data if billing fails', () async {
     final session = NodeLaneSession(base);
