@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_setting_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -111,9 +110,11 @@ class _SourceMultiSelectState<T> extends State<_SourceMultiSelect<T>> {
     final filtered = widget.options
         .where((o) => o.label.toLowerCase().contains(needle))
         .toList();
-    return MobileBrowsePage.form(
+    return NodeLaneBubblePanel(
       title: widget.title,
-      body: CustomScrollView(
+      subtitle: widget.subtitle,
+      dismissEnabled: !saving,
+      child: CustomScrollView(
         keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
         slivers: [
           NodeLanePinnedHeader(
@@ -127,8 +128,6 @@ class _SourceMultiSelectState<T> extends State<_SourceMultiSelect<T>> {
             padding: NodeLaneTokens.pagePadding,
             sliver: SliverList.list(
               children: [
-                if (widget.subtitle != null)
-                  Text(widget.subtitle!, style: t.secondary),
                 Text(
                   l.source_selected_count(selected.length),
                   style: t.readerSecondary,

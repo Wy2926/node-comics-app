@@ -45,12 +45,12 @@ class _MobileSourceFilterPageState extends State<MobileSourceFilterPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final actions = [
-      NodeLaneSecondaryButton(onPressed: _reset, child: Text(l10n.reset)),
-    ];
+    final actions = [NodeLaneBubbleAction.reset.button(context, _reset)];
     final body = ListView(
       shrinkWrap: true,
-      padding: NodeLaneTokens.pagePadding,
+      padding: widget.onChanged == null
+          ? NodeLaneTokens.pagePadding
+          : NodeLaneTokens.bubbleContentPadding,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       children: [
         SourceFilterFields(

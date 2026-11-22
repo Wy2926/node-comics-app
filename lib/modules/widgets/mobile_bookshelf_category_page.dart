@@ -1,6 +1,7 @@
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_progress.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -109,9 +110,9 @@ class _MobileBookshelfCategoryPageState
       canPop: !_busy,
       child: MobileBrowsePage.form(
         title: l10n.set_categories,
-        leading: NodeLaneCloseButton(
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: _busy || _leaving ? null : _close,
+        leading: NodeLaneBubbleAction.close.button(
+          context,
+          _busy || _leaving ? null : _close,
         ),
         bottomAction: _failed
             ? null

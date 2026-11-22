@@ -52,7 +52,8 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 - **设置行**：名称左、值右。进入设置分类用前进箭头，选值或编辑用向下箭头并在行旁弹出气泡。单选后只收起顶层；数值可连续调节，拖动松手保存。文本确认才保存，开关整行或控件点击都只提交一次。
 - **选择**：需要确认的多选和文本编辑保留本地草稿，搜索不丢失隐藏选择。目录筛选即时生效；滑块通常松手提交，外观缩放保留实时预览。
 - **浮动数字**：从当前控件位置浮出，宽 184、三行、行高至少 44；停止滚动才保存，外部点击关闭，外部值刷新不触发写入。范围仍由业务定义。
-- **模态**：短内容随内容展开，长内容有界滚动；标题、关闭和操作区可达，避让键盘及安全区。双操作窄屏纵排，三操作纵排。嵌套返回只关闭当前层，草稿与滚动由所属页面管理。
+- **气泡顶栏**：`NodeLaneBubblePanel` 固定顶栏，正文按需滚动。`NodeLaneBubbleAction` 提供关闭、返回、管理、完成、重置和清空；页面可传入专用按钮、标题内容和副标题。独立气泡显示关闭，原气泡内的步骤显示返回。`onDismiss` 可回传结果，`dismissEnabled: false` 同时禁用默认按钮、系统返回和点外关闭。
+- **模态**：短内容随内容展开，避让键盘及安全区。底部双操作窄屏纵排，三操作纵排。嵌套返回只关闭当前层，草稿与滚动由所属页面管理。
 - **异步操作**：处理中防重入，写入失败保留草稿或提示核对可能的部分结果；结果未知时不自动重放。控制器、订阅和临时状态随所属视图释放，迟到回调不得改写新页面。
 - **折叠**：`NodeLaneDisclosure` 管理展开动画和状态，收起后释放隐藏内容；每次重新展开创建新的单订阅流。`NodeLaneRevealScope` 只在搜索直达时定位，开关、清理等动作不自动执行。
 - **页面动效**：[`NodeLaneMotion`](../lib/theme/nodelane_motion.dart) 统一时长、曲线和减少动态效果。全页用 `MaterialPage`／`MaterialPageRoute` 保留系统返回手势；对话框用 `showNodeLaneDialog`，锚定气泡只缩放、淡入自身。同页用 `NodeLaneContentMotion(value: 目的地, ...)` 仅平移当前内容；首次切换才创建动画控制器，相同目的地的数据刷新不重播。可横滑页签用 `TabBarView`；点选后原位替换的页签用 `NodeLaneMotion.tabBody` 复用页签控制器。
@@ -121,7 +122,7 @@ Flutter 图标集中在 [`NodeLaneIcons`](../lib/theme/nodelane_icons.dart)，�
 
 ## 来源与搜索
 
-MuMu 运行截图：[目录筛选气泡](images/android-tablet-source-filters.webp)、[目录与站内作品](images/android-tablet-source-website.webp)、[搜作品](images/android-tablet-source-search.webp)、[新增来源表单](images/android-tablet-source-request.webp)。安装、同步频率、来源身份和宿主执行边界见[来源插件](SOURCE_PLUGINS.md)。
+MuMu 运行截图：[目录筛选气泡](images/android-tablet-source-filters.webp)、[目录与站内作品](images/android-tablet-source-website.webp)、[来源设置气泡](images/android-source-settings-bubble.webp)、[搜作品](images/android-tablet-source-search.webp)、[新增来源表单](images/android-tablet-source-request.webp)。安装、同步频率、来源身份和宿主执行边界见[来源插件](SOURCE_PLUGINS.md)。
 
 - 官方／第三方分区共用 `SourceWebsiteCard`；常用位于首个可见分组，其余目录不重复列出。长按网站在手指旁选固定、最新内容、原网页、说明或设置。点分类数量直接看完整资料。
 - 网站卡片显示名称、语言、分类、收费底带及独立 18+ 切角。标准字号高 136，随窄屏／大字号统一增高；操作位承载安装、更新、重试和常用管理。缺资料保持未标注，成人标记只读取 `isNsfw`。
@@ -137,7 +138,7 @@ MuMu 运行截图：[目录筛选气泡](images/android-tablet-source-filters.we
 - 只展示有命中的网站；宽屏有两个以上分组时并排，只有一个时占满结果区。「查看全部」在旁边或下方展开站内结果，复用顶部输入框；直接点封面就在结果下展开详情，无需先打开网站。范围和进度在各自气泡内操作；全部／常用／自选即时生效，保留未改变来源的请求和横向位置。重试只重跑失败的网站。
 - 全局与迁移搜索共用 `SourceResultSection`、`SourceResultCover`、`GlobalSearchResultCard` 和三路 `FetchGate`。查询变更、离页释放订阅，迟到结果按轮次丢弃；查看全部复用关键词与首屏。
 - 站内热门／最新首次访问才请求，各自保持分页、在途读取和位置；搜索或筛选使用一份可替换结果集，首屏、分页与重试共用参数。下拉刷新失败保留内容，隐藏列表不主动翻页。
-- 站内 `…` 的筛选、保存／调用关键词、网站资料和来源设置在同一锚点内逐级返回。只有已提交关键词才可保存；已保存搜索按来源隔离，点选直接回到结果，管理时才显示删除。
+- 站内 `…` 的「已保存搜索」「网站说明」「来源设置」和「网页翻译」共用锚点动效与固定顶栏，从各自的操作行弹出，关闭后回到原菜单。目录卡片直开说明则返回卡片。只有已提交的关键词可保存；搜索按来源隔离，管理时才显示删除，点选关键词直接回到结果。卸载来源后同时收起失效的菜单。
 - 插件筛选、排序、三态和开关点选即查；文本停顿 300 ms 合并查询，离开气泡仍应用最后输入。每次请求独立持有一份条件；恢复默认时，有关键词则继续按词搜索，否则回到原浏览标签及位置。长选项可在气泡内搜索，展示翻译不改变插件参数。
 - 来源偏好单选、开关及多选逐次保存，写入失败保留原值。名称、地址等文本确认后才写入；删除仓库、卸载来源仍显式确认。
 - 结果懒构建、封面复用原缓存，空封面显示本地占位。站内页面最多保留两份浏览列表和一份搜索结果，离页释放；跨来源仍可能同时挂载所有来源首屏，尚无全局可见图片窗口。
@@ -348,7 +349,7 @@ Simkl 续期共用一次在途请求；401 先重读新令牌，必要时续期�
 | 本地导入与漫画详情 | MuMu Debug：从[导入气泡](images/android-local-file-import-bubble.webp)取消系统选择、再选 ZIP 导入；另从系统选择器导入两章 EPUB 和 H.264 MP4。在漫画详情追加第二章、打开阅读器并返回。独立详情在 [1182 dp 三栏](images/android-comic-detail-three.webp)、[874 dp 双栏](images/android-comic-detail-two.webp)、[430 dp 单列](images/android-comic-detail-one.webp)重排，转屏保留选章。Widget 用 100 章验证限宽往返后的目录锚点。 | 新详情的 iOS／Android 真机及其他系统文件提供方 |
 | 详情气泡工具 | MuMu：从书架作品打开分类管理并逐级取消；FEEL web 实测迁移搜索、批量迁移到目标来源选择、扩展设置、取消系统分享与目录选择。转 430 dp 竖屏保留排序标签及目录位置。滑动动作在 390 dp 中文界面呈两列、[320 dp／200% 系统字号](images/android-detail-swipe-large.webp)呈单列；更改一个方向后重开仍选中，另一个方向未改变。Widget 验证迁移写入时拦截返回和点外侧，失败不会重复提交。 | iOS、Android 真机；实际迁移写入、向其他应用分享及写出元数据 |
 | 来源与网页 | iOS 模拟器检查开始页、原位输入、标签及部分恢复；DOM 夹具覆盖桥接；Android 真实翻译与归档范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办)，站点验收见[来源文档](SOURCE_PLUGINS.md#代码与验证入口) | 动态站点登录、清除登录、系统回收恢复、iOS 归档与真实送译 |
-| 来源目录与搜索 | MuMu Debug：日语筛选 24→7，清空回到 24。FEEL web 目录与作品横屏并排，打开详情后转竖屏，逐级返回仍是原作品和筛选；站内 FEEL YOUNG 即时筛选与重置、仓库逐级返回均已实测。跨站自选 FEEL web 搜 `FEEL` 返回 5 本。Widget 覆盖 Android／iOS 布局、直接点封面、草稿与滚动锚点、迟到请求及失败重试。 | iOS 设备、Android 真机、折叠屏与新版 Profile 性能；其他站点需分别验收 |
+| 来源目录与搜索 | MuMu Debug：日语筛选 24→7，清空回到 24。目录卡片直开网站说明，滚动正文时关闭按钮固定；长按和站内 `…` 打开说明／设置可退回原菜单。FEEL web 已验保存、管理、点选关键词回到结果和移除，亦验目录与作品横屏并排、转竖屏逐级返回保留作品和筛选。Widget 另验卸载后收起失效菜单，以及跨来源隔离、迟到请求和失败重试。 | iOS 设备、Android 真机、折叠屏与新版 Profile 性能；其他站点需分别验收 |
 | 浏览器首页与标签 | MuMu API 32 x86_64 Debug：[分栏首页](images/android-tablet-browser-home.webp)和[竖屏首页](images/android-phone-browser-clip.webp)按可用空间排续读卡；已验最近访问显示页面指定的 PNG 图标、历史列表滚动时关闭按钮固定、专注阅读进出与展开工具后保持图号和图内位置。六个引擎均返回真实[联想提示](images/android-browser-search-suggestions.webp)，转屏后仍可点选回填。Widget 用 42 站验证左栏滑动、右栏及地址框不移位。另已验[全部续读](images/android-browser-reading-bubble.webp)搜索重开、与书签独立移除、夹页冷启动恢复、标签关闭／撤销及后台网页草稿与加载计数。 | 新版 iOS、ARM 真机、外接键盘与不同输入法、系统分享、渲染进程回收和 Release 性能 |
 | Android GeckoView／广告过滤 | 同一 MuMu 配置可查看[本页和累计计数](images/android-phone-browser-protection.webp)；本地夹具开／关／恢复后，正文图片始终可用，广告请求拦截数为 1／0／1。组件测试验证网页就绪前打开面板、读取失败及写入结果未知时重读。另已验证分站清理和带 HttpOnly Cookie 的原图读取。真实翻译范围见[翻译验证](TRANSLATION_ARCHITECTURE.md#验证与待办)。 | Android 7 系统 WebView、ARM 真机、真实站点的拦截效果和长时间阅读 |
 | 反馈 | 自动回归覆盖校验、匿名请求、幂等恢复、存储失败与 RTL；MuMu Debug 实测申请填字、返回查仓库、重开仍保留输入；已查空表单校验、横竖重排及固定提交按钮。 | 真实反馈入库、iOS、设备软键盘 |

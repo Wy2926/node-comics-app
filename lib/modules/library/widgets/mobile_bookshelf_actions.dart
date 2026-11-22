@@ -26,40 +26,42 @@ class MobileBookshelfMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n, icons = NodeLaneIcons.of(context);
-    return ListView(
-      shrinkWrap: true,
-      padding: EdgeInsets.zero,
-      children: [
-        NodeLaneBubbleHeading(l10n.bookshelf_actions),
-        if (hasEntries) ...[
+    return NodeLaneBubblePanel(
+      title: l10n.bookshelf_actions,
+      child: ListView(
+        shrinkWrap: true,
+        padding: EdgeInsets.zero,
+        children: [
+          if (hasEntries) ...[
+            NodeLaneRow(
+              title: l10n.bookshelf_select_entries,
+              icon: icons.selected,
+              onTap: () => onSelected(6),
+            ),
+            NodeLaneRow(
+              title: l10n.open_random_entry,
+              icon: icons.shuffle,
+              onTap: () => onSelected(1),
+            ),
+          ],
           NodeLaneRow(
-            title: l10n.bookshelf_select_entries,
-            icon: icons.selected,
-            onTap: () => onSelected(6),
+            title: l10n.bookshelf_manage_categories,
+            icon: icons.categories,
+            onTap: () => showCategoryManager(context, itemType),
           ),
-          NodeLaneRow(
-            title: l10n.open_random_entry,
-            icon: icons.shuffle,
-            onTap: () => onSelected(1),
+          if (itemType == ItemType.anime)
+            NodeLaneRow(
+              title: l10n.torrent_stream,
+              icon: icons.webLink,
+              onTap: () => onSelected(3),
+            ),
+          NodeLaneSwitchRow(
+            title: l10n.bookshelf_ignore_filters,
+            value: ignoreFilters,
+            onChanged: (_) => onSelected(4),
           ),
         ],
-        NodeLaneRow(
-          title: l10n.bookshelf_manage_categories,
-          icon: icons.categories,
-          onTap: () => showCategoryManager(context, itemType),
-        ),
-        if (itemType == ItemType.anime)
-          NodeLaneRow(
-            title: l10n.torrent_stream,
-            icon: icons.webLink,
-            onTap: () => onSelected(3),
-          ),
-        NodeLaneSwitchRow(
-          title: l10n.bookshelf_ignore_filters,
-          value: ignoreFilters,
-          onChanged: (_) => onSelected(4),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -178,9 +180,9 @@ class _MobileBookshelfRemovePageState extends State<MobileBookshelfRemovePage> {
       canPop: !_busy,
       child: MobileBrowsePage.form(
         title: l10n.remove,
-        leading: NodeLaneCloseButton(
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: _busy ? null : () => Navigator.pop(context, false),
+        leading: NodeLaneBubbleAction.close.button(
+          context,
+          _busy ? null : () => Navigator.pop(context, false),
         ),
         bottomAction: _failed
             ? null

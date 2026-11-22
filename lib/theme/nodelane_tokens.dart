@@ -87,7 +87,7 @@ class NodeLaneTokens {
   static const sheetHandleSize = Size(44, 4);
   static const minTapTarget = 44.0, menuItemHeight = 52.0;
   static const menuMaxWidth = 280.0;
-  static const bubbleToolWidth = 360.0, bubbleTabsWidth = 380.0;
+  static const bubbleToolWidth = 360.0, bubblePanelWidth = 380.0;
   static const bubbleFormWidth = 420.0, bubbleSettingsWidth = 440.0;
   static const bubbleMaxHeight = 560.0, bubbleTipHeight = 7.0;
   static const bubbleBarrier = Color(0x0A000000);

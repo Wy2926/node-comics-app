@@ -4,6 +4,8 @@ import 'dart:ui' show SemanticsRole;
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -232,12 +234,19 @@ class NodeLaneBubbleFlow extends StatefulWidget {
   static bool contains(BuildContext context) =>
       context.findAncestorStateOfType<_NodeLaneBubbleFlowState>() != null;
 
+  static bool _isStep(BuildContext context) {
+    final flow = context.findAncestorStateOfType<_NodeLaneBubbleFlowState>();
+    return flow != null &&
+        (flow._panel != null ||
+            Navigator.of(context) == flow._navigator.currentState);
+  }
+
   static Future<T?> open<T>(
     BuildContext anchor, {
     required String title,
     required Widget child,
     Offset? localPoint,
-    double width = NodeLaneTokens.bubbleFormWidth,
+    double width = NodeLaneTokens.bubblePanelWidth,
   }) => showNodeLaneBubble<T>(
     anchor,
     label: title,
@@ -654,18 +663,67 @@ class _BubbleOutline extends ShapeBorder {
       );
 }
 
+/// Common header commands. A panel can also put its own widgets in [NodeLaneBubbleHeading.actions].
+enum NodeLaneBubbleAction {
+  close,
+  back,
+  manage,
+  done,
+  reset,
+  clear;
+
+  Widget button(BuildContext context, VoidCallback? onPressed) {
+    final material = MaterialLocalizations.of(context);
+    final label = switch (this) {
+      close => material.closeButtonTooltip,
+      back => material.backButtonTooltip,
+      manage => context.l10n.manage,
+      done => context.l10n.action_done,
+      reset => context.l10n.reset,
+      clear => context.l10n.action_clear,
+    };
+    if (this == close) {
+      return NodeLaneCloseButton(tooltip: label, onPressed: onPressed);
+    }
+    if (this == back) {
+      return NodeLaneIconButton(
+        icon: NodeLaneIcons.of(context).back,
+        tooltip: label,
+        style: NodeLaneIconButtonStyle.plain,
+        onPressed: onPressed,
+      );
+    }
+    return TextButton(
+      style: TextButton.styleFrom(
+        minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space8),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: NodeLaneTokens.of(context).label,
+      ),
+      onPressed: onPressed,
+      child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+    );
+  }
+}
+
 class NodeLaneBubbleHeading extends StatelessWidget {
   const NodeLaneBubbleHeading(
     this.title, {
     super.key,
     this.actions = const [],
     this.closeButton,
+    this.onDismiss,
+    this.dismissEnabled = true,
+    this.titleContent,
     this.subtitle,
   });
   final String title;
   final String? subtitle;
   final List<Widget> actions;
   final Widget? closeButton;
+  final VoidCallback? onDismiss;
+  final bool dismissEnabled;
+  final Widget? titleContent;
   @override
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsetsDirectional.fromSTEB(
@@ -682,11 +740,11 @@ class NodeLaneBubbleHeading extends StatelessWidget {
             children: [
               Semantics(
                 header: true,
-                child: Text(
-                  title,
+                child: DefaultTextStyle(
+                  style: NodeLaneTokens.of(context).readerLabel,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: NodeLaneTokens.of(context).readerLabel,
+                  child: titleContent ?? Text(title),
                 ),
               ),
               if (subtitle?.isNotEmpty == true)
@@ -701,10 +759,15 @@ class NodeLaneBubbleHeading extends StatelessWidget {
         ),
         ...actions,
         closeButton ??
-            NodeLaneCloseButton(
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: () => Navigator.maybePop(context),
-            ),
+            (NodeLaneBubbleFlow._isStep(context)
+                    ? NodeLaneBubbleAction.back
+                    : NodeLaneBubbleAction.close)
+                .button(
+                  context,
+                  dismissEnabled
+                      ? onDismiss ?? () => Navigator.maybePop(context)
+                      : null,
+                ),
       ],
     ),
   );
@@ -719,38 +782,50 @@ class NodeLaneBubblePanel extends StatelessWidget {
     this.subtitle,
     this.actions = const [],
     this.closeButton,
+    this.onDismiss,
+    this.dismissEnabled = true,
+    this.titleContent,
     this.footer,
   });
   final String title;
   final String? subtitle;
   final List<Widget> actions;
   final Widget? closeButton;
+  final VoidCallback? onDismiss;
+  final bool dismissEnabled;
+  final Widget? titleContent;
   final Widget? footer;
   final Widget child;
 
   @override
-  Widget build(BuildContext context) => LayoutBuilder(
-    builder: (context, box) => Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        NodeLaneBubbleHeading(
-          title,
-          subtitle: subtitle,
-          actions: actions,
-          closeButton: closeButton,
-        ),
-        Flexible(child: child),
-        if (footer != null)
-          ConstrainedBox(
-            constraints: BoxConstraints(maxHeight: box.maxHeight * .42),
-            child: SingleChildScrollView(
-              primary: false,
-              padding: NodeLaneTokens.sheetFooterPadding,
-              child: footer!,
-            ),
+  Widget build(BuildContext context) => PopScope(
+    canPop: dismissEnabled,
+    child: LayoutBuilder(
+      builder: (context, box) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          NodeLaneBubbleHeading(
+            title,
+            subtitle: subtitle,
+            actions: actions,
+            closeButton: closeButton,
+            onDismiss: onDismiss,
+            dismissEnabled: dismissEnabled,
+            titleContent: titleContent,
           ),
-      ],
+          Flexible(child: child),
+          if (footer != null)
+            ConstrainedBox(
+              constraints: BoxConstraints(maxHeight: box.maxHeight * .42),
+              child: SingleChildScrollView(
+                primary: false,
+                padding: NodeLaneTokens.sheetFooterPadding,
+                child: footer!,
+              ),
+            ),
+        ],
+      ),
     ),
   );
 }

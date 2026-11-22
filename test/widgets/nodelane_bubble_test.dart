@@ -86,10 +86,12 @@ void main() {
                                     form,
                                     ValueListenableBuilder<bool>(
                                       valueListenable: busy,
-                                      builder: (_, value, _) => PopScope(
-                                        canPop: !value,
-                                        child: const Text('Cabinet'),
-                                      ),
+                                      builder: (_, value, _) =>
+                                          NodeLaneBubblePanel(
+                                            title: 'Cabinet',
+                                            dismissEnabled: !value,
+                                            child: const SizedBox(height: 40),
+                                          ),
                                     ),
                                   ),
                                 ),
@@ -126,7 +128,7 @@ void main() {
       expect(find.text('Cabinet'), findsOneWidget);
       busy.value = false;
       await tester.pump();
-      await tester.tapAt(const Offset(780, 570));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       expect(find.text('my draft'), findsOneWidget);
       expect(tester.element(find.byType(TextField)), same(form));

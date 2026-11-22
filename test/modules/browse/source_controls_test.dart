@@ -155,6 +155,9 @@ void main() {
       await tester.pump();
       await tester.tap(find.text('日本語'));
       await tester.pump();
+      await tester.binding.handlePopRoute();
+      await tester.pump();
+      expect(find.text('日本語').hitTestable(), findsOneWidget);
       expect(saved.length, 1);
       expect(saved.single.multiSelectListPreference!.values, ['en', 'ja']);
       expect(pref.multiSelectListPreference!.values, ['en']);

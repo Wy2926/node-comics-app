@@ -33,14 +33,16 @@ import 'package:mangayomi/utils/platform_utils.dart';
 import 'widgets/create_extension.dart';
 
 Future<Source?> showSourceSettings(BuildContext menu, Source source) async {
-  bool installed() => sourceRepository.getById(source.id!)?.isAdded == true;
-  if (installed()) {
-    final updated = await NodeLaneBubbleFlow.open<Source>(
-      menu,
-      title: menu.l10n.settings_source_preferences,
-      child: ExtensionDetail(source: source),
-    );
-    if (!menu.mounted || installed()) return updated;
+  final id = source.id!;
+  final before = sourceRepository.getById(id);
+  if (before != null && before.isAdded == true) {
+    final updated = await ExtensionDetail.show(menu, before);
+    if (!menu.mounted) return null;
+    final current = sourceRepository.getById(id);
+    if (current != null && current.isAdded == true) {
+      // Replacing an unchanged Source would re-fetch its paginated results.
+      return current.updatedAt != before.updatedAt ? updated ?? current : null;
+    }
   }
   // Uninstall can delete a local source entirely. Don't return to its stale actions.
   if (menu.mounted && ModalRoute.isCurrentOf(menu) == true) Navigator.pop(menu);
@@ -50,6 +52,13 @@ Future<Source?> showSourceSettings(BuildContext menu, Source source) async {
 class ExtensionDetail extends ConsumerStatefulWidget {
   final Source source;
   const ExtensionDetail({super.key, required this.source});
+
+  static Future<Source?> show(BuildContext anchor, Source source) =>
+      NodeLaneBubbleFlow.open<Source>(
+        anchor,
+        title: anchor.l10n.settings_source_preferences,
+        child: ExtensionDetail(source: source),
+      );
 
   @override
   ConsumerState<ExtensionDetail> createState() => _ExtensionDetailState();
@@ -157,77 +166,116 @@ class _ExtensionDetailState extends ConsumerState<ExtensionDetail> {
   Widget _mobileView(BuildContext context) {
     final icons = NodeLaneIcons.of(context);
     final developerMode = ref.watch(developerModeStateProvider);
-    return MobileBrowsePage(
-      title: context.l10n.source_details,
-      leading: NodeLaneIconButton(
-        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
-        onPressed: () => Navigator.pop(context, source),
-        icon: icons.back,
-      ),
-      body: ListView(
-        padding: NodeLaneTokens.pagePadding,
-        children: [
-          if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
-            const ExtensionServerWarningBanner(),
+    final inBubble = NodeLaneBubbleFlow.contains(context);
+    final identity = [
+      completeLanguageName(source.lang ?? ''),
+      if (source.version?.isNotEmpty == true) 'v${source.version}',
+      if (source.isNsfw == true) '18+',
+    ].where((part) => part.isNotEmpty).join(' · ');
+    void dismiss() => Navigator.maybePop(context, source);
+    final body = ListView(
+      primary: inBubble ? false : null,
+      shrinkWrap: inBubble,
+      padding: inBubble
+          ? NodeLaneTokens.bubbleContentPadding
+          : NodeLaneTokens.pagePadding,
+      children: [
+        if (source.sourceCodeLanguage == SourceCodeLanguage.mihon)
+          const ExtensionServerWarningBanner(),
+        if (!inBubble)
           NodeLaneRow.card(
             title: source.name ?? '',
-            subtitle: [
-              completeLanguageName(source.lang ?? ''),
-              if (source.version?.isNotEmpty == true) 'v${source.version}',
-              if (source.isNsfw == true) '18+',
-            ].where((value) => value.isNotEmpty).join(' · '),
+            subtitle: identity,
             leading: NodeLaneWebsiteIcon(url: source.iconUrl),
           ),
-          if (source.repo?.website?.isNotEmpty == true) ...[
-            const SizedBox(height: NodeLaneTokens.space24),
-            NodeLaneRow.card(
-              title: context.l10n.source_repository_website,
-              icon: icons.external,
-              onTap: () => _launchInBrowser(Uri.parse(source.repo!.website!)),
-            ),
-          ],
-          if (sourcePreference?.isNotEmpty == true) ...[
-            NodeLaneCatalogHeading(context.l10n.source_provided_settings),
-            SourcePreferenceWidget(
+        if (source.repo?.website?.isNotEmpty == true) ...[
+          if (!inBubble) const SizedBox(height: NodeLaneTokens.space24),
+          NodeLaneRow.card(
+            title: context.l10n.source_repository_website,
+            icon: icons.external,
+            onTap: () => _launchInBrowser(Uri.parse(source.repo!.website!)),
+          ),
+        ],
+        if (sourcePreference?.isNotEmpty == true) ...[
+          NodeLaneCatalogHeading(context.l10n.source_provided_settings),
+          IgnorePointer(
+            ignoring: _busy,
+            child: SourcePreferenceWidget(
               sourcePreference: sourcePreference!,
               source: source,
-            ),
-          ],
-          const SizedBox(height: NodeLaneTokens.space24),
-          NodeLaneDisclosure(
-            title: context.l10n.source_advanced_actions,
-            icon: icons.extensions,
-            child: Column(
-              children: [
-                if (developerMode)
-                  NodeLaneRow(
-                    title: context.l10n.edit_code,
-                    icon: icons.code,
-                    onTap: _editCode,
-                  ),
-                if (developerMode && source.isLocal == true)
-                  NodeLaneRow(
-                    title: context.l10n.source_edit_metadata,
-                    icon: icons.edit,
-                    onOpen: _editMetadata,
-                  ),
-                NodeLaneRow(
-                  title: context.l10n.source_clear_cookies,
-                  subtitle: context.l10n.source_clear_cookies_hint,
-                  icon: icons.cookies,
-                  onTap: _busy ? null : _clearCookies,
-                ),
-                NodeLaneRow(
-                  title: context.l10n.source_uninstall,
-                  icon: icons.delete,
-                  destructive: true,
-                  onOpen: _busy ? null : _confirmUninstall,
-                ),
-              ],
+              onSave: (pref, owner) async {
+                setState(() => _busy = true);
+                try {
+                  await savePreferenceSetting(pref, owner);
+                } finally {
+                  if (mounted) setState(() => _busy = false);
+                }
+              },
             ),
           ),
         ],
-      ),
+        const SizedBox(height: NodeLaneTokens.space24),
+        NodeLaneDisclosure(
+          title: context.l10n.source_advanced_actions,
+          icon: icons.extensions,
+          child: Column(
+            children: [
+              if (developerMode)
+                NodeLaneRow(
+                  title: context.l10n.edit_code,
+                  icon: icons.code,
+                  onTap: _busy ? null : _editCode,
+                ),
+              if (developerMode && source.isLocal == true)
+                NodeLaneRow(
+                  title: context.l10n.source_edit_metadata,
+                  icon: icons.edit,
+                  onOpen: _busy ? null : _editMetadata,
+                ),
+              NodeLaneRow(
+                title: context.l10n.source_clear_cookies,
+                subtitle: context.l10n.source_clear_cookies_hint,
+                icon: icons.cookies,
+                onTap: _busy ? null : _clearCookies,
+              ),
+              NodeLaneRow(
+                title: context.l10n.source_uninstall,
+                icon: icons.delete,
+                destructive: true,
+                onOpen: _busy ? null : _confirmUninstall,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+    if (inBubble) {
+      final title = context.l10n.settings_source_preferences;
+      return NodeLaneBubblePanel(
+        title: title,
+        titleContent: Row(
+          children: [
+            ExcludeSemantics(
+              child: SizedBox.square(
+                dimension: NodeLaneTokens.smallIconSize,
+                child: NodeLaneWebsiteIcon(url: source.iconUrl),
+              ),
+            ),
+            const SizedBox(width: NodeLaneTokens.space8),
+            Flexible(child: Text(title)),
+          ],
+        ),
+        subtitle: [?source.name, if (identity.isNotEmpty) identity].join(' · '),
+        onDismiss: dismiss,
+        dismissEnabled: !_busy,
+        child: body,
+      );
+    }
+    return MobileBrowsePage(
+      title: context.l10n.source_details,
+      onDismiss: dismiss,
+      busy: _busy,
+      body: body,
     );
   }
 

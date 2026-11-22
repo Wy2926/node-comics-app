@@ -70,13 +70,10 @@ Future<void> showTranslationImageMenu(
   context,
   localPoint: localPoint,
   label: context.l10n.translation_image_actions,
-  child: SingleChildScrollView(
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        NodeLaneBubbleHeading(context.l10n.translation_image_actions),
-        TranslationImageActions(controller: controller, target: target),
-      ],
+  child: NodeLaneBubblePanel(
+    title: context.l10n.translation_image_actions,
+    child: SingleChildScrollView(
+      child: TranslationImageActions(controller: controller, target: target),
     ),
   ),
 );

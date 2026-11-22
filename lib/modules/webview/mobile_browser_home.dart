@@ -116,7 +116,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
       final action = await showNodeLaneBubble<String>(
         anchor,
         label: context.l10n.tabs,
-        width: NodeLaneTokens.bubbleTabsWidth,
+        width: NodeLaneTokens.bubblePanelWidth,
         child: BrowserTabsPanel(
           entries: browserSessionStore.entries,
           onUndo: () async {

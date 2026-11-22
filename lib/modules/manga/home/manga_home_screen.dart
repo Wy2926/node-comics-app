@@ -408,54 +408,22 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
   }
 
-  Future<void> _showSavedSearches() async {
-    showModalBottomSheet(
-      context: context,
-      builder: (ctx) => Consumer(
-        builder: (ctx, ref, _) {
-          final saved =
-              ref.watch(savedSearchesProvider)[source.id] ??
-              const <SavedSearch>[];
-          if (saved.isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                context.l10n.source_no_saved_searches,
-                textAlign: TextAlign.center,
-              ),
-            );
-          }
-          return ListView(
-            shrinkWrap: true,
-            children: [
-              for (final s in saved)
-                ListTile(
-                  leading: const Icon(Icons.bookmark_outline),
-                  title: Text(s.name),
-                  subtitle: Text(
-                    s.query,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    onPressed: () => ref
-                        .read(savedSearchesProvider.notifier)
-                        .remove(source.id!, s.name),
-                  ),
-                  onTap: () {
-                    Navigator.pop(ctx);
-                    _runSavedSearch(s.query);
-                  },
-                ),
-            ],
-          );
-        },
-      ),
+  Future<void> _showSavedSearches(BuildContext anchor) async {
+    final id = source.id!;
+    final fromMenu = NodeLaneBubbleFlow.contains(anchor);
+    final query = await NodeLaneBubbleFlow.open<String>(
+      anchor,
+      title: anchor.l10n.source_saved_searches,
+      child: MobileSavedSearches(sourceId: id, title: source.name ?? ''),
     );
-  }
-
-  void _runSavedSearch(String query) {
+    if (query == null ||
+        !mounted ||
+        source.id != id ||
+        !anchor.mounted ||
+        ModalRoute.isCurrentOf(anchor) != true) {
+      return;
+    }
+    if (fromMenu) Navigator.pop(anchor);
     _textEditingController.text = query;
     _submit(query);
   }
@@ -498,14 +466,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
       case SourceCatalogAction.save:
         await _promptSaveSearch(menu);
       case SourceCatalogAction.saved:
-        final query = await NodeLaneBubbleFlow.push<String>(
-          menu,
-          MobileSavedSearches(sourceId: source.id!, title: source.name ?? ''),
-        );
-        if (query != null && mounted && menu.mounted) {
-          Navigator.pop(menu);
-          _runSavedSearch(query);
-        }
+        await _showSavedSearches(menu);
       case SourceCatalogAction.settings:
         final updated = await showSourceSettings(menu, source);
         if (updated != null && mounted) setState(() => source = updated);
@@ -813,48 +774,52 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
               },
             )
           else
-            NodeLaneBubbleButton<Object>(
-              icon: Icon(displayTypeIcon),
-              tooltip: context.l10n.display_mode,
-              itemBuilder: (context) {
-                final displayType = ref.read(mangaHomeDisplayTypeStateProvider);
-                return [
-                  for (final (mode, title) in [
-                    (
-                      DisplayType.comfortableGrid,
-                      context.l10n.comfortable_grid,
+            Builder(
+              builder: (anchor) => NodeLaneBubbleButton<Object>(
+                icon: Icon(displayTypeIcon),
+                tooltip: context.l10n.display_mode,
+                itemBuilder: (context) {
+                  final displayType = ref.read(
+                    mangaHomeDisplayTypeStateProvider,
+                  );
+                  return [
+                    for (final (mode, title) in [
+                      (
+                        DisplayType.comfortableGrid,
+                        context.l10n.comfortable_grid,
+                      ),
+                      (DisplayType.compactGrid, context.l10n.compact_grid),
+                      (DisplayType.list, context.l10n.list),
+                    ])
+                      CheckedPopupMenuItem<Object>(
+                        value: mode,
+                        checked: mode == displayType,
+                        child: Text(title),
+                      ),
+                    PopupMenuItem<int>(
+                      value: 2,
+                      child: Text(context.l10n.save_search),
                     ),
-                    (DisplayType.compactGrid, context.l10n.compact_grid),
-                    (DisplayType.list, context.l10n.list),
-                  ])
-                    CheckedPopupMenuItem<Object>(
-                      value: mode,
-                      checked: mode == displayType,
-                      child: Text(title),
+                    PopupMenuItem<int>(
+                      value: 3,
+                      child: Text(context.l10n.saved_searches),
                     ),
-                  PopupMenuItem<int>(
-                    value: 2,
-                    child: Text(context.l10n.save_search),
-                  ),
-                  PopupMenuItem<int>(
-                    value: 3,
-                    child: Text(context.l10n.saved_searches),
-                  ),
-                ];
-              },
-              onSelected: (value) {
-                if (value is DisplayType) {
-                  if (ref.read(mangaHomeDisplayTypeStateProvider) != value) {
-                    ref
-                        .read(mangaHomeDisplayTypeStateProvider.notifier)
-                        .setMangaHomeDisplayType(value);
+                  ];
+                },
+                onSelected: (value) {
+                  if (value is DisplayType) {
+                    if (ref.read(mangaHomeDisplayTypeStateProvider) != value) {
+                      ref
+                          .read(mangaHomeDisplayTypeStateProvider.notifier)
+                          .setMangaHomeDisplayType(value);
+                    }
+                  } else if (value == 2) {
+                    _promptSaveSearch(anchor);
+                  } else if (value == 3) {
+                    _showSavedSearches(anchor);
                   }
-                } else if (value == 2) {
-                  _promptSaveSearch();
-                } else if (value == 3) {
-                  _showSavedSearches();
-                }
-              },
+                },
+              ),
             ),
           if (!isLocal)
             if (isTv)

@@ -43,24 +43,26 @@ class MobileBookshelfSettings extends ConsumerWidget {
     return DefaultTabController(
       animationDuration: NodeLaneMotion.time(context),
       length: 3,
-      child: Column(
-        children: [
-          Semantics(child: NodeLaneBubbleHeading(l10n.bookshelf_settings)),
-          LibrarySettingsTabs([l10n.filter, l10n.sort, l10n.display]),
-          Expanded(
-            child: TabBarView(
-              children: [
-                _Filters(
-                  settings: current,
-                  entries: currentEntries,
-                  itemType: itemType,
-                ),
-                _Sort(settings: current, itemType: itemType),
-                _Display(settings: current, itemType: itemType),
-              ],
+      child: NodeLaneBubblePanel(
+        title: l10n.bookshelf_settings,
+        child: Column(
+          children: [
+            LibrarySettingsTabs([l10n.filter, l10n.sort, l10n.display]),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _Filters(
+                    settings: current,
+                    entries: currentEntries,
+                    itemType: itemType,
+                  ),
+                  _Sort(settings: current, itemType: itemType),
+                  _Display(settings: current, itemType: itemType),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

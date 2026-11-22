@@ -174,7 +174,7 @@ void main() {
     expect(closed, 0);
     await tester.tap(find.text('Speed'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const ValueKey('player-settings-close')));
+    await tester.tap(find.byTooltip('Close'));
     await tester.pumpAndSettle();
     expect(closed, 1);
     expect(tester.takeException(), isNull);
@@ -212,7 +212,7 @@ void main() {
         _app(entries: entries, initialIndex: 0, onClosed: () => closed++),
       );
       await _open(tester);
-      expect(find.byKey(const ValueKey('player-settings-back')), findsNothing);
+      expect(find.byTooltip('Back'), findsNothing);
       await tester.tap(find.text('1.5x'));
       await tester.pumpAndSettle();
       expect(selections, 1);
@@ -223,11 +223,7 @@ void main() {
       await _open(tester);
       await tester.tap(find.text('Speed'));
       await tester.pumpAndSettle();
-      expect(
-        find.byKey(const ValueKey('player-settings-back')),
-        findsOneWidget,
-      );
-      await tester.tap(find.byKey(const ValueKey('player-settings-back')));
+      await tester.tap(find.byTooltip('Back'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Share'));
       await tester.pumpAndSettle();
@@ -303,9 +299,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byTooltip('Increase Delay'));
       expect(increments, 1);
-      final close = tester.getRect(
-        find.byKey(const ValueKey('player-settings-close')),
-      );
+      final close = tester.getRect(find.byTooltip('Close'));
       expect(close.top, greaterThanOrEqualTo(0));
       expect(close.bottom, lessThanOrEqualTo(210));
       await tester.ensureVisible(find.text(label));
@@ -364,7 +358,7 @@ void main() {
     await tester.testTextInput.receiveAction(TextInputAction.done);
     await tester.pump();
     expect(settings.writes.single.fontSize, 70);
-    await tester.tap(find.byKey(const ValueKey('player-settings-back')));
+    await tester.tap(find.byTooltip('Back'));
     await tester.pumpAndSettle();
     expect(find.byType(TextField), findsNothing);
     expect(tester.takeException(), isNull);

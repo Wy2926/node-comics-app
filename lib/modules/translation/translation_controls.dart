@@ -33,7 +33,6 @@ Future<void> showTranslationControls(
   return NodeLaneBubbleFlow.open<void>(
     context,
     title: title ?? context.l10n.translation_title,
-    width: NodeLaneTokens.bubbleTabsWidth,
     child: content,
   );
 }

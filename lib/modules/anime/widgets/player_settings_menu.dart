@@ -114,17 +114,9 @@ class _PlayerSettingsPanelState extends State<_PlayerSettingsPanel> {
                   : widget.entries[active].label,
               actions: [
                 if (canGoBack)
-                  BackButton(
-                    key: const ValueKey('player-settings-back'),
-                    onPressed: _goHome,
-                    color: colors.ink,
-                  ),
+                  NodeLaneBubbleAction.back.button(context, _goHome),
               ],
-              closeButton: CloseButton(
-                key: const ValueKey('player-settings-close'),
-                onPressed: _close,
-                color: colors.ink,
-              ),
+              onDismiss: _close,
               // The builders need this inner context so the
               // existing onDone callbacks can find their scope.
               child: Builder(

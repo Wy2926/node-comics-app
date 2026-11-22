@@ -71,18 +71,15 @@ class _BrowserTabsPanelState extends State<BrowserTabsPanel> {
       76.0,
       line(colors.readerLabel) + line(colors.readerSecondary) + 20,
     );
-    final heading = NodeLaneBubbleHeading(
-      l.browser_tab_count(entries.length),
-      actions: [
-        if (browserSessionStore.canUndo)
-          NodeLaneIconButton(
-            style: NodeLaneIconButtonStyle.plain,
-            icon: icons.reset,
-            tooltip: l.browser_undo_close,
-            onPressed: busy ? null : () => _edit(widget.onUndo),
-          ),
-      ],
-    );
+    final actions = [
+      if (browserSessionStore.canUndo)
+        NodeLaneIconButton(
+          style: NodeLaneIconButtonStyle.plain,
+          icon: icons.reset,
+          tooltip: l.browser_undo_close,
+          onPressed: busy ? null : () => _edit(widget.onUndo),
+        ),
+    ];
     final newTab = NodeLaneRow(
       icon: icons.add,
       accented: true,
@@ -110,7 +107,6 @@ class _BrowserTabsPanelState extends State<BrowserTabsPanel> {
           shrinkWrap: true,
           controller: scroll,
           slivers: [
-            if (short) SliverToBoxAdapter(child: heading),
             if (error != null)
               SliverToBoxAdapter(
                 child: Padding(
@@ -152,17 +148,20 @@ class _BrowserTabsPanelState extends State<BrowserTabsPanel> {
             if (short) SliverToBoxAdapter(child: newTab),
           ],
         );
-        return short
-            ? list
-            : Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  heading,
-                  Flexible(child: list),
-                  const NodeLaneGroupDivider(),
-                  newTab,
-                ],
-              );
+        return NodeLaneBubblePanel(
+          title: l.browser_tab_count(entries.length),
+          actions: actions,
+          child: short
+              ? list
+              : Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Flexible(child: list),
+                    const NodeLaneGroupDivider(),
+                    newTab,
+                  ],
+                ),
+        );
       },
     );
   }

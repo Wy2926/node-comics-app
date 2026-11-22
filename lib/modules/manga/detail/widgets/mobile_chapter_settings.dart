@@ -36,11 +36,11 @@ class MobileChapterSettingsPanel extends StatelessWidget {
   String _title(BuildContext context) => manga.itemType == ItemType.anime
       ? context.l10n.filter
       : context.l10n.chapter_settings;
-  Future<void> show(BuildContext anchor) => showNodeLaneBubble<void>(
+  Future<void> show(BuildContext anchor) => NodeLaneBubbleFlow.open<void>(
     anchor,
-    label: _title(anchor),
+    title: _title(anchor),
     width: NodeLaneTokens.bubbleSettingsWidth,
-    child: NodeLaneBubbleFlow(home: this),
+    child: this,
   );
 
   @override
@@ -56,35 +56,33 @@ class MobileChapterSettingsPanel extends StatelessWidget {
           final controller = DefaultTabController.of(context);
           return ListenableBuilder(
             listenable: controller,
-            builder: (context, _) => CustomScrollView(
-              shrinkWrap: true,
-              key: PageStorageKey('chapter-settings-${controller.index}'),
-              slivers: [
-                SliverToBoxAdapter(
-                  child: NodeLaneBubbleHeading(
-                    _title(context),
-                    subtitle: manga.name,
-                  ),
-                ),
-                PinnedHeaderSliver(child: LibrarySettingsTabs(tabs)),
-                SliverToBoxAdapter(
-                  child: NodeLaneMotion.tabBody(
-                    context,
-                    controller,
-                    Padding(
-                      padding: NodeLaneTokens.bubbleContentPadding,
-                      child: switch (controller.index) {
-                        0 => _ChapterFilters(
-                          manga: manga,
-                          localArchive: localArchive,
-                        ),
-                        1 => _ChapterSort(manga: manga),
-                        _ => const _ChapterHabits(),
-                      },
+            builder: (context, _) => NodeLaneBubblePanel(
+              title: _title(context),
+              subtitle: manga.name,
+              child: CustomScrollView(
+                shrinkWrap: true,
+                key: PageStorageKey('chapter-settings-${controller.index}'),
+                slivers: [
+                  PinnedHeaderSliver(child: LibrarySettingsTabs(tabs)),
+                  SliverToBoxAdapter(
+                    child: NodeLaneMotion.tabBody(
+                      context,
+                      controller,
+                      Padding(
+                        padding: NodeLaneTokens.bubbleContentPadding,
+                        child: switch (controller.index) {
+                          0 => _ChapterFilters(
+                            manga: manga,
+                            localArchive: localArchive,
+                          ),
+                          1 => _ChapterSort(manga: manga),
+                          _ => const _ChapterHabits(),
+                        },
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

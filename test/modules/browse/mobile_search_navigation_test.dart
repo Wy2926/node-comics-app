@@ -407,7 +407,35 @@ void main() {
         expect(find.byType(TextField).hitTestable(), findsNothing);
         expect(position.pixels, y);
         expect(tester.getRect(find.text(name)), before);
-        await database.sources.count();
+        final card = tester.widget<SourceWebsiteCard>(
+          find.widgetWithText(SourceWebsiteCard, name),
+        );
+        final installedRow = Source.fromJson(card.source.toJson())
+          ..sourceCodeLanguage = SourceCodeLanguage.mihon
+          ..preferenceList = '[]';
+        await database.writeTxn(() => database.sources.put(installedRow));
+        addTearDown(
+          () => database.writeTxn(
+            () => database.sources.delete(installedRow.id!),
+          ),
+        );
+        card.onLongPress!(before.center);
+        await tester.pumpAndSettle();
+        Future<void> tap(Finder target) async {
+          await tester.ensureVisible(target);
+          await tester.tap(target);
+          await tester.pumpAndSettle();
+        }
+
+        await tap(find.text(l10n.source_website_info));
+        await tap(find.byTooltip('Close'));
+        await tap(find.text(l10n.settings_source_preferences));
+        await tap(find.text(l10n.source_advanced_actions));
+        await tap(find.text(l10n.source_uninstall));
+        await tap(find.widgetWithText(NodeLaneDialogAction, l10n.uninstall));
+        expect(database.sources.getSync(installedRow.id!)!.isAdded, isFalse);
+        expect(find.text(l10n.settings_source_preferences), findsNothing);
+        expect(tester.getRect(find.text(name).hitTestable()), before);
         await tester.pumpWidget(const SizedBox());
         expect(tester.takeException(), isNull);
       });
@@ -943,6 +971,11 @@ void main() {
             await tester.tap(find.byTooltip('Source actions'));
             await tester.pumpAndSettle();
             await tester.tap(find.text('Saved searches'));
+            await tester.pumpAndSettle();
+            await tester.tap(find.byTooltip('Close'));
+            await tester.pumpAndSettle();
+            expect(calls, ['海岸来信:1', '海岸来信:2']);
+            await tester.tap(find.text('Saved searches').hitTestable());
             await tester.pumpAndSettle();
             await tester.tap(find.text('Evening'));
             await tester.pumpAndSettle();

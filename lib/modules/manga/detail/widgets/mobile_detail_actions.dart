@@ -202,20 +202,17 @@ class _ToolPanel extends StatelessWidget {
   final String title, subtitle;
   final List<Widget> children;
   @override
-  Widget build(BuildContext context) => ListView(
-    shrinkWrap: true,
-    padding: EdgeInsets.zero,
-    children: [
-      NodeLaneBubbleHeading(title, subtitle: subtitle),
-      Padding(
-        padding: NodeLaneTokens.bubbleContentPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          spacing: NodeLaneTokens.space12,
-          children: children,
-        ),
+  Widget build(BuildContext context) => NodeLaneBubblePanel(
+    title: title,
+    subtitle: subtitle,
+    child: SingleChildScrollView(
+      padding: NodeLaneTokens.bubbleContentPadding,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: NodeLaneTokens.space12,
+        children: children,
       ),
-    ],
+    ),
   );
 }
 

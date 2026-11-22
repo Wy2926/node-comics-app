@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/home/providers/saved_searches_provider.dart';
-import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/source_tool_menu.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -61,7 +61,7 @@ class MobileSourceMenu extends StatelessWidget {
               (SourceCatalogAction.info, l.source_website_info, icons.info),
               (
                 SourceCatalogAction.settings,
-                l.sources_settings,
+                l.settings_source_preferences,
                 icons.settings,
               ),
             ],
@@ -89,26 +89,23 @@ class _MobileSavedSearchesState extends ConsumerState<MobileSavedSearches> {
   bool managing = false;
   @override
   Widget build(BuildContext context) {
-    final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
+    final icons = NodeLaneIcons.of(context);
     final entries =
         ref.watch(savedSearchesProvider)[widget.sourceId] ??
         const <SavedSearch>[];
-    return MobileBrowsePage.form(
+    return NodeLaneBubblePanel(
       title: context.l10n.source_saved_searches,
+      subtitle: widget.title,
       actions: [
         if (entries.isNotEmpty)
-          TextButton(
-            onPressed: () => setState(() => managing = !managing),
-            child: Text(
-              managing ? context.l10n.action_done : context.l10n.manage,
-            ),
-          ),
+          (managing ? NodeLaneBubbleAction.done : NodeLaneBubbleAction.manage)
+              .button(context, () => setState(() => managing = !managing)),
       ],
-      body: ListView(
-        padding: NodeLaneTokens.pagePadding,
+      child: ListView(
+        primary: false,
+        shrinkWrap: true,
+        padding: NodeLaneTokens.bubbleContentPadding,
         children: [
-          Text(widget.title, style: t.secondary),
-          const SizedBox(height: NodeLaneTokens.space12),
           for (var i = 0; i < entries.length; i++)
             NodeLaneRow.card(
               title: entries[i].name,

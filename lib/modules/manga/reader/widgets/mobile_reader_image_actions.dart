@@ -133,10 +133,8 @@ class _MobileReaderImageActionsState extends State<MobileReaderImageActions> {
       },
       child: NodeLaneBubblePanel(
         title: _confirmCover ? l10n.set_as_cover : l10n.reader_image_actions,
-        closeButton: NodeLaneCloseButton(
-          tooltip: l10n.close,
-          onPressed: busy ? null : _close,
-        ),
+        dismissEnabled: !busy,
+        onDismiss: _close,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 16),
           child: Column(

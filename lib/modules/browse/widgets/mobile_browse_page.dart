@@ -19,6 +19,8 @@ class MobileBrowsePage extends StatelessWidget {
     required this.title,
     required this.body,
     this.leading,
+    this.onDismiss,
+    this.busy = false,
     this.actions,
     this.bottomAction,
   }) : _form = false;
@@ -28,6 +30,8 @@ class MobileBrowsePage extends StatelessWidget {
     required this.title,
     required this.body,
     this.leading,
+    this.onDismiss,
+    this.busy = false,
     this.actions,
     this.bottomAction,
   }) : _form = true;
@@ -36,6 +40,8 @@ class MobileBrowsePage extends StatelessWidget {
   final bool _form;
   final Widget body;
   final Widget? leading;
+  final VoidCallback? onDismiss;
+  final bool busy;
   final List<Widget>? actions;
   final Widget? bottomAction;
 
@@ -45,47 +51,50 @@ class MobileBrowsePage extends StatelessWidget {
       return NodeLaneBubblePanel(
         title: title,
         actions: actions ?? const [],
-        closeButton:
-            leading ??
-            (ModalRoute.of(context) is PageRoute
-                ? BackButton(onPressed: () => Navigator.maybePop(context))
-                : null),
+        closeButton: leading,
+        onDismiss: onDismiss,
+        dismissEnabled: !busy,
         footer: bottomAction,
         child: body,
       );
     }
     final colors = NodeLaneTokens.of(context);
-    return NodeLaneSurface(
-      child: Scaffold(
-        appBar: nodeLaneAppBar(
-          context,
-          title: title,
-          leading: leading,
-          actions: actions ?? const [],
-        ),
-        body: SafeArea(
-          top: false,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: _form ? NodeLaneFormColumn(child: body) : body),
-              if (bottomAction != null)
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: colors.surface,
-                    border: Border(top: BorderSide(color: colors.line)),
-                  ),
-                  child: NodeLaneFormColumn(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.gutter,
-                        vertical: NodeLaneTokens.space12,
+    return PopScope(
+      canPop: !busy,
+      child: NodeLaneSurface(
+        child: Scaffold(
+          appBar: nodeLaneAppBar(
+            context,
+            title: title,
+            leading: leading,
+            onBack: onDismiss,
+            busy: busy,
+            actions: actions ?? const [],
+          ),
+          body: SafeArea(
+            top: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: _form ? NodeLaneFormColumn(child: body) : body),
+                if (bottomAction != null)
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: colors.surface,
+                      border: Border(top: BorderSide(color: colors.line)),
+                    ),
+                    child: NodeLaneFormColumn(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: NodeLaneTokens.gutter,
+                          vertical: NodeLaneTokens.space12,
+                        ),
+                        child: bottomAction,
                       ),
-                      child: bottomAction,
                     ),
                   ),
-                ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

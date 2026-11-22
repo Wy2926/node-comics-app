@@ -775,7 +775,7 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
       final action = await showNodeLaneBubble<String>(
         anchor,
         label: context.l10n.tabs,
-        width: NodeLaneTokens.bubbleTabsWidth,
+        width: NodeLaneTokens.bubblePanelWidth,
         child: BrowserTabsPanel(
           entries: _entries,
           onClose: _editTabs,
@@ -1516,18 +1516,15 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
         context,
         label: Uri.parse(url).host,
         localPoint: _pressPoint,
-        child: Builder(
-          builder: (panel) => SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                NodeLaneBubbleHeading(Uri.parse(url).host),
-                NodeLaneRow(
-                  title: context.l10n.browser_background_tab,
-                  icon: NodeLaneIcons.of(context).add,
-                  onTap: () => Navigator.pop(panel, true),
-                ),
-              ],
+        child: NodeLaneBubblePanel(
+          title: Uri.parse(url).host,
+          child: SingleChildScrollView(
+            child: Builder(
+              builder: (panel) => NodeLaneRow(
+                title: context.l10n.browser_background_tab,
+                icon: NodeLaneIcons.of(context).add,
+                onTap: () => Navigator.pop(panel, true),
+              ),
             ),
           ),
         ),

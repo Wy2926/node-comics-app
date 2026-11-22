@@ -258,7 +258,7 @@ void main() {
       expect((initial[2] as SelectFilter).state, 0);
       await tester.tap(find.text('Open filters'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Reset'));
+      await tester.tap(find.text('Reset'));
       await tester.pumpAndSettle();
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,

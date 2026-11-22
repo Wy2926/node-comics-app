@@ -1311,7 +1311,7 @@ class NodeLaneCloseButton extends StatelessWidget {
         child: Icon(
           NodeLaneIcons.of(context).close,
           size: NodeLaneTokens.smallIconSize,
-          color: t.ink,
+          color: onPressed == null ? Theme.of(context).disabledColor : t.ink,
         ),
       ),
     );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
-import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -51,48 +50,42 @@ class _ConfirmPanelState extends State<NodeLaneConfirmPanel> {
   }
 
   @override
-  Widget build(BuildContext context) => PopScope(
-    canPop: !_busy,
-    child: NodeLaneBubblePanel(
-      title: widget.title,
-      closeButton: NodeLaneCloseButton(
-        tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-        onPressed: _busy ? null : () => Navigator.maybePop(context),
-      ),
-      footer: NodeLaneModalActions(
-        actions: [
-          NodeLaneDialogAction(
-            label: context.l10n.cancel,
-            secondary: true,
-            onPressed: _busy ? null : () => Navigator.pop(context),
-          ),
-          NodeLaneDialogAction(
-            label: widget.confirmLabel,
-            destructive: widget.destructive,
-            busy: _busy,
-            onPressed: _busy || !widget.enabled ? null : _confirm,
-          ),
-        ],
-      ),
-      child: SingleChildScrollView(
-        primary: false,
-        padding: NodeLaneTokens.groupPadding,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(widget.message),
-            if (widget.options != null) widget.options!(!_busy),
-            if (_busy) ...[
-              const SizedBox(height: 16),
-              const LinearProgressIndicator(),
-            ],
-            if (_failed) ...[
-              const SizedBox(height: 16),
-              Semantics(liveRegion: true, child: Text(context.l10n.failed)),
-            ],
-          ],
+  Widget build(BuildContext context) => NodeLaneBubblePanel(
+    title: widget.title,
+    dismissEnabled: !_busy,
+    footer: NodeLaneModalActions(
+      actions: [
+        NodeLaneDialogAction(
+          label: context.l10n.cancel,
+          secondary: true,
+          onPressed: _busy ? null : () => Navigator.pop(context),
         ),
+        NodeLaneDialogAction(
+          label: widget.confirmLabel,
+          destructive: widget.destructive,
+          busy: _busy,
+          onPressed: _busy || !widget.enabled ? null : _confirm,
+        ),
+      ],
+    ),
+    child: SingleChildScrollView(
+      primary: false,
+      padding: NodeLaneTokens.groupPadding,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(widget.message),
+          if (widget.options != null) widget.options!(!_busy),
+          if (_busy) ...[
+            const SizedBox(height: 16),
+            const LinearProgressIndicator(),
+          ],
+          if (_failed) ...[
+            const SizedBox(height: 16),
+            Semantics(liveRegion: true, child: Text(context.l10n.failed)),
+          ],
+        ],
       ),
     ),
   );

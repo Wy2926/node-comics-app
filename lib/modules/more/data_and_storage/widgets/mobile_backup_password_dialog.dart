@@ -79,92 +79,82 @@ class _MobileBackupPasswordDialogState
         ),
       ),
     );
-    return PopScope(
-      canPop: !_busy,
-      child: NodeLaneBubblePanel(
-        title: _setup ? l10n.set_backup_password : l10n.enter_backup_password,
-        closeButton: NodeLaneCloseButton(
-          tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-          onPressed: _busy ? null : () => Navigator.maybePop(context),
-        ),
-        footer: NodeLaneModalActions(
-          actions: [
-            NodeLaneDialogAction(
-              label: l10n.ok,
-              busy: _busy,
-              onPressed: _busy || !_valid ? null : _submit,
-            ),
-          ],
-        ),
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: NodeLaneTokens.gutter,
+    return NodeLaneBubblePanel(
+      title: _setup ? l10n.set_backup_password : l10n.enter_backup_password,
+      dismissEnabled: !_busy,
+      footer: NodeLaneModalActions(
+        actions: [
+          NodeLaneDialogAction(
+            label: l10n.ok,
+            busy: _busy,
+            onPressed: _busy || !_valid ? null : _submit,
           ),
-          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (widget.wasIncorrect) ...[
-                error(l10n.incorrect_password_try_again),
-                const SizedBox(height: NodeLaneTokens.space12),
-              ],
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: NodeLaneTokens.space16,
-                children: [
+        ],
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.gutter),
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.wasIncorrect) ...[
+              error(l10n.incorrect_password_try_again),
+              const SizedBox(height: NodeLaneTokens.space12),
+            ],
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              spacing: NodeLaneTokens.space16,
+              children: [
+                NodeLaneTextField(
+                  key: const ValueKey('backup-password'),
+                  controller: _password,
+                  label: l10n.password,
+                  autofocus: true,
+                  enabled: !_busy,
+                  obscureText: _obscure,
+                  autocorrect: false,
+                  enableSuggestions: false,
+                  textInputAction: _setup && _obscure
+                      ? TextInputAction.next
+                      : TextInputAction.done,
+                  onChanged: (_) => setState(() {}),
+                  onSubmitted: (_) => _setup && _obscure
+                      ? _confirmFocus.requestFocus()
+                      : _submit(),
+                  trailing: NodeLaneIconButton(
+                    tooltip: _obscure ? l10n.show_password : l10n.hide_password,
+                    onPressed: _busy
+                        ? null
+                        : () => setState(() => _obscure = !_obscure),
+                    icon: _obscure
+                        ? NodeLaneIcons.of(context).visible
+                        : NodeLaneIcons.of(context).incognito,
+                  ),
+                ),
+                if (_setup && _obscure)
                   NodeLaneTextField(
-                    key: const ValueKey('backup-password'),
-                    controller: _password,
-                    label: l10n.password,
-                    autofocus: true,
+                    key: const ValueKey('backup-password-confirm'),
+                    controller: _confirm,
+                    focusNode: _confirmFocus,
+                    label: l10n.confirm_password,
                     enabled: !_busy,
-                    obscureText: _obscure,
+                    obscureText: true,
                     autocorrect: false,
                     enableSuggestions: false,
-                    textInputAction: _setup && _obscure
-                        ? TextInputAction.next
-                        : TextInputAction.done,
+                    textInputAction: TextInputAction.done,
                     onChanged: (_) => setState(() {}),
-                    onSubmitted: (_) => _setup && _obscure
-                        ? _confirmFocus.requestFocus()
-                        : _submit(),
-                    trailing: NodeLaneIconButton(
-                      tooltip: _obscure
-                          ? l10n.show_password
-                          : l10n.hide_password,
-                      onPressed: _busy
-                          ? null
-                          : () => setState(() => _obscure = !_obscure),
-                      icon: _obscure
-                          ? NodeLaneIcons.of(context).visible
-                          : NodeLaneIcons.of(context).incognito,
-                    ),
+                    onSubmitted: (_) => _submit(),
                   ),
-                  if (_setup && _obscure)
-                    NodeLaneTextField(
-                      key: const ValueKey('backup-password-confirm'),
-                      controller: _confirm,
-                      focusNode: _confirmFocus,
-                      label: l10n.confirm_password,
-                      enabled: !_busy,
-                      obscureText: true,
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      textInputAction: TextInputAction.done,
-                      onChanged: (_) => setState(() {}),
-                      onSubmitted: (_) => _submit(),
-                    ),
-                ],
-              ),
-              if (_setup &&
-                  _obscure &&
-                  _confirm.text.isNotEmpty &&
-                  _confirm.text != _password.text)
-                error(l10n.passwords_do_not_match),
-              if (_failed) error(l10n.failed),
-            ],
-          ),
+              ],
+            ),
+            if (_setup &&
+                _obscure &&
+                _confirm.text.isNotEmpty &&
+                _confirm.text != _password.text)
+              error(l10n.passwords_do_not_match),
+            if (_failed) error(l10n.failed),
+          ],
         ),
       ),
     );

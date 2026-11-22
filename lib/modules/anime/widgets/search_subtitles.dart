@@ -227,8 +227,9 @@ class _SubtitleSearchResultsState extends State<_SubtitleSearchResults> {
       title: l.search_subtitles,
       actions: [
         if (!_busy && (_subtitles != null || _episodes != null))
-          BackButton(
-            onPressed: () => setState(() {
+          NodeLaneBubbleAction.back.button(
+            context,
+            () => setState(() {
               if (_subtitles != null) {
                 _subtitles = null;
               } else {

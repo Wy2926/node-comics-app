@@ -202,10 +202,7 @@ class _DirectoryFilterState extends ConsumerState<SourceDirectoryFilterPanel> {
       subtitle: filters.summary(l, type),
       actions: [
         if (filters.isNotEmpty)
-          TextButton(
-            onPressed: () => change(const {}),
-            child: Text(l.action_clear),
-          ),
+          NodeLaneBubbleAction.clear.button(context, () => change(const {})),
       ],
       child: SingleChildScrollView(
         child: DefaultTabController(

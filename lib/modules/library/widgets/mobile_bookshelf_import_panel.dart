@@ -86,63 +86,50 @@ class _MobileBookshelfImportPanelState
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n, t = NodeLaneTokens.of(context);
-    return PopScope(
-      canPop: !_busy,
+    return NodeLaneBubblePanel(
+      title: l10n.import_local_file,
+      onDismiss: _close,
+      dismissEnabled: !_busy,
       child: ListView(
         shrinkWrap: true,
-        padding: EdgeInsets.zero,
+        padding: NodeLaneTokens.bubbleContentPadding,
         children: [
-          NodeLaneBubbleHeading(
-            l10n.import_local_file,
-            closeButton: NodeLaneCloseButton(
-              tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
-              onPressed: _busy ? null : _close,
+          if (_failed)
+            Semantics(
+              liveRegion: true,
+              child: Text(
+                l10n.bookshelf_import_incomplete,
+                style: t.readerSecondary.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            )
+          else ...[
+            if (widget.itemType == ItemType.novel)
+              NodeLaneSwitchRow(
+                title: l10n.split_epub_chapters,
+                value: _splitChapters,
+                onChanged: _busy
+                    ? null
+                    : (v) => setState(() => _splitChapters = v),
+              ),
+            NodeLaneRow.card(
+              title: l10n.bookshelf_choose_files,
+              subtitle: localArchiveExtensions(widget.itemType)
+                  .join(' · ')
+                  .toUpperCase(),
+              enabled: !_busy,
+              icon: NodeLaneIcons.of(context).folderOutline,
+              onTap: _busy ? null : _choose,
             ),
-          ),
-          Padding(
-            padding: NodeLaneTokens.modalActionsPadding,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (_failed)
-                  Semantics(
-                    liveRegion: true,
-                    child: Text(
-                      l10n.bookshelf_import_incomplete,
-                      style: t.readerSecondary.copyWith(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  )
-                else ...[
-                  if (widget.itemType == ItemType.novel)
-                    NodeLaneSwitchRow(
-                      title: l10n.split_epub_chapters,
-                      value: _splitChapters,
-                      onChanged: _busy
-                          ? null
-                          : (v) => setState(() => _splitChapters = v),
-                    ),
-                  NodeLaneRow.card(
-                    title: l10n.bookshelf_choose_files,
-                    subtitle: localArchiveExtensions(widget.itemType)
-                        .join(' · ')
-                        .toUpperCase(),
-                    enabled: !_busy,
-                    icon: NodeLaneIcons.of(context).folderOutline,
-                    onTap: _busy ? null : _choose,
-                  ),
-                  if (_busy)
-                    Padding(
-                      padding: EdgeInsets.only(top: NodeLaneTokens.space16),
-                      child: NodeLaneProgress(
-                        semanticsLabel: l10n.translation_processing,
-                      ),
-                    ),
-                ],
-              ],
-            ),
-          ),
+            if (_busy)
+              Padding(
+                padding: EdgeInsets.only(top: NodeLaneTokens.space16),
+                child: NodeLaneProgress(
+                  semanticsLabel: l10n.translation_processing,
+                ),
+              ),
+          ],
         ],
       ),
     );

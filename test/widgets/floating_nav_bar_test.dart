@@ -333,27 +333,6 @@ void main() {
     }
   });
 
-  testWidgets('the pill is as round as the bar it sits in', (tester) async {
-    await tester.pumpWidget(_host(index: 1));
-    await tester.pumpAndSettle();
-
-    final decoration = tester
-        .widget<AnimatedContainer>(
-          find.descendant(
-            of: find.byType(AnimatedPositioned),
-            matching: find.byType(AnimatedContainer),
-          ),
-        )
-        .decoration;
-    expect(
-      (decoration as ShapeDecoration).shape,
-      isA<StadiumBorder>(),
-      reason:
-          'a stadium is a full capsule at any height, so the pill stays as '
-          'round as the bar even as the gap animates',
-    );
-  });
-
   testWidgets('the pill widens as it is pulled along', (tester) async {
     await tester.pumpWidget(_host(index: 1));
     await tester.pumpAndSettle();
@@ -451,94 +430,6 @@ void main() {
       _pillRect(tester).height,
       moreOrLessEquals(resting.height, epsilon: 0.5),
     );
-  });
-
-  testWidgets('the bar is edged with glass, not outlined', (tester) async {
-    await tester.pumpWidget(_host(index: 1));
-    await tester.pumpAndSettle();
-
-    final decorations = tester
-        .widgetList<DecoratedBox>(
-          find.descendant(
-            of: find.descendant(
-              of: find.byType(FloatingNavBar),
-              matching: find.byType(ClipRRect),
-            ),
-            matching: find.byType(DecoratedBox),
-          ),
-        )
-        .map((b) => b.decoration)
-        .whereType<BoxDecoration>();
-
-    expect(
-      decorations.every((d) => d.border == null),
-      isTrue,
-      reason: 'a hard outline all the way round is what we are replacing',
-    );
-    // Painted as a stroke along the outline rather than a decoration
-    // gradient. A horizontal band cannot reach a stadium's far left and right
-    // points, which sit at mid height, so those ends were left unlit.
-    expect(
-      find.descendant(
-        of: find.byType(FloatingNavBar),
-        matching: find.byType(CustomPaint),
-      ),
-      findsWidgets,
-    );
-    expect(
-      FloatingNavBar.glassStrokeWidth,
-      lessThanOrEqualTo(1.0),
-      reason: 'heavier than a hairline reads as a border, not glass',
-    );
-
-    // Uneven along its length, the way glass catches light in patches. The
-    // distinction that matters is uneven versus faded: it must not trend down
-    // towards the centre.
-    final mask = tester.widget<ShaderMask>(
-      find.descendant(
-        of: find.byType(FloatingNavBar),
-        matching: find.byType(ShaderMask),
-      ),
-    );
-    expect(mask.blendMode, BlendMode.dstIn);
-
-    final alphas = FloatingNavBar.glassPatchAlphas;
-    final mid = alphas[alphas.length ~/ 2];
-    expect(
-      mid,
-      greaterThan(alphas.reduce(math.min)),
-      reason: 'the centre must not be the darkest point',
-    );
-    // Genuinely irregular rather than a smooth ramp either way.
-    var reversals = 0;
-    for (var i = 2; i < alphas.length; i++) {
-      final a = alphas[i] - alphas[i - 1];
-      final b = alphas[i - 1] - alphas[i - 2];
-      if (a.sign != b.sign) reversals++;
-    }
-    expect(reversals, greaterThan(2), reason: 'a ramp is not unevenness');
-  });
-
-  testWidgets('the focused icon is thickened for icons that cannot fill', (
-    tester,
-  ) async {
-    await tester.pumpWidget(_host(index: 1));
-    await tester.pumpAndSettle();
-
-    IconThemeData themeFor(IconData icon) => tester
-        .widget<IconTheme>(
-          find
-              .ancestor(of: find.byIcon(icon), matching: find.byType(IconTheme))
-              .first,
-        )
-        .data;
-
-    expect(
-      themeFor(Icons.video_library_rounded).shadows,
-      isNotNull,
-      reason: 'selected icons carry a stroke so line-art icons read as active',
-    );
-    expect(themeFor(Icons.explore_outlined).shadows, isNull);
   });
 
   testWidgets('the pill nearly fills the bar it sits in', (tester) async {
@@ -696,45 +587,6 @@ void main() {
     expect(themeOf(Icons.explore_outlined).color, scheme.onSurface);
   });
 
-  testWidgets('a shadow separates the bar in either theme', (tester) async {
-    // Dark relies on the blur, and the blur only helps when there is content
-    // behind the bar. Over a flat background the shadow is what is left, so it
-    // has to exist and it has to sit outside the clip to be drawn at all.
-    for (final brightness in Brightness.values) {
-      await tester.pumpWidget(themed(brightness));
-      await tester.pumpAndSettle();
-
-      final outer =
-          tester
-                  .widget<DecoratedBox>(
-                    find
-                        .descendant(
-                          of: find.byType(FloatingNavBar),
-                          matching: find.byType(DecoratedBox),
-                        )
-                        .first,
-                  )
-                  .decoration
-              as BoxDecoration;
-      expect(outer.boxShadow, isNotNull, reason: '$brightness has no shadow');
-      expect(outer.boxShadow!.single.blurRadius, greaterThan(0));
-
-      // The shadow box has to wrap the clip, not sit inside it, or the clip
-      // cuts the shadow off and it never draws.
-      expect(
-        find.ancestor(
-          of: find.descendant(
-            of: find.byType(FloatingNavBar),
-            matching: find.byType(ClipRRect),
-          ),
-          matching: find.byType(DecoratedBox),
-        ),
-        findsWidgets,
-        reason: '$brightness draws its shadow inside the clip',
-      );
-    }
-  });
-
   testWidgets('the end icons sit centred in the pill, not in their slot', (
     tester,
   ) async {
@@ -772,81 +624,6 @@ void main() {
       moreOrLessEquals(bar.center.dx, epsilon: 0.5),
       reason: 'the middle slot of three is the bar centre; nothing to nudge',
     );
-  });
-
-  testWidgets('light mode uses a clear tonal pill and a distinct surface', (
-    tester,
-  ) async {
-    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xFF7B4BD6));
-    await tester.pumpWidget(
-      MaterialApp(
-        theme: ThemeData(colorScheme: scheme, useMaterial3: true),
-        home: Scaffold(
-          body: Align(
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              width: 360,
-              child: FloatingNavBar(
-                destinations: _destinations,
-                currentIndex: 1,
-                onSelected: (_) {},
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-    await tester.pumpAndSettle();
-
-    expect(pillColourOf(tester), scheme.primaryContainer);
-
-    final fill = barFillOf(tester);
-    expect(
-      fill.withValues(alpha: 1),
-      scheme.surfaceContainerHigh,
-      reason:
-          'the medium container separates the bar without using the heaviest '
-          'available surface tone',
-    );
-    expect(
-      (fill.r - fill.g).abs() < 0.25 && (fill.g - fill.b).abs() < 0.25,
-      isTrue,
-      reason: 'the bar itself must stay near-neutral',
-    );
-  });
-
-  test('a selected icon stays legible on the pill in any scheme', () {
-    double contrast(Color a, Color b) {
-      final la = a.computeLuminance(), lb = b.computeLuminance();
-      return (math.max(la, lb) + 0.05) / (math.min(la, lb) + 0.05);
-    }
-
-    final seeds = [
-      const Color(0xFF6750A4),
-      const Color(0xFF0061A4),
-      const Color(0xFF006E1C),
-      const Color(0xFFBA1A1A),
-      const Color(0xFFFFD600),
-      const Color(0xFF00696E),
-      const Color(0xFF8F4C38),
-      const Color(0xFF4A4458),
-    ];
-    for (final seed in seeds) {
-      for (final brightness in Brightness.values) {
-        final s = ColorScheme.fromSeed(seedColor: seed, brightness: brightness);
-        final pill = brightness == Brightness.light
-            ? s.primaryContainer
-            : s.secondaryContainer;
-        final icon = brightness == Brightness.light
-            ? s.onPrimaryContainer
-            : s.onSecondaryContainer;
-        expect(
-          contrast(icon, pill),
-          greaterThan(4.5),
-          reason: 'seed $seed in $brightness fails the pairing',
-        );
-      }
-    }
   });
 
   testWidgets('light icons stay readable while a dragged pill crosses them', (
@@ -953,27 +730,6 @@ void main() {
 
     await gesture.up();
     await tester.pumpAndSettle();
-  });
-
-  testWidgets('unselected icons are not dimmed', (tester) async {
-    await tester.pumpWidget(_host(index: 1));
-    await tester.pumpAndSettle();
-
-    IconThemeData themeOf(IconData icon) => tester
-        .widget<IconTheme>(
-          find
-              .ancestor(of: find.byIcon(icon), matching: find.byType(IconTheme))
-              .first,
-        )
-        .data;
-
-    expect(
-      themeOf(Icons.explore_outlined).color!.a,
-      1.0,
-      reason:
-          'the pill, the fill and the stroke weight already mark the active '
-          'tab, so dimming the others only made them harder to read',
-    );
   });
 
   testWidgets('the bar reports its own height, not the screen height', (

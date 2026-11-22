@@ -606,66 +606,55 @@ class _UnknownPricingDivider extends CustomPainter {
 Future<void> showSourceWebsiteInfo(BuildContext context, Source source) {
   final metadata = source.catalogMetadata;
   final host = Uri.tryParse(source.baseUrl ?? '')?.host ?? '';
-  final title = source.name ?? context.l10n.source_information;
-  final step = NodeLaneBubbleFlow.contains(context);
-  final panel = Builder(
-    builder: (context) {
-      final l = context.l10n;
-      return NodeLaneBubblePanel(
-        title: title,
-        closeButton: step
-            ? BackButton(onPressed: () => Navigator.maybePop(context))
-            : null,
-        child: ListView(
-          shrinkWrap: true,
-          padding: NodeLaneTokens.pagePadding,
-          children: [
-            if (host.isNotEmpty)
-              SelectableText(host, style: NodeLaneTokens.of(context).secondary),
-            if (source.notes?.trim().isNotEmpty == true)
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  vertical: NodeLaneTokens.space8,
+  final l = context.l10n, title = l.source_website_info;
+  return NodeLaneBubbleFlow.open<void>(
+    context,
+    title: title,
+    child: NodeLaneBubblePanel(
+      title: title,
+      subtitle: source.name,
+      child: ListView(
+        primary: false,
+        shrinkWrap: true,
+        padding: NodeLaneTokens.bubbleContentPadding,
+        children: [
+          if (host.isNotEmpty)
+            SelectableText(host, style: NodeLaneTokens.of(context).secondary),
+          if (source.notes?.trim().isNotEmpty == true)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: NodeLaneTokens.space8,
+              ),
+              child: SelectableText(
+                source.notes!,
+                style: NodeLaneTokens.of(context).readerSecondary,
+              ),
+            ),
+          NodeLaneGroupSurface(
+            children: [
+              for (final entry in [
+                (l.source_region, metadata.regionLabels(l)),
+                (l.source_format, metadata.formatLabels(l)),
+                (l.source_creation, metadata.creationLabels(l)),
+              ])
+                NodeLaneRow(
+                  title: entry.$1,
+                  subtitle: entry.$2.isEmpty
+                      ? l.source_unspecified
+                      : entry.$2.join(l.list_separator),
                 ),
-                child: SelectableText(
-                  source.notes!,
-                  style: NodeLaneTokens.of(context).readerSecondary,
+              NodeLaneRow(
+                title: l.source_pricing,
+                subtitle: sourcePricingLabel(
+                  metadata.pricing,
+                  source.itemType,
+                  l,
                 ),
               ),
-            NodeLaneGroupSurface(
-              children: [
-                for (final entry in [
-                  (l.source_region, metadata.regionLabels(l)),
-                  (l.source_format, metadata.formatLabels(l)),
-                  (l.source_creation, metadata.creationLabels(l)),
-                ])
-                  NodeLaneRow(
-                    title: entry.$1,
-                    subtitle: entry.$2.isEmpty
-                        ? l.source_unspecified
-                        : entry.$2.join(l.list_separator),
-                  ),
-                NodeLaneRow(
-                  title: l.source_pricing,
-                  subtitle: sourcePricingLabel(
-                    metadata.pricing,
-                    source.itemType,
-                    l,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    },
+            ],
+          ),
+        ],
+      ),
+    ),
   );
-  return step
-      ? NodeLaneBubbleFlow.showPanel(context, panel)
-      : showNodeLaneBubble<void>(
-          context,
-          label: title,
-          width: NodeLaneTokens.bubbleFormWidth,
-          child: panel,
-        );
 }

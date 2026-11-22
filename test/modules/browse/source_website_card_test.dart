@@ -248,10 +248,9 @@ void main() {
       expect([opened, updated], [0, 1]);
       await tester.tap(find.text('+4'));
       await tester.pumpAndSettle();
-      expect(find.byType(BottomSheet), findsNothing);
       expect(find.text('日漫、韩漫、国漫、欧美漫画'), findsOneWidget);
       expect(opened, 0);
-      Navigator.of(tester.element(find.text('地区'))).pop();
+      await tester.tap(find.byTooltip('关闭'));
       await tester.pumpAndSettle();
       await tester.tap(find.text(source.name!));
       await tester.longPress(find.text(source.name!));

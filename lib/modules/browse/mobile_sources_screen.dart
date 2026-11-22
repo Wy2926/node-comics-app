@@ -487,7 +487,11 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
           (_WebsiteAction.browser, l.open_in_browser, icons.browser),
         (_WebsiteAction.info, l.source_website_info, icons.info),
         if (source.isAdded == true)
-          (_WebsiteAction.settings, l.sources_settings, icons.settings),
+          (
+            _WebsiteAction.settings,
+            l.settings_source_preferences,
+            icons.settings,
+          ),
       ],
       onSelected: (menu, action) async {
         if (!mounted) return;

@@ -146,166 +146,146 @@ class _MobileCategoriesState extends ConsumerState<MobileCategories> {
           ..sort((a, b) => (a.pos ?? 0).compareTo(b.pos ?? 0)));
     final ready =
         !_busy && !_failed && state.asData != null && !state.isLoading;
-    final local = NodeLaneBubbleFlow.contains(context);
-    return PopScope(
-      canPop: !_busy,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          NodeLaneBubbleHeading(
-            l.bookshelf_manage_categories,
-            subtitle: widget.itemType.localized(l),
-            actions: [
-              NodeLaneIconButton(
-                tooltip: l.add_category,
-                icon: icons.add,
-                onPressed: ready ? _name : null,
-              ),
-            ],
-            closeButton: NodeLaneIconButton(
-              tooltip: local
-                  ? MaterialLocalizations.of(context).backButtonTooltip
-                  : l.close,
-              icon: local ? icons.back : icons.close,
-              onPressed: _busy ? null : () => Navigator.maybePop(context),
-            ),
-          ),
-          Flexible(
-            child: ReorderableListView.builder(
-              key: PageStorageKey(('category-manager', widget.itemType)),
-              shrinkWrap: true,
-              padding: NodeLaneTokens.bubbleContentPadding,
-              buildDefaultDragHandles: false,
-              header: _failed || state.hasError
-                  ? Column(
-                      children: [
-                        Text(l.failed),
-                        TextButton(
-                          onPressed: _busy
-                              ? null
-                              : () => _run(() async {
-                                  ref.invalidate(_provider);
-                                  await ref.read(_provider.future);
-                                  if (mounted) {
-                                    setState(() => _failed = false);
-                                  }
-                                }),
-                          child: Text(l.retry),
-                        ),
-                      ],
-                    )
-                  : state.isLoading
-                  ? const Center(child: NodeLaneProgress())
-                  : entries.isEmpty
-                  ? Text(l.library_no_category_exist, style: t.readerSecondary)
-                  : null,
-              itemCount: entries.length,
-              itemBuilder: (_, i) {
-                final c = entries[i], open = c.id == _expanded;
-                return Padding(
-                  key: ValueKey('category-${c.id}'),
-                  padding: const EdgeInsets.only(bottom: NodeLaneTokens.space8),
-                  child: NodeLaneGroupSurface(
-                    outlined: true,
-                    children: [
-                      Row(
-                        children: [
-                          ReorderableDragStartListener(
-                            index: i,
-                            enabled: ready,
-                            child: SizedBox.square(
-                              dimension: NodeLaneTokens.minTapTarget,
-                              child: Icon(icons.reorder, color: t.muted),
-                            ),
-                          ),
-                          Expanded(
-                            child: Semantics(
-                              expanded: open,
-                              child: NodeLaneRow(
-                                title: c.name ?? '',
-                                subtitle: (c.hide ?? false)
-                                    ? l.mobile_category_hidden
-                                    : null,
-                                trailing: Icon(
-                                  open ? icons.up : icons.down,
-                                  size: NodeLaneTokens.smallIconSize,
-                                  color: t.muted,
-                                ),
-                                enabled: ready,
-                                onTap: () => setState(
-                                  () => _expanded = open ? null : c.id,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (open) ...[
-                        NodeLaneRow(
-                          title: l.rename_category,
-                          icon: icons.edit,
-                          enabled: ready,
-                          onTap: () => _name(c),
-                        ),
-                        NodeLaneSwitchRow(
-                          title: l.mobile_category_visible,
-                          icon: icons.visible,
-                          value: !(c.hide ?? false),
-                          onChanged: ready
-                              ? (v) => _run(
-                                  () => widget.onSave(_copy(c)..hide = !v),
-                                )
-                              : null,
-                        ),
-                        NodeLaneSwitchRow(
-                          title: l.mobile_category_updates,
-                          icon: icons.refresh,
-                          value: c.shouldUpdate ?? true,
-                          onChanged: ready
-                              ? (v) => _run(
-                                  () =>
-                                      widget.onSave(_copy(c)..shouldUpdate = v),
-                                )
-                              : null,
-                        ),
-                        NodeLaneRow(
-                          title: l.delete_category,
-                          icon: icons.delete,
-                          destructive: true,
-                          enabled: ready,
-                          onTap: () => _run(() async {
-                            final confirmed = await showNodeLaneConfirmation(
-                              context,
-                              title: l.delete_category,
-                              message: l.delete_category_msg(c.name ?? ''),
-                              confirmLabel: l.delete,
-                              destructive: true,
-                            );
-                            if (!confirmed || !mounted) return;
-                            await widget.onRemove(c);
-                            if (mounted) setState(() => _expanded = null);
+    return NodeLaneBubblePanel(
+      title: l.bookshelf_manage_categories,
+      subtitle: widget.itemType.localized(l),
+      dismissEnabled: !_busy,
+      actions: [
+        NodeLaneIconButton(
+          tooltip: l.add_category,
+          icon: icons.add,
+          style: NodeLaneIconButtonStyle.plain,
+          onPressed: ready ? _name : null,
+        ),
+      ],
+      child: ReorderableListView.builder(
+        key: PageStorageKey(('category-manager', widget.itemType)),
+        shrinkWrap: true,
+        padding: NodeLaneTokens.bubbleContentPadding,
+        buildDefaultDragHandles: false,
+        header: _failed || state.hasError
+            ? Column(
+                children: [
+                  Text(l.failed),
+                  TextButton(
+                    onPressed: _busy
+                        ? null
+                        : () => _run(() async {
+                            ref.invalidate(_provider);
+                            await ref.read(_provider.future);
+                            if (mounted) {
+                              setState(() => _failed = false);
+                            }
                           }),
-                        ),
-                      ],
-                    ],
+                    child: Text(l.retry),
                   ),
-                );
-              },
-              onReorderItem: (from, to) {
-                if (!ready || from == to) return;
-                final next = entries.map(_copy).toList();
-                next.insert(to, next.removeAt(from));
-                final now = DateTime.now().millisecondsSinceEpoch;
-                for (var i = 0; i < next.length; i++) {
-                  next[i].pos = i;
-                  next[i].updatedAt = now;
-                }
-                _pendingOrder = next;
-                _run(() => widget.onReorder(next));
-              },
+                ],
+              )
+            : state.isLoading
+            ? const Center(child: NodeLaneProgress())
+            : entries.isEmpty
+            ? Text(l.library_no_category_exist, style: t.readerSecondary)
+            : null,
+        itemCount: entries.length,
+        itemBuilder: (_, i) {
+          final c = entries[i], open = c.id == _expanded;
+          return Padding(
+            key: ValueKey('category-${c.id}'),
+            padding: const EdgeInsets.only(bottom: NodeLaneTokens.space8),
+            child: NodeLaneGroupSurface(
+              outlined: true,
+              children: [
+                Row(
+                  children: [
+                    ReorderableDragStartListener(
+                      index: i,
+                      enabled: ready,
+                      child: SizedBox.square(
+                        dimension: NodeLaneTokens.minTapTarget,
+                        child: Icon(icons.reorder, color: t.muted),
+                      ),
+                    ),
+                    Expanded(
+                      child: Semantics(
+                        expanded: open,
+                        child: NodeLaneRow(
+                          title: c.name ?? '',
+                          subtitle: (c.hide ?? false)
+                              ? l.mobile_category_hidden
+                              : null,
+                          trailing: Icon(
+                            open ? icons.up : icons.down,
+                            size: NodeLaneTokens.smallIconSize,
+                            color: t.muted,
+                          ),
+                          enabled: ready,
+                          onTap: () =>
+                              setState(() => _expanded = open ? null : c.id),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                if (open) ...[
+                  NodeLaneRow(
+                    title: l.rename_category,
+                    icon: icons.edit,
+                    enabled: ready,
+                    onTap: () => _name(c),
+                  ),
+                  NodeLaneSwitchRow(
+                    title: l.mobile_category_visible,
+                    icon: icons.visible,
+                    value: !(c.hide ?? false),
+                    onChanged: ready
+                        ? (v) => _run(() => widget.onSave(_copy(c)..hide = !v))
+                        : null,
+                  ),
+                  NodeLaneSwitchRow(
+                    title: l.mobile_category_updates,
+                    icon: icons.refresh,
+                    value: c.shouldUpdate ?? true,
+                    onChanged: ready
+                        ? (v) => _run(
+                            () => widget.onSave(_copy(c)..shouldUpdate = v),
+                          )
+                        : null,
+                  ),
+                  NodeLaneRow(
+                    title: l.delete_category,
+                    icon: icons.delete,
+                    destructive: true,
+                    enabled: ready,
+                    onTap: () => _run(() async {
+                      final confirmed = await showNodeLaneConfirmation(
+                        context,
+                        title: l.delete_category,
+                        message: l.delete_category_msg(c.name ?? ''),
+                        confirmLabel: l.delete,
+                        destructive: true,
+                      );
+                      if (!confirmed || !mounted) return;
+                      await widget.onRemove(c);
+                      if (mounted) setState(() => _expanded = null);
+                    }),
+                  ),
+                ],
+              ],
             ),
-          ),
-        ],
+          );
+        },
+        onReorderItem: (from, to) {
+          if (!ready || from == to) return;
+          final next = entries.map(_copy).toList();
+          next.insert(to, next.removeAt(from));
+          final now = DateTime.now().millisecondsSinceEpoch;
+          for (var i = 0; i < next.length; i++) {
+            next[i].pos = i;
+            next[i].updatedAt = now;
+          }
+          _pendingOrder = next;
+          _run(() => widget.onReorder(next));
+        },
       ),
     );
   }
