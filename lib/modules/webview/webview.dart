@@ -12,7 +12,7 @@ import 'package:mangayomi/modules/more/settings/general/providers/general_state_
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/utils/constant.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -281,7 +281,7 @@ class _MangaWebViewState extends ConsumerState<MangaWebView> {
                                 : null,
                           ),
                           PopupMenuButton(
-                            popUpAnimationStyle: popupAnimationStyle,
+                            popUpAnimationStyle: NodeLaneMotion.style(context),
                             itemBuilder: (context) {
                               return [
                                 PopupMenuItem<int>(

@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 
 import 'dart:async';
 import 'dart:convert';
@@ -177,6 +178,7 @@ void main() {
           await showDialog<bool>(
             context: context,
             builder: (_) => MobileCategoryNameDialog(
+              itemType: ItemType.novel,
               initialName: 'Original',
               nameExists: (name) => name == 'Existing',
               onSave: (name) {
@@ -188,20 +190,11 @@ void main() {
         }),
       );
       await tap(tester, find.text('Open'));
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'OK'))
-            .onPressed,
-        isNull,
-      );
+      final save = find.widgetWithText(FilledButton, 'OK');
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
       await tester.enterText(find.byType(TextField), 'Existing');
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<FilledButton>(find.widgetWithText(FilledButton, 'OK'))
-            .onPressed,
-        isNull,
-      );
+      expect(tester.widget<FilledButton>(save).onPressed, isNull);
       await tap(tester, find.text('Cancel'));
       expect(writes, isEmpty);
       await tap(tester, find.text('Open'));
@@ -211,11 +204,12 @@ void main() {
       );
       await tester.enterText(find.byType(TextField), ' Existing ');
       await tester.pumpAndSettle();
-      await tap(tester, find.widgetWithText(FilledButton, 'OK'));
-      await tester.tap(
-        find.widgetWithText(FilledButton, 'OK'),
-        warnIfMissed: false,
+      expect(
+        find.text(' Existing ', findRichText: true).evaluate().length,
+        greaterThan(1),
       );
+      await tap(tester, save);
+      await tester.tap(save, warnIfMissed: false);
       await tester.binding.handlePopRoute();
       await tester.pump();
       expect(find.byType(MobileCategoryNameDialog), findsOneWidget);
@@ -228,7 +222,7 @@ void main() {
         ' Existing ',
       );
       pending = Completer<void>()..complete();
-      await tap(tester, find.widgetWithText(FilledButton, 'OK'));
+      await tap(tester, save);
       await tester.pumpAndSettle();
       expect(find.byType(MobileCategoryNameDialog), findsNothing);
       expect(writes, [' Existing ', ' Existing ']);
@@ -274,30 +268,24 @@ void main() {
       addTearDown(container.dispose);
       await start(
         tester,
-        MobileCategories(
-          types: [ItemType.manga, ItemType.novel],
-          initialType: ItemType.novel,
-          editing: true,
-          onCreate: (category) async => created.add(category),
-          onSave: (_) async => fail('No edit requested'),
-          onRemove: (_) async => fail('No removal requested'),
-          onReorder: (next) async {
-            reordered.add(next);
-            records = next;
-            events.add(next);
-          },
+        Scaffold(
+          body: MobileCategories(
+            itemType: ItemType.novel,
+            onCreate: (category) async => created.add(category),
+            onSave: (_) async => fail('No edit requested'),
+            onRemove: (_) async => fail('No removal requested'),
+            onReorder: (next) async {
+              reordered.add(next);
+              records = next;
+              events.add(next);
+            },
+          ),
         ),
         container: container,
       );
       await tester.pumpAndSettle();
-      expect(
-        tester
-            .widget<NodeLaneSegments<ItemType>>(
-              find.byType(NodeLaneSegments<ItemType>),
-            )
-            .value,
-        ItemType.novel,
-      );
+      expect(find.text('Novel'), findsOneWidget);
+      expect(find.byType(NodeLaneSegments<ItemType>), findsNothing);
       final row = find.byKey(const ValueKey('category-10'));
       final handle = find.descendant(
         of: row,
@@ -337,17 +325,10 @@ void main() {
       expect(created.single.forItemType, ItemType.novel);
       layout.value = (2.5, 0);
       await tester.pumpAndSettle();
-      await tap(
-        tester,
-        find.descendant(
-          of: find.byType(NodeLaneSegments<ItemType>),
-          matching: find.text('Manga'),
-        ),
-        delta: -250,
-      );
-      await tester.pumpAndSettle();
-      expect(requests, [ItemType.novel, ItemType.manga]);
-      expect(find.text('Novel first'), findsNothing);
+      expect(requests, [ItemType.novel]);
+      expect(find.text('Manga'), findsNothing);
+      await reveal(tester, find.text('Novel first'));
+      expect(find.text('Novel first'), findsOneWidget);
       expect(tester.takeException(), isNull);
     },
   );
@@ -383,11 +364,13 @@ void main() {
       await start(
         tester,
         launcher((context) async {
-          await Navigator.push<void>(
-            context,
-            MaterialPageRoute(
-              builder: (_) => MobileCategoryDetails(
-                category: original,
+          await showNodeLaneDialog<void>(
+            context: context,
+            builder: (_) => NodeLaneDialog(
+              child: MobileCategories(
+                itemType: ItemType.novel,
+                onCreate: (_) async => fail('No creation requested'),
+                onReorder: (_) async => fail('No reorder requested'),
                 onSave: (next) async {
                   writes.add(next);
                   await pending.future;
@@ -404,6 +387,7 @@ void main() {
         container: container,
       );
       await tap(tester, find.text('Open'));
+      await tap(tester, find.text('A category with a long name'));
       Finder toggle(String label) => find.descendant(
         of: find.widgetWithText(NodeLaneRow, label),
         matching: find.byType(NodeLaneSwitch),
@@ -420,9 +404,9 @@ void main() {
         isTrue,
       );
       await tap(tester, toggle('Show in library'));
-      await tester.pageBack();
+      await tester.binding.handlePopRoute();
       await tester.pump();
-      expect(find.byType(MobileCategoryDetails), findsOneWidget);
+      expect(find.byType(MobileCategories), findsOneWidget);
       expect(writes, hasLength(1));
       expect(original.hide, isNull);
       expect(

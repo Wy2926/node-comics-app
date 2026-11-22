@@ -105,7 +105,7 @@ class _MangaDetailsViewState extends ConsumerState<MangaDetailsView> {
     String oldSourceName,
   ) {
     final l10n = l10nLocalizations(context)!;
-    return showDialog<_DuplicateLibraryAction>(
+    return showNodeLaneDialog<_DuplicateLibraryAction>(
       context: context,
       builder: (ctx) => NodeLaneAlertDialog(
         title: Text(model.name ?? ''),

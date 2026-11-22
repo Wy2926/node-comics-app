@@ -10,20 +10,22 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/widgets/nodelane_brand_mark.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/main_view/main_screen.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
+import 'package:mangayomi/modules/main_view/providers/tv_mode_provider.dart';
 
-class MoreScreen extends ConsumerStatefulWidget {
+class MoreScreen extends ConsumerWidget {
   const MoreScreen({super.key});
 
   @override
-  ConsumerState<MoreScreen> createState() => MoreScreenState();
-}
-
-class MoreScreenState extends ConsumerState<MoreScreen> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (isMobile && !isTv) return const MobileMoreScreen();
     final l10n = l10nLocalizations(context)!;
     final hiddenItems = ref.watch(hideItemsStateProvider);
+    final animeOnly = ref.watch(animeOnlyTvModeProvider);
+    final categoryTypes = visibleItemTypes(hiddenItems)
+        .where((t) => !animeOnly || t == ItemType.anime);
     return Scaffold(
       body: SingleChildScrollView(
         padding: tvPageInsets.add(pageBottomInsets(context)),
@@ -35,16 +37,6 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
               child: NodeLaneBrandMark(size: 100),
             ),
             const Divider(),
-            // ListTile(
-            //   onTap: () {},
-            //   leading: const SizedBox(height: 40, child: Icon(Icons.cloud_off)),
-            //   subtitle: const Text('Filter all entries in your library'),
-            //   title: const Text('Donloaded only'),
-            //   trailing: Switch(
-            //     value: false,
-            //     onChanged: (value) {},
-            //   ),
-            // ),
             const DownloadedOnlyWidget(),
             const IncognitoModeWidget(),
             const Divider(),
@@ -66,17 +58,7 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
                 icon: Icons.download_outlined,
                 title: l10n.download_queue,
               ),
-            // Mass migration is otherwise only reachable from a manga's
-            // overflow menu, which the TV detail view does not have. It is a
-            // library-wide tool anyway: it lists every source in the library,
-            // and only uses a manga to float that source to the top. Seeded
-            // with anime because the TV build is anime-first; the per-source
-            // shortcut on the TV detail view covers the other libraries.
-            // Mass migration is otherwise only reachable from a manga's overflow
-            // menu, which the TV anime detail lacks. It is a library-wide tool
-            // (lists every source in the library), seeded with anime here since
-            // the TV build is anime-first; the TV detail's per-source shortcut
-            // covers the other libraries.
+            // TV has no detail overflow menu, so expose library-wide migration here.
             if (isTv)
               ListTileWidget(
                 onTap: () => context.push(
@@ -86,13 +68,15 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
                 icon: Icons.swap_horiz,
                 title: l10n.mass_migration_title,
               ),
-            ListTileWidget(
-              onTap: () {
-                context.push('/categories', extra: (false, 0));
-              },
-              icon: Icons.label_outline_rounded,
-              title: l10n.categories,
-            ),
+            if (categoryTypes.isNotEmpty)
+              ListTileWidget(
+                onTap: () => showCategoryManager(
+                  context,
+                  MainScreen.libraryForTools(context) ?? categoryTypes.first,
+                ),
+                icon: Icons.label_outline_rounded,
+                title: l10n.categories,
+              ),
             ListTileWidget(
               onTap: () {
                 context.push('/statistics');
@@ -129,11 +113,6 @@ class MoreScreenState extends ConsumerState<MoreScreen> {
               icon: Icons.info_outline,
               title: l10n.about,
             ),
-            // ListTileWidget(
-            //   onTap: () {},
-            //   icon: Icons.help_outline,
-            //   title: l10n.help,
-            // ),
           ],
         ),
       ),

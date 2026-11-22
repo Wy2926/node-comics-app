@@ -104,13 +104,12 @@ class _LibrarySettingsButton extends ConsumerStatefulWidget {
       _LibrarySettingsButtonState();
 }
 
-class _LibrarySettingsButtonState extends ConsumerState<_LibrarySettingsButton>
-    with SingleTickerProviderStateMixin {
+class _LibrarySettingsButtonState
+    extends ConsumerState<_LibrarySettingsButton> {
   bool _focused = false;
 
   void _open() => showLibrarySettingsSheet(
     context: context,
-    vsync: this,
     settings: widget.settings,
     itemType: ItemType.anime,
     entries: widget.entries,

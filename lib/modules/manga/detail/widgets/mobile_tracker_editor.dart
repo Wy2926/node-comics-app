@@ -121,7 +121,7 @@ class _MobileTrackerEditorState extends State<MobileTrackerEditor> {
     final max = (widget.track.totalChapter ?? 0) > 0
         ? widget.track.totalChapter!
         : 10000;
-    final selected = await showDialog<String>(
+    final selected = await showNodeLaneDialog<String>(
       context: context,
       builder: (_) => MobileSettingsTextDialog(
         title: widget.itemType == ItemType.manga

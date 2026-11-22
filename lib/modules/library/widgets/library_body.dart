@@ -16,6 +16,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -134,66 +135,76 @@ class LibraryBody extends ConsumerWidget {
                 (allMangaStream.asData?.value.isNotEmpty ?? false) ||
                 searchQuery.isNotEmpty;
             final searching = searchQuery.isNotEmpty;
-            return NodeLaneEmptyState(
-              scrollable: true,
-              icon: filtered
-                  ? NodeLaneIcons.of(context).search
-                  : NodeLaneIcons.of(context).manga,
-              title: filtered
-                  ? l10n.bookshelf_no_match_title
-                  : l10n.bookshelf_empty_title,
-              message: filtered
-                  ? l10n.bookshelf_no_match_hint
-                  : l10n.bookshelf_empty_hint,
-              action: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Builder(
-                    builder: (anchor) => FilledButton(
-                      onPressed: filtered
-                          ? (searching
-                                ? onClearSearch
-                                : () => onAdjustFilters?.call(anchor))
-                          : () {
-                              ref
-                                  .read(browseInitialTabProvider.notifier)
-                                  .request(
-                                    BrowseTab(itemType, BrowseTabKind.sources),
-                                  );
-                              context.go('/browse');
-                            },
-                      child: Text(
-                        filtered
+            return NodeLaneContentMotion(
+              value: filtered ? 'no-matches' : 'empty-shelf',
+              child: NodeLaneEmptyState(
+                scrollable: true,
+                icon: filtered
+                    ? NodeLaneIcons.of(context).search
+                    : NodeLaneIcons.of(context).manga,
+                title: filtered
+                    ? l10n.bookshelf_no_match_title
+                    : l10n.bookshelf_empty_title,
+                message: filtered
+                    ? l10n.bookshelf_no_match_hint
+                    : l10n.bookshelf_empty_hint,
+                action: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Builder(
+                      builder: (anchor) => FilledButton(
+                        onPressed: filtered
                             ? (searching
-                                  ? l10n.bookshelf_clear_query
-                                  : l10n.filter)
-                            : l10n.bookshelf_browse_sources,
+                                  ? onClearSearch
+                                  : () => onAdjustFilters?.call(anchor))
+                            : () {
+                                ref
+                                    .read(browseInitialTabProvider.notifier)
+                                    .request(
+                                      BrowseTab(
+                                        itemType,
+                                        BrowseTabKind.sources,
+                                      ),
+                                    );
+                                context.go('/browse');
+                              },
+                        child: Text(
+                          filtered
+                              ? (searching
+                                    ? l10n.bookshelf_clear_query
+                                    : l10n.filter)
+                              : l10n.bookshelf_browse_sources,
+                        ),
                       ),
                     ),
-                  ),
-                  if (!filtered || (searching && onAdjustFilters != null)) ...[
-                    const SizedBox(height: NodeLaneTokens.space8),
-                    if (filtered)
-                      Builder(
-                        builder: (anchor) => TextButton(
-                          onPressed: () => onAdjustFilters!(anchor),
-                          child: Text(l10n.filter),
+                    if (!filtered ||
+                        (searching && onAdjustFilters != null)) ...[
+                      const SizedBox(height: NodeLaneTokens.space8),
+                      if (filtered)
+                        Builder(
+                          builder: (anchor) => TextButton(
+                            onPressed: () => onAdjustFilters!(anchor),
+                            child: Text(l10n.filter),
+                          ),
+                        )
+                      else
+                        Builder(
+                          builder: (anchor) => NodeLaneSecondaryButton(
+                            onPressed: () =>
+                                showImportLocalDialog(anchor, itemType),
+                            child: Text(l10n.import_local_file),
+                          ),
                         ),
-                      )
-                    else
-                      Builder(
-                        builder: (anchor) => NodeLaneSecondaryButton(
-                          onPressed: () =>
-                              showImportLocalDialog(anchor, itemType),
-                          child: Text(l10n.import_local_file),
-                        ),
-                      ),
+                    ],
                   ],
-                ],
+                ),
               ),
             );
           }
-          return Center(child: Text(l10n.empty_library));
+          return NodeLaneContentMotion(
+            value: null,
+            child: Center(child: Text(l10n.empty_library)),
+          );
         }
 
         final entriesManga = reverse
@@ -206,40 +217,40 @@ class LibraryBody extends ConsumerWidget {
                     )
                   : entries.reversed.toList()
             : entries;
-        return RefreshIndicator(
-          onRefresh: () async {
-            await updateLibrary(
-              ref: ref,
-              context: context,
-              mangaList: data,
-              itemType: itemType,
-            );
-          },
-          child: displayType == DisplayType.list
-              ? LibraryListViewWidget(
-                  entriesManga: entriesManga,
-                  sourceBadge: sourceBadge,
-                  continueReaderBtn: continueReaderBtn,
-                  downloadedChapter: downloadedChapter,
-                  language: language,
-                  mangaIdsList: mangaIdsList,
-                  localSource: localSource,
-                  settings: settings,
-                )
-              : LibraryGridViewWidget(
-                  entriesManga: entriesManga,
-                  isCoverOnlyGrid: !(displayType == DisplayType.compactGrid),
-                  isComfortableGrid: displayType == DisplayType.comfortableGrid,
-                  continueReaderBtn: continueReaderBtn,
-                  downloadedChapter: downloadedChapter,
-                  language: language,
-                  sourceBadge: sourceBadge,
-                  mangaIdsList: mangaIdsList,
-                  localSource: localSource,
-                  itemType: itemType,
-                  settings: settings,
-                ),
+        final books = displayType == DisplayType.list
+            ? LibraryListViewWidget(
+                entriesManga: entriesManga,
+                sourceBadge: sourceBadge,
+                continueReaderBtn: continueReaderBtn,
+                downloadedChapter: downloadedChapter,
+                language: language,
+                mangaIdsList: mangaIdsList,
+                localSource: localSource,
+                settings: settings,
+              )
+            : LibraryGridViewWidget(
+                entriesManga: entriesManga,
+                isCoverOnlyGrid: !(displayType == DisplayType.compactGrid),
+                isComfortableGrid: displayType == DisplayType.comfortableGrid,
+                continueReaderBtn: continueReaderBtn,
+                downloadedChapter: downloadedChapter,
+                language: language,
+                sourceBadge: sourceBadge,
+                mangaIdsList: mangaIdsList,
+                localSource: localSource,
+                itemType: itemType,
+                settings: settings,
+              );
+        final results = RefreshIndicator(
+          onRefresh: () => updateLibrary(
+            ref: ref,
+            context: context,
+            mangaList: data,
+            itemType: itemType,
+          ),
+          child: books,
         );
+        return NodeLaneContentMotion(value: displayType, child: results);
       },
       error: (error, _) => ErrorText(error),
       loading: () => const NodeLaneEmptyState.loading(),

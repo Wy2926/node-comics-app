@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/eval/mihon/service.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
@@ -29,7 +30,7 @@ import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:mangayomi/utils/extensions/string_extensions.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
@@ -280,11 +281,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
         context.findAncestorWidgetOfExactType<SourceBrowsePanes>() != null;
     if (value == 0) {
       final genre = widget.manga.genre![index];
-      final path = switch (widget.manga.itemType) {
-        ItemType.manga => '/MangaLibrary',
-        ItemType.anime => '/AnimeLibrary',
-        ItemType.novel => '/NovelLibrary',
-      };
+      final path = libraryRoutes[widget.manga.itemType]!;
       if (inPane) {
         context.push(path, extra: genre);
       } else {
@@ -598,7 +595,7 @@ class _MangaInfoHeaderState extends ConsumerState<MangaInfoHeader> {
   Future<void> _editLocalArchiveInfos() async {
     final l = context.l10n, book = widget.manga;
     var name = book.name ?? '', description = book.description ?? '';
-    final save = await showDialog<bool>(
+    final save = await showNodeLaneDialog<bool>(
       context: context,
       builder: (dialog) => NodeLaneAlertDialog(
         title: Text(l.edit),
@@ -851,7 +848,7 @@ class DetailGenreChip extends StatelessWidget {
       child: SizedBox(
         height: 30,
         child: PopupMenuButton<int>(
-          popUpAnimationStyle: popupAnimationStyle,
+          popUpAnimationStyle: NodeLaneMotion.style(context),
           itemBuilder: (context) => [
             // These are the only two menu rows in the app that set their own
             // height, and 40 is under the minimum target on Material and Apple.

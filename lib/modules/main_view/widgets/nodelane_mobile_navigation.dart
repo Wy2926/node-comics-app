@@ -10,14 +10,14 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'ios_native_tab_bar.dart';
 import 'mobile_navigation_destinations.dart';
 
-/// Presentation state only: the router and persisted navigation preferences
-/// remain owned by MainScreen. Switching away remembers the last library type.
-class NodeLaneMobileNavigation extends StatefulWidget {
+/// Emits tab IDs; the shell resolves the grouped library to its current shelf.
+class NodeLaneMobileNavigation extends StatelessWidget {
   const NodeLaneMobileNavigation({
     super.key,
     required this.routes,
@@ -38,31 +38,8 @@ class NodeLaneMobileNavigation extends StatefulWidget {
   final Widget child;
 
   @override
-  State<NodeLaneMobileNavigation> createState() =>
-      _NodeLaneMobileNavigationState();
-}
-
-class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
-  String? _libraryRoute;
-
-  void _select(String destination) {
-    if (destination == mobileLibraryTab) {
-      final libraries = widget.routes.where(mobileLibraryRoutes.contains);
-      if (libraries.isEmpty) return;
-      widget.onSelected(
-        libraries.contains(_libraryRoute) ? _libraryRoute! : libraries.first,
-      );
-    } else {
-      widget.onSelected(destination);
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (mobileLibraryRoutes.contains(widget.location)) {
-      _libraryRoute = widget.location;
-    }
-    final rail = !widget.nativeIos && context.isAndroidTablet;
+    final rail = !nativeIos && context.isAndroidTablet;
     final navigation = _navigation(context, rail);
     final shell = FloatingNavigationScope(
       enabled: !rail,
@@ -78,7 +55,7 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
                 left: false,
                 right: false,
                 bottom: rail,
-                child: widget.child,
+                child: child,
               ),
             ),
           ],
@@ -88,7 +65,7 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
             : NodeLaneNoticeAvoidance(child: navigation),
       ),
     );
-    if (widget.nativeIos) return shell;
+    if (nativeIos) return shell;
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -102,18 +79,18 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
   }
 
   Widget _navigation(BuildContext context, bool rail) {
-    if (widget.routes.isEmpty) {
+    if (routes.isEmpty) {
       return const SizedBox.shrink();
     }
     final height =
-        (widget.nativeIos
+        (nativeIos
             ? 64.0
             : NodeLaneFlutterTabBar.barHeight(
                     MediaQuery.textScalerOf(context),
                   ) +
                   NodeLaneTokens.space8 * 2) +
         MediaQuery.viewPaddingOf(context).bottom;
-    if (!widget.visible) {
+    if (!visible) {
       // Pushed pages cover the shell. Keep its layout stable while offstage so
       // retained library scroll positions are not clamped to a shorter extent.
       if (rail) {
@@ -124,14 +101,14 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
           child: SizedBox(width: NodeLaneTokens.navigationRailWidth),
         );
       }
-      return SizedBox(height: widget.maintainSpace ? height : 0);
+      return SizedBox(height: maintainSpace ? height : 0);
     }
     final l10n = context.l10n;
     final colors = NodeLaneTokens.of(context);
     final icons = NodeLaneIcons.of(context);
-    final grouped = groupedMobileRoutes(widget.routes);
-    final visible = rail ? grouped : visibleMobileTabs(grouped);
-    final selected = selectedMobileTab(visible, widget.location);
+    final grouped = groupedMobileRoutes(routes);
+    final tabs = rail ? grouped : visibleMobileTabs(grouped);
+    final selected = selectedMobileTab(tabs, location);
     MobileTabItem item(String route) {
       final (
         label,
@@ -187,18 +164,15 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
         badge: route == mobileOverflowTab
             ? grouped
                   .skip(4)
-                  .fold(
-                    0,
-                    (total, route) => total + (widget.badges[route] ?? 0),
-                  )
-            : widget.badges[route] ?? 0,
+                  .fold(0, (total, route) => total + (badges[route] ?? 0))
+            : badges[route] ?? 0,
       );
     }
 
-    Future<void> onSelected(int index) async {
-      final route = visible[index];
+    Future<void> selectTab(int index) async {
+      final route = tabs[index];
       if (route != mobileOverflowTab) {
-        _select(route);
+        onSelected(route);
         return;
       }
       final destination = await showNodeLaneCatalogSheet<String>(
@@ -217,11 +191,11 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
                       icon: item(route).icon,
                       title: item(route).label,
                       selected:
-                          route == widget.location ||
+                          route == location ||
                           route == mobileLibraryTab &&
-                              mobileLibraryRoutes.contains(widget.location),
-                      value: (widget.badges[route] ?? 0) > 0
-                          ? '${widget.badges[route]}'
+                              libraryRoutes.containsValue(location),
+                      value: (badges[route] ?? 0) > 0
+                          ? '${badges[route]}'
                           : null,
                       onTap: () => Navigator.pop(context, route),
                     ),
@@ -231,11 +205,11 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
           ),
         ),
       );
-      if (mounted && destination != null) _select(destination);
+      if (context.mounted && destination != null) onSelected(destination);
     }
 
-    final items = visible.map(item).toList();
-    if (widget.nativeIos) {
+    final items = tabs.map(item).toList();
+    if (nativeIos) {
       return SizedBox(
         height: height,
         child: IosNativeTabBar(
@@ -243,7 +217,7 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
           selectedIndex: selected,
           accent: colors.accent,
           dark: Theme.of(context).brightness == Brightness.dark,
-          onSelected: onSelected,
+          onSelected: selectTab,
         ),
       );
     }
@@ -251,7 +225,7 @@ class _NodeLaneMobileNavigationState extends State<NodeLaneMobileNavigation> {
       rail: rail,
       items: items,
       selectedIndex: selected,
-      onSelected: onSelected,
+      onSelected: selectTab,
     );
   }
 }

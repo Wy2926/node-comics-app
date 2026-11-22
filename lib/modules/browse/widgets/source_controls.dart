@@ -4,6 +4,7 @@ import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_picker.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_text_dialog.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -40,7 +41,7 @@ Future<T?> showSourceChoice<T>(
       useRootNavigator: true,
       positionBuilder: (_, _) => row.attached ? position() : initial,
       semanticLabel: title,
-      popUpAnimationStyle: NodeLaneMotion.menu(context),
+      popUpAnimationStyle: NodeLaneMotion.style(context),
       items: [
         for (final o in options)
           CheckedPopupMenuItem<T>(
@@ -181,7 +182,7 @@ Future<String?> showSourceTextEditor(
   String? description,
   required String initialValue,
   bool allowEmpty = true,
-}) => showDialog<String>(
+}) => showNodeLaneDialog<String>(
   context: context,
   useRootNavigator: !NodeLaneBubbleFlow.contains(context),
   builder: (_) => MobileSettingsTextDialog(

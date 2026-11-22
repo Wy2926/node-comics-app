@@ -9,7 +9,7 @@ import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart'
 import 'package:mangayomi/modules/widgets/tv_menu.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
@@ -41,11 +41,19 @@ class DetailAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selecting = ref.watch(isLongPressedStateProvider);
+    return NodeLaneContentMotion(
+      value: selecting,
+      reverse: !selecting,
+      child: _bar(context, ref, selecting),
+    );
+  }
+
+  Widget _bar(BuildContext context, WidgetRef ref, bool isLongPressed) {
     final l10n = l10nLocalizations(context)!;
     final mobile = isMobile && !isTv;
     final itemType = manga.itemType;
     final isLocalArchive = manga.isLocalArchive ?? false;
-    final isLongPressed = ref.watch(isLongPressedStateProvider);
     final chapterList = ref.watch(chaptersListStateProvider);
     final mobileManga = mobile && itemType == ItemType.manga;
 
@@ -74,38 +82,38 @@ class DetailAppBar extends ConsumerWidget {
                 .isNotEmpty ??
             false);
     if (mobile) {
-      if (isLongPressed) {
-        return nodeLaneSelectionAppBar(
-          context,
-          title: itemType == ItemType.anime
-              ? l10n.bookshelf_selected_count(chapterList.length)
-              : l10n.chapter_selected_count(chapterList.length),
-          cancelLabel: l10n.cancel,
-          selectAllLabel: l10n.bookshelf_select_all,
-          invertLabel: l10n.bookshelf_invert_selection,
-          onCancel: cancelSelection,
-          onSelectAll: chapters.isEmpty ? null : selectAll,
-          onInvert: chapters.isEmpty ? null : invertSelection,
-        );
-      }
-      return nodeLaneAppBar(
-        context,
-        title: position == DetailHeaderPosition.pastCover
-            ? manga.name ?? ''
-            : '',
-        titleStyle: NodeLaneTokens.of(context).readerLabel,
-        actions: [
-          MobileMangaDetailActionsButton(
-            key: ValueKey(manga.id),
-            title: mobileManga ? null : l10n.more,
-            bookTitle: manga.name ?? '',
-            localArchive: isLocalArchive,
-            favorite:
-                manga.favorite == true && (mobileManga || checkCategoryList),
-            onSelected: onOverflowAction,
-          ),
-        ],
-      );
+      return isLongPressed
+          ? nodeLaneSelectionAppBar(
+              context,
+              title: itemType == ItemType.anime
+                  ? l10n.bookshelf_selected_count(chapterList.length)
+                  : l10n.chapter_selected_count(chapterList.length),
+              cancelLabel: l10n.cancel,
+              selectAllLabel: l10n.bookshelf_select_all,
+              invertLabel: l10n.bookshelf_invert_selection,
+              onCancel: cancelSelection,
+              onSelectAll: chapters.isEmpty ? null : selectAll,
+              onInvert: chapters.isEmpty ? null : invertSelection,
+            )
+          : nodeLaneAppBar(
+              context,
+              title: position == DetailHeaderPosition.pastCover
+                  ? manga.name ?? ''
+                  : '',
+              titleStyle: NodeLaneTokens.of(context).readerLabel,
+              actions: [
+                MobileMangaDetailActionsButton(
+                  key: ValueKey(manga.id),
+                  title: mobileManga ? null : l10n.more,
+                  bookTitle: manga.name ?? '',
+                  localArchive: isLocalArchive,
+                  favorite:
+                      manga.favorite == true &&
+                      (mobileManga || checkCategoryList),
+                  onSelected: onOverflowAction,
+                ),
+              ],
+            );
     }
 
     final isNotFiltering = ref.watch(
@@ -199,7 +207,7 @@ class DetailAppBar extends ConsumerWidget {
                 PopupMenuButton(
                   tooltip: l10n.more,
                   icon: const Icon(Icons.more_vert),
-                  popUpAnimationStyle: popupAnimationStyle,
+                  popUpAnimationStyle: NodeLaneMotion.style(context),
                   itemBuilder: (_) => [
                     for (final (id, label) in entries)
                       PopupMenuItem<int>(value: id, child: Text(label)),

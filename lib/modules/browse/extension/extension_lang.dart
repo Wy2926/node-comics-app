@@ -5,7 +5,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/source_repository.dart';
 import 'package:mangayomi/modules/browse/extension/widgets/extension_lang_list_tile_widget.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -18,7 +18,7 @@ class ExtensionsLang extends ConsumerWidget {
     final l10n = l10nLocalizations(context)!;
     final actions = <Widget>[
       PopupMenuButton(
-        popUpAnimationStyle: popupAnimationStyle,
+        popUpAnimationStyle: NodeLaneMotion.style(context),
         itemBuilder: (context) {
           return [
             PopupMenuItem<int>(value: 0, child: Text(l10n.enable_all)),
@@ -26,11 +26,7 @@ class ExtensionsLang extends ConsumerWidget {
           ];
         },
         onSelected: (value) {
-          bool enable = true;
-          if (value == 0) {
-          } else if (value == 1) {
-            enable = false;
-          }
+          final enable = value == 0;
           final sources = sourceRepository.getByItemType(itemType);
           final now = DateTime.now().millisecondsSinceEpoch;
           for (var source in sources) {

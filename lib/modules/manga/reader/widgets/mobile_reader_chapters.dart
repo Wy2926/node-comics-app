@@ -13,6 +13,7 @@ import 'package:mangayomi/modules/manga/reader/reader_view.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/date.dart';
 import 'package:mangayomi/utils/extensions/manga_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -57,6 +58,7 @@ class _MobileReaderChaptersButtonState
       final chapters = owner.manga.value!.getSortedFilteredChapters();
       final selected = await showModalBottomSheet<Chapter>(
         context: context,
+        sheetAnimationStyle: NodeLaneMotion.style(context),
         useRootNavigator: true,
         isScrollControlled: true,
         useSafeArea: true,

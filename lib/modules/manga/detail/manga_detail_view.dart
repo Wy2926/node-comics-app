@@ -65,8 +65,7 @@ class MangaDetailView extends ConsumerStatefulWidget {
   ConsumerState<MangaDetailView> createState() => _MangaDetailViewState();
 }
 
-class _MangaDetailViewState extends ConsumerState<MangaDetailView>
-    with TickerProviderStateMixin {
+class _MangaDetailViewState extends ConsumerState<MangaDetailView> {
   @override
   void initState() {
     super.initState();
@@ -506,7 +505,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       }
     } catch (_) {
       if (mounted) {
-        await showDialog<void>(
+        await showNodeLaneDialog<void>(
           context: context,
           builder: (context) => NodeLaneAlertDialog(
             content: Text(context.l10n.chapter_action_incomplete),
@@ -651,7 +650,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                     pluralEntryType,
                     mediaType,
                   );
-                  showDialog(
+                  showNodeLaneDialog(
                     context: context,
                     builder: (context) {
                       return AlertDialog(
@@ -795,7 +794,7 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
                       Expanded(
                         child: ElevatedButton(
                           onPressed: () {
-                            showDialog(
+                            showNodeLaneDialog(
                               context: context,
                               builder: (context) {
                                 return Consumer(
@@ -1003,7 +1002,6 @@ class _MangaDetailViewState extends ConsumerState<MangaDetailView>
       tabs: [for (final label in labels) Tab(text: label)],
       children: children,
       context: context,
-      vsync: this,
     );
   }
 

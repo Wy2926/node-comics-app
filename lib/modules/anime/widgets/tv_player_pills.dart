@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -163,7 +164,7 @@ class _SpeedPill extends StatelessWidget {
   }
 
   void _showMenu(BuildContext context, double current) {
-    showDialog<void>(
+    showNodeLaneDialog<void>(
       context: context,
       builder: (ctx) => _SpeedMenu(
         accent: accent,

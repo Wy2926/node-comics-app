@@ -13,6 +13,7 @@ import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -2907,6 +2908,7 @@ mp.register_script_message('call_button_${button.id}_long', button${button.id}lo
             .replaceAll(RegExp(r'[^a-zA-Z0-9 .()\-\s]'), '_');
     await showModalBottomSheet(
       context: sheetContext,
+      sheetAnimationStyle: NodeLaneMotion.style(sheetContext),
       constraints: BoxConstraints(
         maxWidth: MediaQuery.sizeOf(sheetContext).width,
       ),

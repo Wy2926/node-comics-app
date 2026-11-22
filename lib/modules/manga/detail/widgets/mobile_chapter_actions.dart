@@ -25,9 +25,8 @@ Future<void> showMobileChapterDeleteConfirmation({
   final navigator = Navigator.of(context);
   final detailRoute = ModalRoute.of(context);
   var removedComic = false;
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showNodeLaneDialog<bool>(
     context: context,
-    useRootNavigator: true,
     barrierDismissible: false,
     builder: (_) => MobileChapterDeleteDialog(
       bookTitle: bookTitle,

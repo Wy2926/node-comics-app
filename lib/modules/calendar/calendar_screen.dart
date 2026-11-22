@@ -42,10 +42,10 @@ class _CalendarScreenState extends ConsumerState<CalendarScreen> {
   void initState() {
     super.initState();
     // Anime-only TV layout shows just anime. Force it rather than intersecting
-    // with hiddenItemTypes, which can be empty if the Anime library is hidden.
+    // with visibleItemTypes, which can be empty if the Anime library is hidden.
     _visibleTypes = ref.read(animeOnlyTvModeProvider)
         ? const [ItemType.anime]
-        : hiddenItemTypes(ref.read(hideItemsStateProvider));
+        : visibleItemTypes(ref.read(hideItemsStateProvider));
     final initialItemType = widget.itemType ?? ItemType.manga;
     if (_visibleTypes.contains(initialItemType)) {
       itemType = initialItemType;

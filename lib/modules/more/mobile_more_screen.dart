@@ -3,6 +3,9 @@ import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/feedback/support_request_page.dart';
+import 'package:mangayomi/modules/main_view/main_screen.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/settings_search.dart';
@@ -152,15 +155,20 @@ class _MobileMoreScreenState extends ConsumerState<MobileMoreScreen> {
         ],
       ),
     ];
+    final visibleShelves = visibleItemTypes(hidden);
     final tools = [
-      entry(
-        l.categories,
-        NodeLaneRow(
-          title: l.categories,
-          icon: icons.categories,
-          onTap: () => _open('/categories', extra: (false, 0)),
+      if (visibleShelves.isNotEmpty)
+        entry(
+          l.categories,
+          NodeLaneRow(
+            title: l.categories,
+            icon: icons.categories,
+            onTap: () => showCategoryManager(
+              context,
+              MainScreen.libraryForTools(context) ?? visibleShelves.first,
+            ),
+          ),
         ),
-      ),
       link(l.statistics, icons.statistics, '/statistics'),
       link(l.calendar, icons.calendar, '/calendarScreen'),
     ];

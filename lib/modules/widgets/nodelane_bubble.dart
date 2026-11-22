@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -24,12 +25,10 @@ Future<T?> showNodeLaneBubble<T>(
       : box.localToGlobal(localPoint, ancestor: overlay) & Size.zero;
   var lastRect = measure();
   return navigator.push<T>(
-    RawDialogRoute<T>(
+    _BubbleRoute<T>(
       barrierLabel: MaterialLocalizations.of(anchor).menuDismissLabel,
-      barrierColor: NodeLaneTokens.bubbleBarrier,
       requestFocus: requestFocus,
       transitionDuration: NodeLaneMotion.time(anchor),
-      transitionBuilder: (_, _, _, page) => page,
       pageBuilder: (context, animation, _) => themes.wrap(
         LayoutBuilder(
           builder: (context, constraints) {
@@ -61,9 +60,6 @@ Future<T?> showNodeLaneBubble<T>(
             final down = bounds.bottom - below >= above - bounds.top;
             final height = down ? bounds.bottom - below : above - bounds.top;
             final pivot = Alignment(tip / w * 2 - 1, down ? -1 : 1);
-            final motion = animation.drive(
-              CurveTween(curve: NodeLaneMotion.curve),
-            );
             final colors = NodeLaneTokens.of(context);
             return Stack(
               children: [
@@ -79,35 +75,29 @@ Future<T?> showNodeLaneBubble<T>(
                         height,
                       ),
                     ),
-                    child: FadeTransition(
-                      opacity: animation.drive(
-                        CurveTween(
-                          curve: const Interval(0, .72, curve: Curves.easeOut),
-                        ),
-                      ),
-                      child: ScaleTransition(
-                        alignment: pivot,
-                        scale: motion.drive(Tween(begin: .93, end: 1.0)),
-                        child: Material(
-                          color: colors.surface,
-                          surfaceTintColor: Colors.transparent,
-                          elevation: 7,
-                          shadowColor: Colors.black26,
-                          animationDuration: Duration.zero,
-                          shape: _BubbleOutline(down, tip, colors.line),
-                          clipBehavior: Clip.antiAlias,
-                          child: Padding(
-                            padding: EdgeInsets.only(
-                              top: down ? NodeLaneTokens.bubbleTipHeight : 0,
-                              bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
-                            ),
-                            child: Semantics(
-                              namesRoute: true,
-                              scopesRoute: true,
-                              explicitChildNodes: true,
-                              label: label,
-                              child: child,
-                            ),
+                    child: NodeLaneMotion.anchored(
+                      context,
+                      animation,
+                      pivot,
+                      Material(
+                        color: colors.surface,
+                        surfaceTintColor: Colors.transparent,
+                        elevation: 7,
+                        shadowColor: Colors.black26,
+                        animationDuration: Duration.zero,
+                        shape: _BubbleOutline(down, tip, colors.line),
+                        clipBehavior: Clip.antiAlias,
+                        child: Padding(
+                          padding: EdgeInsets.only(
+                            top: down ? NodeLaneTokens.bubbleTipHeight : 0,
+                            bottom: down ? 0 : NodeLaneTokens.bubbleTipHeight,
+                          ),
+                          child: Semantics(
+                            namesRoute: true,
+                            scopesRoute: true,
+                            explicitChildNodes: true,
+                            label: label,
+                            child: child,
                           ),
                         ),
                       ),
@@ -120,6 +110,27 @@ Future<T?> showNodeLaneBubble<T>(
         ),
       ),
     ),
+  );
+}
+
+class _BubbleRoute<T> extends RawDialogRoute<T> {
+  _BubbleRoute({
+    required super.pageBuilder,
+    required super.barrierLabel,
+    required super.requestFocus,
+    required super.transitionDuration,
+  }) : super(
+         barrierColor: NodeLaneTokens.bubbleBarrier,
+         transitionBuilder: (_, _, _, page) => page,
+       );
+
+  // Keep the scrim in its own static overlay entry while the small bubble scales.
+  @override
+  Widget buildModalBarrier() => ModalBarrier(
+    color: offstage ? null : barrierColor,
+    dismissible: barrierDismissible,
+    semanticsLabel: barrierLabel,
+    barrierSemanticsDismissible: semanticsDismissible,
   );
 }
 
@@ -136,64 +147,147 @@ class NodeLaneBubbleFlow extends StatefulWidget {
       .findAncestorStateOfType<_NodeLaneBubbleFlowState>()!
       ._push<T>(context, step);
 
+  /// Replace the contents of this bubble at their natural height. Back
+  /// restores the originating menu or form without pushing a page.
+  static Future<void> showPanel(BuildContext context, Widget panel) => context
+      .findAncestorStateOfType<_NodeLaneBubbleFlowState>()!
+      ._showPanel(context, panel);
+
   @override
   State<NodeLaneBubbleFlow> createState() => _NodeLaneBubbleFlowState();
 }
 
 class _NodeLaneBubbleFlowState extends State<NodeLaneBubbleFlow> {
   final _navigator = GlobalKey<NavigatorState>();
-  Route<dynamic>? _first;
+  bool _expanded = false, _covered = false;
+  Widget? _panel;
+  LocalHistoryEntry? _panelEntry;
+
+  Future<void> _showPanel(BuildContext origin, Widget panel) async {
+    if (_panel != null || ModalRoute.isCurrentOf(origin) != true) return;
+    final closed = Completer<void>();
+    final entry = _panelEntry = LocalHistoryEntry(
+      onRemove: () {
+        if (_panelEntry != null && mounted) {
+          setState(() {
+            _panel = null;
+            _panelEntry = null;
+          });
+        }
+        closed.complete();
+      },
+    );
+    ModalRoute.of(context)!.addLocalHistoryEntry(entry);
+    setState(() => _panel = panel);
+    return closed.future;
+  }
+
+  @override
+  void dispose() {
+    final entry = _panelEntry;
+    _panelEntry = null;
+    entry?.remove();
+    super.dispose();
+  }
+
+  void _onFirstTransition(AnimationStatus status) {
+    final covered = status == AnimationStatus.completed;
+    if (mounted && covered != _covered) setState(() => _covered = covered);
+  }
 
   Future<T?> _push<T>(BuildContext origin, Widget step) async {
     final navigator = _navigator.currentState;
-    if (ModalRoute.isCurrentOf(origin) != true ||
+    if (_panel != null ||
+        ModalRoute.isCurrentOf(origin) != true ||
         (navigator != null && Navigator.of(origin) != navigator)) {
       return null;
     }
-    final route = MaterialPageRoute<T>(builder: (_) => step);
+    final route = MaterialPageRoute<T>(
+      builder: (context) => Material(
+        color: NodeLaneTokens.of(context).surface,
+        animationDuration: Duration.zero,
+        child: step,
+      ),
+    );
     if (navigator != null) return navigator.push(route);
-    if (_first != null) return null;
-    setState(() => _first = route);
+    if (_expanded) return null;
+    setState(() => _expanded = true);
     try {
-      return await route.popped;
-    } finally {
-      if (mounted) setState(() => _first = null);
+      // Initial routes are installed without a push transition. Mount the local
+      // navigator first, then let the real route animate onto and off its stack.
+      await WidgetsBinding.instance.endOfFrame;
+      if (!mounted) return null;
+      final popped = _navigator.currentState!.push(route);
+      final progress = route.animation!..addStatusListener(_onFirstTransition);
+      _onFirstTransition(progress.status);
+      // Deliver the choice at pop just like Navigator.push; only teardown waits for paint.
+      route.completed.then((_) {
+        progress.removeStatusListener(_onFirstTransition);
+        if (mounted) setState(() => _expanded = _covered = false);
+      });
+      return await popped;
+    } catch (_) {
+      if (mounted) setState(() => _expanded = _covered = false);
+      rethrow;
     }
   }
 
   @override
-  Widget build(BuildContext context) => Stack(
-    children: [
-      Visibility(
-        visible: _first == null,
-        maintainState: true,
-        child: widget.home,
-      ),
-      if (_first != null)
-        NavigatorPopHandler<Object?>(
-          onPopWithResult: (_) => _navigator.currentState?.maybePop(),
-          child: LayoutBuilder(
-            builder: (context, box) => MediaQuery(
-              // The outer bubble already avoids the keyboard and system bars.
-              data: MediaQuery.of(context).copyWith(
-                size: box.biggest,
-                padding: EdgeInsets.zero,
-                viewPadding: EdgeInsets.zero,
-                viewInsets: EdgeInsets.zero,
-              ),
-              child: Navigator(
-                key: _navigator,
-                onGenerateInitialRoutes: (_, _) => [
-                  MaterialPageRoute<void>(
-                    builder: (_) => const SizedBox.shrink(),
-                  ),
-                  _first!,
-                ],
-              ),
+  Widget build(BuildContext context) => NodeLaneContentMotion(
+    value: _panel != null,
+    reverse: _panel == null,
+    child: Stack(
+      children: [
+        Visibility(
+          visible: !_covered && _panel == null,
+          maintainState: true,
+          child: ExcludeFocus(
+            excluding: _expanded,
+            child: ExcludeSemantics(
+              excluding: _expanded,
+              child: IgnorePointer(ignoring: _expanded, child: widget.home),
             ),
           ),
         ),
-    ],
+        if (_expanded)
+          Visibility(
+            visible: _panel == null,
+            maintainState: true,
+            child: PopScope<Object?>(
+              canPop: _panel != null,
+              onPopInvokedWithResult: (didPop, _) {
+                if (!didPop && _panel == null) {
+                  _navigator.currentState?.maybePop();
+                }
+              },
+              child: LayoutBuilder(
+                builder: (context, box) => MediaQuery(
+                  // The outer bubble already avoids the keyboard and system bars.
+                  data: MediaQuery.of(context).copyWith(
+                    size: box.biggest,
+                    padding: EdgeInsets.zero,
+                    viewPadding: EdgeInsets.zero,
+                    viewInsets: EdgeInsets.zero,
+                  ),
+                  child: Navigator(
+                    key: _navigator,
+                    onGenerateInitialRoutes: (_, _) => [
+                      // The menu paints behind this placeholder. There is no
+                      // underlying page for a platform exit animation to composite.
+                      PageRouteBuilder<void>(
+                        transitionDuration: Duration.zero,
+                        reverseTransitionDuration: Duration.zero,
+                        pageBuilder: (_, _, _) => const SizedBox.shrink(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ?_panel,
+      ],
+    ),
   );
 }
 

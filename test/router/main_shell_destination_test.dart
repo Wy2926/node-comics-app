@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/sync_preference.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
 import 'package:mangayomi/modules/main_view/providers/migration.dart';
@@ -14,7 +15,7 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/router/router.dart';
+import 'package:mangayomi/modules/widgets/loading_icon.dart';
 
 class _Order extends NavigationOrderState {
   @override
@@ -66,37 +67,42 @@ class _Sync extends Synching {
   SyncPreference build({required int? syncId}) => SyncPreference(syncId: 1);
 }
 
-class _Location extends RouterCurrentLocationState {
-  @override
-  String? build() => null;
-}
-
 void main() {
   for (final scenario in [
-    (path: '/browse', hidden: <String>[], tv: false, expected: '/browse'),
+    (
+      path: '/browse',
+      hidden: <String>[],
+      tv: false,
+      expected: '/browse',
+      shelf: ItemType.manga,
+    ),
     (
       path: '/NovelLibrary',
       hidden: <String>[],
       tv: false,
       expected: '/NovelLibrary',
+      shelf: ItemType.novel,
     ),
     (
       path: '/more/about',
       hidden: <String>[],
       tv: false,
       expected: '/more/about',
+      shelf: ItemType.manga,
     ),
     (
       path: '/MangaLibrary',
       hidden: ['/MangaLibrary'],
       tv: false,
       expected: '/AnimeLibrary',
+      shelf: ItemType.anime,
     ),
     (
       path: '/MangaLibrary',
       hidden: <String>[],
       tv: true,
       expected: '/AnimeLibrary',
+      shelf: ItemType.anime,
     ),
   ]) {
     testWidgets(
@@ -134,7 +140,6 @@ void main() {
               floatingNavigationBarStateProvider.overrideWith(_Floating.new),
               mergeLibraryNavMobileStateProvider.overrideWith(_Merged.new),
               synchingProvider(syncId: 1).overrideWith(_Sync.new),
-              routerCurrentLocationStateProvider.overrideWith(_Location.new),
               // Exercise real shell initialization without mounting unrelated screens
               // or starting database migrations, scans and network calls.
               migrationProvider.overrideWith((_) => Completer<void>().future),
@@ -150,6 +155,12 @@ void main() {
         expect(
           router.routeInformationProvider.value.uri.path,
           scenario.expected,
+        );
+        router.go('/more/about');
+        await tester.pump();
+        expect(
+          MainScreen.libraryForTools(tester.element(find.byType(LoadingIcon))),
+          scenario.shelf,
         );
         await tester.pumpWidget(const SizedBox());
         await tester.pump(const Duration(seconds: 6));

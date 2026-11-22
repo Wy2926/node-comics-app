@@ -115,10 +115,12 @@ void main() {
                     anchor,
                     label: 'Shelf tools',
                     width: 440,
-                    child: MobileBookshelfSettings(
-                      itemType: type,
-                      settings: settingsRepository.current,
-                      entries: entries,
+                    child: NodeLaneBubbleFlow(
+                      home: MobileBookshelfSettings(
+                        itemType: type,
+                        settings: settingsRepository.current,
+                        entries: entries,
+                      ),
                     ),
                   ),
                   child: const Text('Shelf tools'),
@@ -133,24 +135,27 @@ void main() {
     await settle(tester);
   }
 
+  Finder scrollable(String list) => find
+      .descendant(
+        of: find.byKey(PageStorageKey(list)),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+
+  Finder choice(String filter, String text) => find.descendant(
+    of: find.widgetWithText(NodeLaneOptionSwitch<int>, filter),
+    matching: find.text(text),
+  );
+
   Future<void> reveal(WidgetTester tester, Finder finder, String list) async {
-    final scrollable = find
-        .descendant(
-          of: find.byKey(PageStorageKey(list)),
-          matching: find.byType(Scrollable),
-        )
-        .first;
-    await tester.scrollUntilVisible(finder, 220, scrollable: scrollable);
+    await tester.scrollUntilVisible(finder, 220, scrollable: scrollable(list));
     await tester.ensureVisible(finder);
     await tester.pumpAndSettle();
   }
 
   Future<void> tab(WidgetTester tester, String name) async {
     await tester.tap(
-      find.descendant(
-        of: find.byType(NodeLaneTabSegments),
-        matching: find.text(name),
-      ),
+      find.descendant(of: find.byType(TabBar), matching: find.text(name)),
     );
     await tester.pumpAndSettle();
   }
@@ -322,12 +327,7 @@ void main() {
   ) async {
     await start(tester, type: ItemType.anime);
     expect(find.text('Unwatched'), findsOneWidget);
-    await tester.tap(
-      find.descendant(
-        of: find.byKey(const ValueKey('bookshelf-filter-1')),
-        matching: find.text('Include'),
-      ),
-    );
+    await tester.tap(choice('Unwatched', 'Include'));
     await settle(tester);
     expect(settingsRepository.current.libraryFilterAnimeUnreadType, 1);
     expect(settingsRepository.current.libraryFilterMangasUnreadType, 0);
@@ -338,36 +338,49 @@ void main() {
   });
 
   testWidgets(
+    'narrow large text wraps the shelf filter options without clipping the choice',
+    (tester) async {
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      await start(tester, type: ItemType.novel);
+      tester.view.physicalSize = const Size(320, 740);
+      await tester.pumpAndSettle();
+      final exclude = choice('Downloaded', 'Exclude');
+      expect(
+        tester.getTopLeft(exclude).dy,
+        greaterThan(tester.getTopLeft(choice('Downloaded', 'Any')).dy),
+      );
+      await tester.ensureVisible(exclude);
+      await tester.tap(exclude);
+      await settle(tester);
+      expect(settingsRepository.current.libraryFilterNovelDownloadType, 2);
+      expect(settingsRepository.current.libraryFilterMangasDownloadType, 0);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
     'explicit filter states persist only manga settings and retain tab position',
     (tester) async {
       await start(tester);
-      Finder choice(int index, String text) => find.descendant(
-        of: find.byKey(ValueKey('bookshelf-filter-$index')),
-        matching: find.text(text),
-      );
-      await tester.tap(choice(0, 'Include'));
+      await tester.tap(choice('Downloaded', 'Include'));
       await settle(tester);
-      await tester.tap(choice(1, 'Exclude'));
+      await tester.tap(choice('Unread', 'Exclude'));
       await settle(tester);
       expect(settingsRepository.current.libraryFilterMangasDownloadType, 1);
       expect(settingsRepository.current.libraryFilterMangasUnreadType, 2);
       expect(settingsRepository.current.libraryFilterAnimeUnreadType, 2);
       expect(settingsRepository.current.libraryFilterNovelStartedType, 1);
-      await reveal(tester, choice(5, 'Include'), 'bookshelf-filters');
-      final scrollable = find
-          .descendant(
-            of: find.byKey(const PageStorageKey('bookshelf-filters')),
-            matching: find.byType(Scrollable),
-          )
-          .first;
-      final before = tester.state<ScrollableState>(scrollable).position.pixels;
+      await reveal(tester, choice('Tracked', 'Include'), 'bookshelf-filters');
+      double offset() => tester
+          .state<ScrollableState>(scrollable('bookshelf-filters'))
+          .position
+          .pixels;
+      final before = offset();
       await tab(tester, 'Sort');
       await tab(tester, 'Filter');
-      expect(
-        tester.state<ScrollableState>(scrollable).position.pixels,
-        closeTo(before, .1),
-      );
-      await tester.tap(choice(5, 'Include'));
+      expect(offset(), closeTo(before, .1));
+      await tester.tap(choice('Tracked', 'Include'));
       await settle(tester);
       expect(settingsRepository.current.libraryFilterMangasTrackingType, 1);
       expect(tester.takeException(), isNull);
@@ -469,6 +482,13 @@ void main() {
       }
 
       await open();
+      expect(
+        find.ancestor(
+          of: find.byType(MobileBookshelfSourceFilter),
+          matching: find.byType(NodeLaneBubbleFlow),
+        ),
+        findsOneWidget,
+      );
       await tester.tap(find.text('Source 01'));
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();

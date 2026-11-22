@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/library_filter_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
@@ -48,14 +49,7 @@ class MobileBookshelfSettings extends ConsumerWidget {
             hint: l10n.bookshelf_settings_live,
             child: NodeLaneBubbleHeading(l10n.bookshelf_settings),
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: NodeLaneTokens.gutter,
-            ),
-            child: NodeLaneTabSegments(
-              labels: [l10n.filter, l10n.sort, l10n.display],
-            ),
-          ),
+          LibrarySettingsTabs([l10n.filter, l10n.sort, l10n.display]),
           Expanded(
             child: TabBarView(
               children: [
@@ -155,79 +149,50 @@ class _Filters extends ConsumerWidget {
         (v) => ref.read(tracked.notifier).setType(v),
       ),
     ];
-    final choices = [
-      l10n.bookshelf_filter_any,
-      l10n.bookshelf_filter_include,
-      l10n.bookshelf_filter_exclude,
-    ];
     return ListView(
       key: const PageStorageKey('bookshelf-filters'),
-      padding: const EdgeInsets.all(NodeLaneTokens.gutter),
+      padding: NodeLaneTokens.bubbleContentPadding,
       children: [
-        NodeLaneGroupSurface(
-          children: [
-            for (var i = 0; i < filters.length; i++)
-              NodeLaneChoiceRow<int>(
-                key: ValueKey('bookshelf-filter-$i'),
-                title: filters[i].$1,
-                value: filters[i].$2,
-                onChanged: filters[i].$3,
-                segments: [
-                  for (var j = 0; j < 3; j++)
-                    ButtonSegment(
-                      value: j,
-                      label: Text(
-                        choices[j],
-                        semanticsLabel: '${filters[i].$1}, ${choices[j]}',
-                      ),
-                    ),
-                ],
+        LibraryFilterGroup(filters),
+        const SizedBox(height: NodeLaneTokens.space12),
+        NodeLaneRow.card(
+          title: l10n.sources,
+          icon: NodeLaneIcons.of(context).web,
+          value: sources.$2.isEmpty
+              ? l10n.bookshelf_all_sources
+              : l10n.bookshelf_sources_selected(sources.$2.length),
+          onTap: () async {
+            final selected = await pushBrowsePage<List<String>>(
+              context,
+              MobileBookshelfSourceFilter(
+                sources: sources.$1,
+                selected: sources.$2,
               ),
-          ],
-        ),
-        const SizedBox(height: NodeLaneTokens.space16),
-        NodeLaneGroupSurface(
-          children: [
-            NodeLaneRow(
-              title: l10n.sources,
-              value: sources.$2.isEmpty
-                  ? l10n.bookshelf_all_sources
-                  : l10n.bookshelf_sources_selected(sources.$2.length),
-              onTap: () async {
-                final selected = await pushBrowsePage<List<String>>(
-                  context,
-                  MobileBookshelfSourceFilter(
-                    sources: sources.$1,
-                    selected: sources.$2,
-                  ),
-                );
-                if (!context.mounted || selected == null) return;
-                final current =
-                    ref.read(getSettingsStreamProvider).asData?.value ??
-                    settings;
-                final currentEntries =
-                    ref
-                        .read(
-                          getAllMangaStreamProvider(
-                            categoryId: null,
-                            itemType: itemType,
-                          ),
-                        )
-                        .asData
-                        ?.value ??
-                    entries;
-                final provider = mangaFilterSourceStateProvider(
-                  mangaList: currentEntries,
-                  itemType: itemType,
-                  settings: current,
-                );
-                final available = ref.read(provider).$1;
+            );
+            if (!context.mounted || selected == null) return;
+            final current =
+                ref.read(getSettingsStreamProvider).asData?.value ?? settings;
+            final currentEntries =
                 ref
-                    .read(provider.notifier)
-                    .set(selected.where(available.contains).toList());
-              },
-            ),
-          ],
+                    .read(
+                      getAllMangaStreamProvider(
+                        categoryId: null,
+                        itemType: itemType,
+                      ),
+                    )
+                    .asData
+                    ?.value ??
+                entries;
+            final provider = mangaFilterSourceStateProvider(
+              mangaList: currentEntries,
+              itemType: itemType,
+              settings: current,
+            );
+            final available = ref.read(provider).$1;
+            ref
+                .read(provider.notifier)
+                .set(selected.where(available.contains).toList());
+          },
         ),
         const SizedBox(height: NodeLaneTokens.space8),
         TextButton(
@@ -313,19 +278,12 @@ class _Sort extends ConsumerWidget {
   }
 }
 
-class _Display extends ConsumerStatefulWidget {
+class _Display extends ConsumerWidget {
   const _Display({required this.settings, required this.itemType});
   final Settings settings;
   final ItemType itemType;
   @override
-  ConsumerState<_Display> createState() => _DisplayState();
-}
-
-class _DisplayState extends ConsumerState<_Display> {
-  bool _expanded = false;
-  @override
-  Widget build(BuildContext context) {
-    final settings = widget.settings, itemType = widget.itemType;
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = context.l10n, icons = NodeLaneIcons.of(context);
     final displayProvider = libraryDisplayTypeStateProvider(
       itemType: itemType,
@@ -403,81 +361,71 @@ class _DisplayState extends ConsumerState<_Display> {
           ],
         ),
         const SizedBox(height: NodeLaneTokens.space16),
-        NodeLaneGroupSurface(
-          children: [
-            NodeLaneRow(
-              title: l10n.bookshelf_more_display,
-              subtitle: l10n.bookshelf_more_display_hint,
-              trailing: AnimatedRotation(
-                turns: _expanded ? .5 : 0,
-                duration: NodeLaneMotion.time(context),
-                curve: NodeLaneMotion.curve,
-                child: Icon(
-                  icons.down,
-                  size: NodeLaneTokens.smallIconSize,
-                  color: NodeLaneTokens.of(context).muted,
+        NodeLaneDisclosure(
+          title: l10n.bookshelf_more_display,
+          subtitle: l10n.bookshelf_more_display_hint,
+          child: Consumer(
+            builder: (context, ref, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                NodeLaneCatalogHeading(l10n.badges),
+                NodeLaneGroupSurface(
+                  children: [
+                    NodeLaneSwitchRow(
+                      title: l10n.bookshelf_download_count,
+                      icon: icons.download,
+                      value: ref.watch(downloaded),
+                      onChanged: (v) => ref.read(downloaded.notifier).set(v),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l10n.language,
+                      icon: icons.translate,
+                      value: ref.watch(language),
+                      onChanged: (v) => ref.read(language.notifier).set(v),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l10n.source,
+                      icon: icons.web,
+                      value: ref.watch(librarySourceBadgeProvider),
+                      onChanged: (v) =>
+                          ref.read(librarySourceBadgeProvider.notifier).set(v),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l10n.local_source,
+                      icon: icons.folderOutline,
+                      value: ref.watch(local),
+                      onChanged: (v) => ref.read(local.notifier).set(v),
+                    ),
+                  ],
                 ),
-              ),
-              onTap: () => setState(() => _expanded = !_expanded),
+                Padding(
+                  padding: const EdgeInsets.only(top: NodeLaneTokens.space8),
+                  child: Text(
+                    l10n.bookshelf_source_global_hint,
+                    style: NodeLaneTokens.of(context).readerSecondary,
+                  ),
+                ),
+                NodeLaneCatalogHeading(l10n.bookshelf_layout),
+                NodeLaneGroupSurface(
+                  children: [
+                    NodeLaneSwitchRow(
+                      title: l10n.show_category_tabs,
+                      icon: icons.categories,
+                      value: ref.watch(categories),
+                      onChanged: (v) => ref.read(categories.notifier).set(v),
+                    ),
+                    NodeLaneSwitchRow(
+                      title: l10n.show_numbers_of_items,
+                      icon: icons.count,
+                      value: ref.watch(counts),
+                      onChanged: (v) => ref.read(counts.notifier).set(v),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ],
+          ),
         ),
-        if (_expanded) ...[
-          NodeLaneCatalogHeading(l10n.badges),
-          NodeLaneGroupSurface(
-            children: [
-              NodeLaneSwitchRow(
-                title: l10n.bookshelf_download_count,
-                icon: icons.download,
-                value: ref.watch(downloaded),
-                onChanged: (v) => ref.read(downloaded.notifier).set(v),
-              ),
-              NodeLaneSwitchRow(
-                title: l10n.language,
-                icon: icons.translate,
-                value: ref.watch(language),
-                onChanged: (v) => ref.read(language.notifier).set(v),
-              ),
-              NodeLaneSwitchRow(
-                title: l10n.source,
-                icon: icons.web,
-                value: ref.watch(librarySourceBadgeProvider),
-                onChanged: (v) =>
-                    ref.read(librarySourceBadgeProvider.notifier).set(v),
-              ),
-              NodeLaneSwitchRow(
-                title: l10n.local_source,
-                icon: icons.folderOutline,
-                value: ref.watch(local),
-                onChanged: (v) => ref.read(local.notifier).set(v),
-              ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(top: NodeLaneTokens.space8),
-            child: Text(
-              l10n.bookshelf_source_global_hint,
-              style: NodeLaneTokens.of(context).readerSecondary,
-            ),
-          ),
-          NodeLaneCatalogHeading(l10n.bookshelf_layout),
-          NodeLaneGroupSurface(
-            children: [
-              NodeLaneSwitchRow(
-                title: l10n.show_category_tabs,
-                icon: icons.categories,
-                value: ref.watch(categories),
-                onChanged: (v) => ref.read(categories.notifier).set(v),
-              ),
-              NodeLaneSwitchRow(
-                title: l10n.show_numbers_of_items,
-                icon: icons.count,
-                value: ref.watch(counts),
-                onChanged: (v) => ref.read(counts.notifier).set(v),
-              ),
-            ],
-          ),
-        ],
       ],
     );
   }

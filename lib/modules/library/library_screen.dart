@@ -7,6 +7,7 @@ import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_torrent_page.
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/widgets/nodelane_pane_layout.dart';
 
 import 'package:flutter/material.dart';
@@ -277,7 +278,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                   },
                   onAdjustFilters: (anchor) => showLibrarySettingsSheet(
                     context: anchor,
-                    vsync: this,
                     settings: settings,
                     itemType: widget.itemType,
                     entries: man,
@@ -372,7 +372,6 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen>
                 },
                 onIgnoreFiltersChanged: (val) =>
                     setState(() => _ignoreFiltersOnSearch = val),
-                vsync: this,
               );
               if (grouped) {
                 return _buildWithCategories(
@@ -701,7 +700,7 @@ void addTorrent(BuildContext context, {Manga? manga}) {
   final l10n = l10nLocalizations(context)!;
   String torrentUrl = "";
   bool isLoading = false;
-  showDialog(
+  showNodeLaneDialog(
     context: context,
     barrierDismissible: !isLoading,
     builder: (context) {

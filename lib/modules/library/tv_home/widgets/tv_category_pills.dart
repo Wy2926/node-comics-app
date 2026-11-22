@@ -1,8 +1,9 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/modules/more/categories/widgets/custom_textfield.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
@@ -95,8 +96,10 @@ class _CategoryPillsState extends State<TvCategoryPills> {
                     child: TvPill(
                       label: context.l10n.category,
                       icon: Icons.add,
-                      onTap: () =>
-                          _showAddCategoryDialog(context, widget.categories),
+                      onTap: () => _showAddCategoryDialog(
+                        context,
+                        widget.categories.followedBy(widget.hidden),
+                      ),
                     ),
                   ),
                 ],
@@ -112,8 +115,6 @@ class _CategoryPillsState extends State<TvCategoryPills> {
 // The filter pill moved to the shared `TvPill` widget
 // (lib/modules/widgets/tv_pill.dart), reused by the Browse tab switcher.
 
-/// Reuses the categories screen's add-category flow to create an anime category
-/// inline from the home.
 /// Has no chip, no icon, nothing on screen: a visible "Hidden" affordance would
 /// advertise the categories the user hid, which is most of what hiding is for.
 /// Reached from the "All" pill — hold OK on it, or press Menu while it's
@@ -123,7 +124,7 @@ void _showHiddenCategoriesDialog(BuildContext context, List<Category> hidden) {
     showNodeLaneNotice(context.l10n.tv_no_hidden_categories);
     return;
   }
-  showDialog(
+  showNodeLaneDialog(
     context: context,
     builder: (dialogContext) => AlertDialog(
       title: Text(context.l10n.hidden_categories),
@@ -155,42 +156,21 @@ void _showHiddenCategoriesDialog(BuildContext context, List<Category> hidden) {
   );
 }
 
-void _showAddCategoryDialog(BuildContext context, List<Category> existing) {
-  final controller = TextEditingController();
-  bool isExist = false;
-  showDialog(
+void _showAddCategoryDialog(
+  BuildContext context,
+  Iterable<Category> categories,
+) {
+  showNodeLaneDialog(
     context: context,
-    builder: (context) => StatefulBuilder(
-      builder: (context, setState) => AlertDialog(
-        title: Text(context.l10n.new_category),
-        content: CustomTextFormField(
-          controller: controller,
-          entries: existing,
-          context: context,
-          exist: (v) => setState(() => isExist = v),
-          isExist: isExist,
-          val: (_) => setState(() {}),
+    builder: (_) => MobileCategoryNameDialog(
+      itemType: ItemType.anime,
+      nameExists: (name) => categories.any((c) => c.name == name.trim()),
+      onSave: (name) => categoryRepository.create(
+        Category(
+          forItemType: ItemType.anime,
+          name: name.trim(),
+          updatedAt: DateTime.now().millisecondsSinceEpoch,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(context.l10n.cancel),
-          ),
-          TextButton(
-            onPressed: controller.text.trim().isEmpty || isExist
-                ? null
-                : () {
-                    final category = Category(
-                      forItemType: ItemType.anime,
-                      name: controller.text.trim(),
-                      updatedAt: DateTime.now().millisecondsSinceEpoch,
-                    );
-                    categoryRepository.create(category);
-                    Navigator.pop(context);
-                  },
-            child: Text(context.l10n.add),
-          ),
-        ],
       ),
     ),
   );

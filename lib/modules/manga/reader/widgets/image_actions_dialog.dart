@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -59,6 +60,7 @@ class ImageActionsDialog {
           .replaceAll(RegExp(r'[^a-zA-Z0-9 .()\-\s]'), '_');
       await showModalBottomSheet<void>(
         context: context,
+        sheetAnimationStyle: NodeLaneMotion.style(context),
         useRootNavigator: true,
         isScrollControlled: true,
         useSafeArea: true,
@@ -90,6 +92,7 @@ class ImageActionsDialog {
 
     showModalBottomSheet(
       context: context,
+      sheetAnimationStyle: NodeLaneMotion.style(context),
       constraints: BoxConstraints(maxWidth: context.width(1)),
       builder: (context) => _ImageActionsSheet(
         imageBytes: imageBytes,

@@ -45,7 +45,7 @@ class MobileMediaMenu extends StatelessWidget {
         enabled: types.length > 1,
         useRootNavigator: true,
         position: PopupMenuPosition.under,
-        popUpAnimationStyle: NodeLaneMotion.menu(context),
+        popUpAnimationStyle: NodeLaneMotion.style(context),
         offset: const Offset(0, 6),
         constraints: const BoxConstraints(minWidth: 220, maxWidth: 320),
         borderRadius: BorderRadius.circular(NodeLaneTokens.capsuleRadius),

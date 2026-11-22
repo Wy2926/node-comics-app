@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -774,7 +775,7 @@ class _WatchOrderScreenState extends State<WatchOrderScreen> {
   }
 
   void _openImage(BuildContext context, ImageProvider imageProvider) {
-    showDialog(
+    showNodeLaneDialog(
       context: context,
       builder: (context) {
         return Scaffold(

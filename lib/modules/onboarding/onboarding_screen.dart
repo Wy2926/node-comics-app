@@ -22,19 +22,12 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/onboarding/widgets/onboarding_nav_preview.dart';
 import 'package:mangayomi/modules/onboarding/widgets/onboarding_folder_status.dart';
 import 'package:mangayomi/modules/onboarding/widgets/onboarding_controls.dart';
 import 'package:mangayomi/modules/onboarding/widgets/mobile_onboarding.dart';
-
-/// The nav destination for each library, so a library the user does not read
-/// can be kept out of the bar.
-const _libraryRoutes = {
-  ItemType.manga: '/MangaLibrary',
-  ItemType.anime: '/AnimeLibrary',
-  ItemType.novel: '/NovelLibrary',
-};
 
 /// First-run and replayable setup. Phones choose content, then browse the
 /// existing catalogue, import a folder or add a third-party repository.
@@ -418,7 +411,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
   /// anything else already hidden alone.
   void _applyLibraries() {
     final hidden = ref.read(hideItemsStateProvider).toSet();
-    for (final entry in _libraryRoutes.entries) {
+    for (final entry in libraryRoutes.entries) {
       if (_libraries.contains(entry.key)) {
         hidden.remove(entry.value);
       } else {
@@ -496,7 +489,7 @@ class _OnboardingScreenState extends ConsumerState<_OnboardingBody>
         ref.read(browseInitialTabProvider.notifier).request(target);
         ref.read(routerProvider).go('/browse');
       } else if (openLibrary) {
-        ref.read(routerProvider).go(_libraryRoutes[_chosen.first]!);
+        ref.read(routerProvider).go(libraryRoutes[_chosen.first]!);
       } else {
         _complete();
         return;

@@ -1,4 +1,5 @@
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,7 +22,6 @@ import 'mobile_bookshelf_settings.dart';
 /// Shows the library filter/sort/display settings sheet.
 void showLibrarySettingsSheet({
   required BuildContext context,
-  required TickerProvider vsync,
   required Settings settings,
   required ItemType itemType,
   required List<Manga> entries,
@@ -31,10 +31,12 @@ void showLibrarySettingsSheet({
       context,
       label: context.l10n.bookshelf_settings,
       width: NodeLaneTokens.bubbleSettingsWidth,
-      child: MobileBookshelfSettings(
-        settings: settings,
-        entries: entries,
-        itemType: itemType,
+      child: NodeLaneBubbleFlow(
+        home: MobileBookshelfSettings(
+          settings: settings,
+          entries: entries,
+          itemType: itemType,
+        ),
       ),
     );
     return;
@@ -52,7 +54,6 @@ void showLibrarySettingsSheet({
       _DisplayTab(itemType: itemType, settings: settings),
     ],
     context: context,
-    vsync: vsync,
   );
 }
 
@@ -215,7 +216,7 @@ class _FilterTab extends ConsumerWidget {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      showDialog(
+                      showNodeLaneDialog(
                         context: context,
                         builder: (context) {
                           return Consumer(

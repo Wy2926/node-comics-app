@@ -24,7 +24,6 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/about/providers/check_for_update.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/auto_backup.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/services/sync_server.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
@@ -32,24 +31,26 @@ import 'package:mangayomi/modules/main_view/widgets/tablet_layout.dart';
 import 'package:mangayomi/modules/main_view/widgets/mobile_bottom_navigation.dart';
 import 'package:mangayomi/modules/main_view/widgets/nav_badges.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
-
-final libLocationRegex = RegExp(r"^/(Manga|Anime|Novel)Library$");
+import 'package:mangayomi/modules/main_view/widgets/mobile_navigation_destinations.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 
 /// Nav destinations kept off the anime-only TV layout (the manga & novel
 /// libraries). True means "keep this destination".
 bool _isNotHiddenLibOnTv(String nav) =>
     nav != "/MangaLibrary" && nav != "/NovelLibrary";
 
-/// The ItemType a nav destination maps to, or null for destinations with no
-/// single content type to scope a global search to (Updates, Sources,
-/// Browser, More, ...). Shared by the desktop rail and mobile bottom bar's
-/// double-tap-for-global-search handling.
-ItemType? itemTypeForNavDest(String dest) => switch (dest) {
-  "/MangaLibrary" => ItemType.manga,
-  "/AnimeLibrary" => ItemType.anime,
-  "/NovelLibrary" => ItemType.novel,
-  _ => null,
-};
+final _visibleRoutes = Provider<List<String>>((ref) {
+  final hidden = ref.watch(hideItemsStateProvider);
+  final animeOnly = ref.watch(animeOnlyTvModeProvider);
+  return ref
+      .watch(navigationOrderStateProvider)
+      .where(
+        (route) =>
+            !hidden.contains(route) &&
+            (!animeOnly || _isNotHiddenLibOnTv(route)),
+      )
+      .toList();
+});
 
 /// How close together two taps on the same nav destination need to land to
 /// count as a double-tap/double-click, rather than two separate single taps.
@@ -75,6 +76,12 @@ class MainScreen extends ConsumerStatefulWidget {
 
   final Widget child;
 
+  /// More has no media of its own. Use the last visible shelf, or the first
+  /// library in the user's navigation order before they have visited one.
+  static ItemType? libraryForTools(BuildContext context) => libraryTypeForRoute(
+    context.findAncestorStateOfType<_MainScreenState>()?._libraryRoute,
+  );
+
   @override
   ConsumerState<MainScreen> createState() => _MainScreenState();
 }
@@ -82,9 +89,6 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   Timer? _backupTimer;
   Timer? _syncTimer;
-
-  late final String _defaultLocation;
-  late final List<String> _navigationOrder;
 
   static final Map<String, String> _hyphenatedLabelsCache = {};
 
@@ -96,6 +100,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   // double-click. Keyed by destination string since the bottom bar callback
   // only hands back the route, not an index.
   String? _lastMobileNavDest;
+  String? _lastLibraryRoute;
+  String? get _libraryRoute =>
+      preferredLibraryRoute(ref.read(_visibleRoutes), _lastLibraryRoute);
   DateTime? _lastMobileNavTapTime;
   final Map<String, List<Widget>> _mobileDestinationsCache = {};
   void _clearCache() {
@@ -127,15 +134,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void initState() {
     super.initState();
 
-    _navigationOrder = ref.read(navigationOrderStateProvider);
     final hiddenItems = ref.read(hideItemsStateProvider);
-
-    // On the anime-only TV layout, never land on a hidden manga/novel library.
-    final order = ref.read(animeOnlyTvModeProvider)
-        ? _navigationOrder.where(_isNotHiddenLibOnTv).toList()
-        : _navigationOrder;
-    final visible = order.where((e) => !hiddenItems.contains(e)).toList();
-    _defaultLocation = visible.isNotEmpty ? visible.first : "/AnimeLibrary";
+    final defaultLocation =
+        ref.read(_visibleRoutes).firstOrNull ?? "/AnimeLibrary";
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -150,7 +151,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         if (hiddenItems.contains(location) ||
             (ref.read(animeOnlyTvModeProvider) &&
                 !_isNotHiddenLibOnTv(location))) {
-          context.go(_defaultLocation);
+          context.go(defaultLocation);
         }
         _initializeTimers();
         _initializeProviders();
@@ -173,18 +174,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         (syncPrefs.authToken?.isNotEmpty ?? false)) {
       _syncTimer = Timer.periodic(Duration(seconds: freq), _onSyncTimerTick);
     }
-  }
-
-  /// The first library the user actually has visible, in their own nav order.
-  String? _firstVisibleLibrary() {
-    final hidden = ref.read(hideItemsStateProvider);
-    final order = ref.read(animeOnlyTvModeProvider)
-        ? _navigationOrder.where(_isNotHiddenLibOnTv)
-        : _navigationOrder;
-    for (final nav in order) {
-      if (libLocationRegex.hasMatch(nav) && !hidden.contains(nav)) return nav;
-    }
-    return null;
   }
 
   void _initializeTimers() {
@@ -326,7 +315,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       _lastMobileNavTapTime,
       now,
     );
-    final itemType = itemTypeForNavDest(destination);
+    final itemType = libraryTypeForRoute(destination);
     if (isDoubleTap && itemType != null) {
       _lastMobileNavDest = null;
       _lastMobileNavTapTime = null;
@@ -358,13 +347,18 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final l10n = context.l10n;
     final route = GoRouter.of(context);
     final navigationOrder = ref.watch(navigationOrderStateProvider);
-    final hideItems = ref.watch(hideItemsStateProvider);
+    final visibleRoutes = ref.watch(_visibleRoutes);
     final mergeLibraryNavMobile = ref.watch(mergeLibraryNavMobileStateProvider);
-    final location = ref.watch(routerCurrentLocationStateProvider);
-
-    return ref
-        .watch(migrationProvider)
-        .when(
+    final migration = ref.watch(migrationProvider);
+    return ListenableBuilder(
+      listenable: route.routerDelegate,
+      builder: (context, _) {
+        final location = route.state.uri.path;
+        if (libraryRoutes.containsValue(location) &&
+            visibleRoutes.contains(location)) {
+          _lastLibraryRoute = location;
+        }
+        return migration.when(
           data: (_) => Consumer(
             builder: (context, ref, child) {
               final useFloatingNav = shouldUseFloatingNav(
@@ -373,9 +367,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               final prefersNavRail = context.prefersNavRail(
                 useFloatingNav: useFloatingNav,
               );
-              final visibleRoutes = navigationOrder
-                  .where((nav) => !hideItems.contains(nav))
-                  .toList();
               final isLongPressed = ref.watch(isLongPressedStateProvider);
               if (isMobile &&
                   !isTv &&
@@ -386,13 +377,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     routes: visibleRoutes,
                     location: location,
                     visible:
-                        !isLongPressed &&
-                        (location == null ||
-                            navigationOrder.contains(location)),
+                        !isLongPressed && navigationOrder.contains(location),
                     maintainSpace: !isLongPressed,
                     nativeIos: Platform.isIOS,
                     badges: badges,
-                    onSelected: (destination) {
+                    onSelected: (tab) {
+                      final destination = tab == mobileLibraryTab
+                          ? _libraryRoute
+                          : tab;
+                      if (destination == null) return;
                       if (destination != location) dismissNodeLaneNotice();
                       _selectRoute(destination);
                     },
@@ -400,53 +393,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   ),
                 );
               }
-              bool uniqueSwitch = false;
-              List<String> dest = !prefersNavRail && isLibSwitch
+              final mergedLibrary =
+                  mergeLibraryNavMobile && !prefersNavRail && !isLibSwitch;
+              final dest = !prefersNavRail && isLibSwitch
                   ? [
                       "_disableLibSwitch",
-                      ...navigationOrder.where(
-                        (nav) => libLocationRegex.hasMatch(nav),
-                      ),
-                    ].where((nav) => !hideItems.contains(nav)).toList()
+                      ...visibleRoutes.where(libraryRoutes.containsValue),
+                    ]
+                  : mergedLibrary
+                  ? groupedMobileRoutes(visibleRoutes)
                   : visibleRoutes;
-
-              // Anime-only TV layout: drop the manga & novel library tabs.
-              if (ref.watch(animeOnlyTvModeProvider)) {
-                dest = dest.where(_isNotHiddenLibOnTv).toList();
-              }
-
-              if (mergeLibraryNavMobile && !prefersNavRail && !isLibSwitch) {
-                dest = dest
-                    .map((nav) {
-                      if ([
-                        "/MangaLibrary",
-                        "/AnimeLibrary",
-                        "/NovelLibrary",
-                      ].contains(nav)) {
-                        if (uniqueSwitch) return null;
-                        uniqueSwitch = true;
-                        return "_enableLibSwitch";
-                      }
-                      return nav;
-                    })
-                    .nonNulls
-                    .toList();
-              }
 
               if (isLibSwitch &&
                   (currentIndex >= dest.length ||
-                      !libLocationRegex.hasMatch(location ?? ""))) {
+                      !libraryRoutes.containsValue(location))) {
                 currentIndex = 0;
               } else {
-                String? libLocation;
-                if (mergeLibraryNavMobile && !prefersNavRail && !isLibSwitch) {
-                  libLocation = location?.replaceAll(
-                    libLocationRegex,
-                    "_enableLibSwitch",
-                  );
-                }
-                int currentIdx = dest.indexOf(
-                  libLocation ?? location ?? _defaultLocation,
+                final currentIdx = dest.indexOf(
+                  mergedLibrary && libraryRoutes.containsValue(location)
+                      ? mobileLibraryTab
+                      : location,
                 );
                 if (currentIdx != -1) {
                   currentIndex = currentIdx;
@@ -491,12 +457,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                           buildNavigationWidgetsMobile:
                               _buildNavigationWidgetsMobile,
                           onDestinationSelected: (destination) {
-                            if (destination == "_enableLibSwitch") {
+                            if (destination == mobileLibraryTab) {
                               setState(() {
                                 isLibSwitch = true;
                               });
-                              if (!libLocationRegex.hasMatch(location ?? "")) {
-                                final target = _firstVisibleLibrary();
+                              if (!libraryRoutes.containsValue(location)) {
+                                final target = visibleRoutes
+                                    .where(libraryRoutes.containsValue)
+                                    .firstOrNull;
                                 if (target != null) route.go(target);
                               }
                             } else if (destination == "_disableLibSwitch") {
@@ -524,6 +492,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
           loading: () => const LoadingIcon(),
         );
+      },
+    );
   }
 
   /// Wraps [icon] in a [Tooltip] with [message] unless the user turned the
@@ -717,8 +687,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         label: l10n.go_back,
       );
     }
-    if (dest.contains("_enableLibSwitch")) {
-      destinations[dest.indexOf("_enableLibSwitch")] = NavigationDestination(
+    if (dest.contains(mobileLibraryTab)) {
+      destinations[dest.indexOf(mobileLibraryTab)] = NavigationDestination(
         selectedIcon: const Icon(Icons.collections_bookmark_rounded),
         icon: const Icon(Icons.collections_bookmark_outlined),
         label: l10n.library,

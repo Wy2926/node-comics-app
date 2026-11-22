@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:marquee/marquee.dart';
@@ -492,7 +493,7 @@ class ChapterListTileWidget extends ConsumerWidget {
   }
 
   void _openImage(BuildContext context, ImageProvider imageProvider) {
-    showDialog(
+    showNodeLaneDialog(
       context: context,
       builder: (context) {
         return Scaffold(

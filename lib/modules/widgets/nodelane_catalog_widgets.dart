@@ -5,6 +5,7 @@ import 'package:extended_image/extended_image.dart'
 import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_reader_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 class NodeLaneWebsiteIcon extends StatelessWidget {
@@ -270,6 +271,7 @@ Future<T?> showNodeLaneCatalogSheet<T>(
   useSafeArea: true,
   isScrollControlled: true,
   showDragHandle: false,
+  sheetAnimationStyle: NodeLaneMotion.style(context),
   isDismissible: dismissible,
   enableDrag: dismissible,
   backgroundColor: Colors.transparent,

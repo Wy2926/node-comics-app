@@ -16,6 +16,7 @@ import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/library_filter_controls.dart';
 
 List<String> _groups(Iterable<Chapter> chapters) => chapters
     .map((chapter) => chapter.scanlator)
@@ -65,68 +66,33 @@ class MobileChapterSettingsPanel extends StatelessWidget {
                     subtitle: manga.name,
                   ),
                 ),
-                PinnedHeaderSliver(
-                  child: ColoredBox(
-                    color: t.surface,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: NodeLaneTokens.space12,
-                      ),
-                      child: LayoutBuilder(
-                        builder: (context, box) => TabBar(
-                          controller: controller,
-                          isScrollable: true,
-                          tabAlignment: TabAlignment.start,
-                          labelPadding: EdgeInsets.zero,
-                          labelColor: t.accent,
-                          labelStyle: t.label,
-                          unselectedLabelColor: t.muted,
-                          indicatorColor: t.accent,
-                          indicatorSize: TabBarIndicatorSize.tab,
-                          dividerColor: t.line,
-                          tabs: [
-                            for (final tab in tabs)
-                              ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  minWidth: box.maxWidth / tabs.length,
-                                  minHeight: NodeLaneTokens.minTapTarget,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: NodeLaneTokens.space12,
-                                    vertical: NodeLaneTokens.space8,
-                                  ),
-                                  child: Center(child: Text(tab)),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                PinnedHeaderSliver(child: LibrarySettingsTabs(tabs)),
                 SliverToBoxAdapter(
-                  child: Padding(
-                    padding: NodeLaneTokens.bubbleContentPadding,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      spacing: NodeLaneTokens.space12,
-                      children: [
-                        switch (controller.index) {
-                          0 => _ChapterFilters(
-                            manga: manga,
-                            localArchive: localArchive,
+                  child: NodeLaneMotion.tabBody(
+                    context,
+                    controller,
+                    Padding(
+                      padding: NodeLaneTokens.bubbleContentPadding,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: NodeLaneTokens.space12,
+                        children: [
+                          switch (controller.index) {
+                            0 => _ChapterFilters(
+                              manga: manga,
+                              localArchive: localArchive,
+                            ),
+                            1 => _ChapterSort(manga: manga),
+                            _ => const _ChapterHabits(),
+                          },
+                          Text(
+                            controller.index == 2
+                                ? l10n.comic_chapter_habits_hint
+                                : l10n.chapter_settings_live,
+                            style: t.readerSecondary,
                           ),
-                          1 => _ChapterSort(manga: manga),
-                          _ => const _ChapterHabits(),
-                        },
-                        Text(
-                          controller.index == 2
-                              ? l10n.comic_chapter_habits_hint
-                              : l10n.chapter_settings_live,
-                          style: t.readerSecondary,
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
@@ -174,27 +140,11 @@ class _ChapterFilters extends ConsumerWidget {
         (value) => ref.read(bookmarked.notifier).setType(value),
       ),
     ];
-    final options = [
-      (0, l10n.bookshelf_filter_any),
-      (1, l10n.bookshelf_filter_include),
-      (2, l10n.bookshelf_filter_exclude),
-    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       spacing: NodeLaneTokens.space12,
       children: [
-        NodeLaneGroupSurface(
-          outlined: true,
-          children: [
-            for (final (title, value, change) in filters)
-              NodeLaneOptionSwitch<int>(
-                title: title,
-                value: value,
-                options: options,
-                onChanged: change,
-              ),
-          ],
-        ),
+        LibraryFilterGroup(filters),
         if (names.isNotEmpty || excluded.isNotEmpty)
           NodeLaneRow.card(
             title: l10n.filter_scanlator_groups,

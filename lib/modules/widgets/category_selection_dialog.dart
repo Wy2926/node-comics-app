@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
@@ -16,9 +15,9 @@ import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart'
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_bookshelf_category_page.dart';
-import 'nodelane_bubble.dart';
+import 'nodelane_modal.dart';
 
-import 'package:mangayomi/modules/more/categories/categories_screen.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 
 Future<void> showCategorySelectionDialog({
   required BuildContext context,
@@ -47,7 +46,7 @@ Future<void> showCategorySelectionDialog({
   if (!isBulk && isFavorite) {
     categoryIds = List<int>.from(singleManga.categories ?? []);
   }
-  await showDialog<void>(
+  await showNodeLaneDialog<void>(
     context: context,
     builder: (context) => StatefulBuilder(
       builder: (context, setState) => _categoryDialogSurface(
@@ -252,20 +251,7 @@ Future<void> showCategorySelectionDialog({
                           vertical: 12,
                         ),
                       ),
-                      onPressed: () {
-                        context.push(
-                          "/categories",
-                          extra: (
-                            true,
-                            itemType == ItemType.manga
-                                ? 0
-                                : itemType == ItemType.anime
-                                ? 1
-                                : 2,
-                          ),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => showCategoryManager(context, itemType),
                     ),
                     Row(
                       children: [
@@ -350,7 +336,6 @@ Future<void> _showMobileLibraryCategories(
     if (isBulk || isFavorite)
       for (final manga in targets) ...?manga.categories,
   };
-  var editRequested = false;
   final saved = await pushBrowsePage<bool>(
     context,
     Consumer(
@@ -369,15 +354,7 @@ Future<void> _showMobileLibraryCategories(
           onRetry: () => pageRef.invalidate(provider),
           onEdit: () {
             if (ModalRoute.isCurrentOf(page) != true) return;
-            if (NodeLaneBubbleFlow.contains(page)) {
-              NodeLaneBubbleFlow.push<void>(
-                page,
-                CategoriesScreen(data: (true, itemType.index)),
-              );
-              return;
-            }
-            editRequested = true;
-            Navigator.pop(page, false);
+            showCategoryManager(page, itemType);
           },
           onSave: (ids) => saveMobileLibraryCategories(
             targets: targets,
@@ -395,7 +372,6 @@ Future<void> _showMobileLibraryCategories(
     ref.read(mangasListStateProvider.notifier).clear();
     ref.read(isLongPressedStateProvider.notifier).update(false);
   }
-  if (editRequested) context.push('/categories', extra: (true, itemType.index));
 }
 
 /// Keeps the existing uniform replacement and favorite rules, but awaits the

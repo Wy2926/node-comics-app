@@ -30,11 +30,11 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen>
   void initState() {
     super.initState();
     // Anime-only TV layout shows just the anime tab. Force it rather than
-    // intersecting with hiddenItemTypes: the Anime library can be hidden from
+    // intersecting with visibleItemTypes: the Anime library can be hidden from
     // that list, which would leave us with no tabs at all.
     _visibleTabTypes = ref.read(animeOnlyTvModeProvider)
         ? const [ItemType.anime]
-        : hiddenItemTypes(ref.read(hideItemsStateProvider));
+        : visibleItemTypes(ref.read(hideItemsStateProvider));
     _tabController = NodeLaneMotion.tabs(
       length: _visibleTabTypes.length,
       vsync: this,

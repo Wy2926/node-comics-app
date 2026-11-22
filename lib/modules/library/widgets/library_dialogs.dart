@@ -10,6 +10,7 @@ import 'package:mangayomi/modules/manga/detail/providers/state_providers.dart';
 import 'package:mangayomi/modules/manga/detail/widgets/chapter_filter_list_tile_widget.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
@@ -60,7 +61,7 @@ void showDeleteMangaDialog({
   }
   bool deleteFromLib = false;
   bool deleteDownloads = false;
-  showDialog(
+  showNodeLaneDialog(
     context: context,
     builder: (context) {
       return Consumer(
@@ -269,7 +270,7 @@ void showImportLocalDialog(BuildContext context, ItemType itemType) {
   };
   bool isLoading = false;
   bool splitChapters = true;
-  showDialog(
+  showNodeLaneDialog(
     context: context,
     barrierDismissible: !isLoading,
     builder: (context) {

@@ -1,6 +1,8 @@
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_selection_bar.dart';
@@ -16,9 +18,10 @@ class MobileBookshelfMenu extends StatelessWidget {
     required this.hasEntries,
     required this.ignoreFilters,
     required this.onSelected,
-    this.anime = false,
+    required this.itemType,
   });
-  final bool hasEntries, ignoreFilters, anime;
+  final bool hasEntries, ignoreFilters;
+  final ItemType itemType;
   final ValueChanged<int> onSelected;
   @override
   Widget build(BuildContext context) {
@@ -43,9 +46,9 @@ class MobileBookshelfMenu extends StatelessWidget {
         NodeLaneRow(
           title: l10n.bookshelf_manage_categories,
           icon: icons.categories,
-          onTap: () => onSelected(7),
+          onTap: () => showCategoryManager(context, itemType),
         ),
-        if (anime)
+        if (itemType == ItemType.anime)
           NodeLaneRow(
             title: l10n.torrent_stream,
             icon: icons.webLink,

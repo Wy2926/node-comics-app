@@ -34,7 +34,6 @@ import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_pr
 import 'package:mangayomi/modules/more/settings/reader/providers/reader_state_provider.dart';
 import 'package:mangayomi/modules/more/settings/sync/providers/sync_providers.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/router/router.dart';
 import 'package:mangayomi/repositories/category_repository.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/repositories/custom_button_repository.dart';
@@ -955,5 +954,4 @@ void _invalidateCommonState(Ref ref) {
   ref.invalidate(extensionsRepoStateProvider(ItemType.manga));
   ref.invalidate(extensionsRepoStateProvider(ItemType.anime));
   ref.invalidate(extensionsRepoStateProvider(ItemType.novel));
-  ref.read(routerCurrentLocationStateProvider.notifier).refresh();
 }

@@ -9,6 +9,7 @@ import 'package:mangayomi/modules/browse/mobile_repositories.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/browse/widgets/source_browse_panes.dart';
 import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/browse/widgets/source_directory_filters.dart';
 import 'package:mangayomi/modules/browse/widgets/source_directory_menu.dart';
@@ -496,7 +497,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
         overlay.globalToLocal(point) & Size.zero,
         Offset.zero & overlay.size,
       ),
-      popUpAnimationStyle: NodeLaneMotion.menu(context),
+      popUpAnimationStyle: NodeLaneMotion.style(context),
       items: [
         for (final (value, label, icon) in [
           (
@@ -896,15 +897,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   Widget build(BuildContext context) {
     ref.watch(isLongPressedStateProvider);
     final hidden = ref.watch(hideItemsStateProvider);
-    final types = ItemType.values
-        .where(
-          (e) => !hidden.contains(switch (e) {
-            ItemType.manga => '/MangaLibrary',
-            ItemType.anime => '/AnimeLibrary',
-            ItemType.novel => '/NovelLibrary',
-          }),
-        )
-        .toList();
+    final types = visibleItemTypes(hidden);
     if (types.isEmpty) return const SizedBox.shrink();
     if (!types.contains(type)) type = types.first;
     ref.listen(browseInitialTabProvider, (_, next) {

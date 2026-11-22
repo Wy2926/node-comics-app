@@ -8,6 +8,7 @@ import 'package:mangayomi/modules/widgets/source_result_widgets.dart';
 import 'package:mangayomi/modules/widgets/tv_pill.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/cached_network.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/headers.dart';
@@ -155,7 +156,7 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
               Scrollable.ensureVisible(
                 context,
                 alignment: .5,
-                duration: NodeLaneTokens.disclosureDuration,
+                duration: NodeLaneMotion.time(context),
                 curve: Curves.easeOut,
               );
             }
@@ -170,7 +171,7 @@ class _GlobalSearchResultCardState extends ConsumerState<GlobalSearchResultCard>
           child: Padding(
             padding: widget.padding,
             child: AnimatedContainer(
-              duration: NodeLaneTokens.disclosureDuration,
+              duration: NodeLaneMotion.time(context),
               curve: Curves.easeOut,
               transform: Matrix4.diagonal3Values(
                 _focused ? 1.06 : 1,

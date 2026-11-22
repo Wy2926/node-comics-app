@@ -56,7 +56,7 @@ abstract class BaseLibraryTabScreenState<T extends ConsumerStatefulWidget>
   }
 
   List<ItemType> _visibleTypes(List<String> hidden, bool animeOnly) =>
-      hiddenItemTypes(hidden)
+      visibleItemTypes(hidden)
           .where((type) => !animeOnly || type == ItemType.anime)
           .toList();
 

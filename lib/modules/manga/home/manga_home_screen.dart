@@ -41,7 +41,7 @@ import 'package:mangayomi/modules/manga/home/widget/mangas_card_selector.dart';
 import 'package:mangayomi/modules/widgets/cover_grid_skeleton.dart';
 import 'package:mangayomi/modules/widgets/gridview_widget.dart';
 import 'package:mangayomi/modules/widgets/manga_image_card_widget.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
 import 'package:marquee/marquee.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
@@ -776,7 +776,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
             )
           else
             PopupMenuButton(
-              popUpAnimationStyle: popupAnimationStyle,
+              popUpAnimationStyle: NodeLaneMotion.style(context),
               icon: Icon(displayTypeIcon),
               itemBuilder: (context) {
                 final displayType = ref.watch(
@@ -850,7 +850,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
               )
             else
               PopupMenuButton(
-                popUpAnimationStyle: popupAnimationStyle,
+                popUpAnimationStyle: NodeLaneMotion.style(context),
                 itemBuilder: (context) {
                   return [
                     PopupMenuItem<int>(

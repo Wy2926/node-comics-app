@@ -7,7 +7,7 @@ import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 /// [MangaInfoHeader] "add chapters" buttons.
 Future<bool> showSplitChaptersDialog(BuildContext context) async {
   final l10n = l10nLocalizations(context)!;
-  return await showDialog<bool>(
+  return await showNodeLaneDialog<bool>(
         context: context,
         builder: (context) => NodeLaneAlertDialog(
           title: Text(l10n.split_epub_chapters),

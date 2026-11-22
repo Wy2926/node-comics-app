@@ -229,8 +229,12 @@ void main() {
       expect(find.text('Unwatched'), findsOneWidget);
       expect(find.text('Settings'), findsNothing);
       await tester.tap(find.text('Sort'));
+      await tester.pump();
+      final option = find.text('By episode number');
+      final entering = tester.getTopLeft(option).dx;
+      expect(find.text('Unwatched', skipOffstage: false), findsNothing);
       await tester.pumpAndSettle();
-      expect(find.text('By episode number'), findsOneWidget);
+      expect(tester.getTopLeft(option).dx, lessThan(entering));
     },
   );
 

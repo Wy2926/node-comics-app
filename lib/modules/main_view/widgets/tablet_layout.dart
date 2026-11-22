@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/modules/main_view/main_screen.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 
 class MainTabletLayout extends StatefulWidget {
   const MainTabletLayout({
@@ -70,7 +71,7 @@ class _TabletLayoutState extends State<MainTabletLayout> {
     );
 
     final dest = widget.dest[newIndex];
-    final itemType = itemTypeForNavDest(dest);
+    final itemType = libraryTypeForRoute(dest);
     if (isDoubleTap && itemType != null) {
       _lastNavTapIndex = null;
       _lastNavTapTime = null;

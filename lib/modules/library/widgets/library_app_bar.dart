@@ -21,8 +21,11 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/library_updater.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 import 'package:mangayomi/utils/item_type_localization.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
 import 'mobile_bookshelf_actions.dart';
@@ -44,7 +47,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
   final VoidCallback onSearchToggle;
   final VoidCallback onSearchClear;
   final ValueChanged<bool> onIgnoreFiltersChanged;
-  final TickerProvider vsync;
   final double mobileHeaderHeight;
 
   const LibraryAppBar({
@@ -63,7 +65,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
     required this.onSearchToggle,
     required this.onSearchClear,
     required this.onIgnoreFiltersChanged,
-    required this.vsync,
     required this.mobileHeaderHeight,
   });
 
@@ -99,29 +100,33 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
       showImportLocalDialog(context, itemType);
     } else if (value == 3 && itemType == ItemType.anime) {
       addTorrent(context);
+    } else if (value == 7) {
+      showCategoryManager(context, itemType);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isLongPressed = ref.watch(isLongPressedStateProvider);
-    final mangaIdsList = ref.watch(mangasListStateProvider);
+    return NodeLaneContentMotion(
+      value: (isLongPressed, isSearch),
+      reverse: !isLongPressed && !isSearch,
+      child: _bar(context, ref, isLongPressed),
+    );
+  }
+
+  Widget _bar(BuildContext context, WidgetRef ref, bool isLongPressed) {
     final l10n = l10nLocalizations(context)!;
 
     if (isLongPressed) {
       return _SelectionAppBar(
-        mangaIdsList: mangaIdsList,
+        mangaIdsList: ref.watch(mangasListStateProvider),
         data: selectionEntries,
       );
     }
 
     if (isMobile && !isTv) {
       final hidden = ref.watch(hideItemsStateProvider);
-      const routes = {
-        ItemType.manga: '/MangaLibrary',
-        ItemType.anime: '/AnimeLibrary',
-        ItemType.novel: '/NovelLibrary',
-      };
       final updating = ref.watch(libraryUpdateProvider).running;
       return MobileBookshelfHeader(
         searchLabel: l10n.bookshelf_search,
@@ -133,17 +138,14 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
         onImport: (anchor) => showImportLocalDialog(anchor, itemType),
         onFilter: (anchor) => showLibrarySettingsSheet(
           context: anchor,
-          vsync: vsync,
           settings: settings,
           itemType: itemType,
           entries: entries,
         ),
         mediaMenu: MobileMediaMenu(
           value: itemType,
-          availableTypes: ItemType.values.where(
-            (type) => !hidden.contains(routes[type]),
-          ),
-          onChanged: (type) => context.go(routes[type]!),
+          availableTypes: visibleItemTypes(hidden),
+          onChanged: (type) => context.go(libraryRoutes[type]!),
         ),
         updateControl: updating || categoryEntries.isNotEmpty
             ? NodeLaneIconButton(
@@ -168,12 +170,15 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
               final action = await showNodeLaneBubble<int>(
                 anchor,
                 label: l10n.bookshelf_actions,
-                child: Builder(
-                  builder: (panel) => MobileBookshelfMenu(
-                    hasEntries: selectionEntries.isNotEmpty,
-                    ignoreFilters: ignoreFiltersOnSearch,
-                    anime: itemType == ItemType.anime,
-                    onSelected: (value) => Navigator.pop(panel, value),
+                width: NodeLaneTokens.bubbleFormWidth,
+                child: NodeLaneBubbleFlow(
+                  home: Builder(
+                    builder: (panel) => MobileBookshelfMenu(
+                      hasEntries: selectionEntries.isNotEmpty,
+                      ignoreFilters: ignoreFiltersOnSearch,
+                      itemType: itemType,
+                      onSelected: (value) => Navigator.pop(panel, value),
+                    ),
                   ),
                 ),
               );
@@ -183,8 +188,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
               } else if (action == 6) {
                 ref.read(mangasListStateProvider.notifier).clear();
                 ref.read(isLongPressedStateProvider.notifier).update(true);
-              } else if (action == 7) {
-                context.push('/categories', extra: (false, itemType.index));
               } else {
                 _onLibraryMenu(context, ref, action);
               }
@@ -276,7 +279,6 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           onPressed: () {
             showLibrarySettingsSheet(
               context: context,
-              vsync: vsync,
               settings: settings,
               itemType: itemType,
               entries: entries,
@@ -296,6 +298,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 (context.l10n.update_library, 0),
                 (l10n.open_random_entry, 1),
                 (l10n.import, 2),
+                (l10n.bookshelf_manage_categories, 7),
                 if (itemType == ItemType.anime) (l10n.torrent_stream, 3),
               ];
               return IconButton(
@@ -315,7 +318,7 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
           )
         else
           PopupMenuButton(
-            popUpAnimationStyle: popupAnimationStyle,
+            popUpAnimationStyle: NodeLaneMotion.style(context),
             itemBuilder: (context) {
               return [
                 PopupMenuItem<int>(
@@ -327,6 +330,10 @@ class LibraryAppBar extends ConsumerWidget implements PreferredSizeWidget {
                   child: Text(l10n.open_random_entry),
                 ),
                 PopupMenuItem<int>(value: 2, child: Text(l10n.import)),
+                PopupMenuItem<int>(
+                  value: 7,
+                  child: Text(l10n.bookshelf_manage_categories),
+                ),
                 if (itemType == ItemType.anime)
                   PopupMenuItem<int>(
                     value: 3,

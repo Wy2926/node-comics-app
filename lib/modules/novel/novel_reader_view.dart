@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mangayomi/main.dart';
 import 'package:mangayomi/models/chapter.dart';
@@ -1323,6 +1324,7 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
   void _showFontSizeBottomSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      sheetAnimationStyle: NodeLaneMotion.style(context),
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
       builder: (context) {
@@ -1938,7 +1940,6 @@ class _NovelWebViewState extends ConsumerState<NovelWebView>
                                     if (_ttsSupported) const TtsSettingsTab(),
                                   ],
                                   context: context,
-                                  vsync: this,
                                 );
                                 if (!autoScrollAlreadyFalse ||
                                     _autoScroll.value) {

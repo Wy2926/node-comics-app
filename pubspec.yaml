@@ -34,7 +34,6 @@ dependencies:
       url: https://github.com/kodjodevf/flutter_inappwebview.git
       path: flutter_inappwebview
       ref: master
-  draggable_menu: ^4.4.1
   isar_community: ^3.3.2
   isar_community_flutter_libs: ^3.3.2
   share_plus: ^13.0.0

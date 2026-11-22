@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -178,7 +179,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                 child: _elevatedButton(
                   context,
                   onPressed: () {
-                    showDialog(
+                    showNodeLaneDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
@@ -279,7 +280,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                   context,
                   onPressed: () {
                     int currentIntValue = widget.trackRes.lastChapterRead!;
-                    showDialog(
+                    showNodeLaneDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
@@ -363,7 +364,7 @@ class _TrackerWidgetState extends ConsumerState<TrackerWidget> {
                   context,
                   onPressed: () {
                     int currentIntValue = widget.trackRes.score!;
-                    showDialog(
+                    showNodeLaneDialog(
                       context: context,
                       builder: (context) {
                         return AlertDialog(

@@ -17,6 +17,9 @@ import 'package:mangayomi/models/track.dart';
 import 'package:mangayomi/modules/library/providers/library_state_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_dialogs.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_actions.dart';
+import 'package:mangayomi/modules/more/categories/providers/isar_providers.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
+import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
@@ -97,18 +100,30 @@ void main() {
     _phone(tester);
     final actions = <int>[];
     var entries = false;
+    final requests = <ItemType>[];
     late StateSetter change;
     await tester.pumpWidget(
-      _app(
-        StatefulBuilder(
-          builder: (context, setState) {
-            change = setState;
-            return MobileBookshelfMenu(
-              hasEntries: entries,
-              ignoreFilters: false,
-              onSelected: actions.add,
-            );
-          },
+      ProviderScope(
+        overrides: [
+          getMangaCategorieStreamProvider.overrideWith((ref, type) {
+            requests.add(type);
+            return Stream.value([]);
+          }),
+        ],
+        child: _app(
+          NodeLaneBubbleFlow(
+            home: StatefulBuilder(
+              builder: (context, setState) {
+                change = setState;
+                return MobileBookshelfMenu(
+                  itemType: ItemType.novel,
+                  hasEntries: entries,
+                  ignoreFilters: false,
+                  onSelected: actions.add,
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
@@ -116,12 +131,26 @@ void main() {
       expect(find.text(label), findsNothing);
     }
     await tester.tap(find.text('Manage categories'));
+    await tester.pumpAndSettle();
+    expect(requests, [ItemType.novel]);
+    expect(find.byType(Navigator, skipOffstage: false), findsOneWidget);
+    expect(find.text('Novel'), findsOneWidget);
+    expect(
+      find.ancestor(
+        of: find.byType(MobileCategories),
+        matching: find.byType(NodeLaneBubbleFlow),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Manage categories').hitTestable(), findsOneWidget);
     change(() => entries = true);
     await tester.pump();
     await tester.tap(find.text('Select works'));
     await tester.tap(find.text('Open random entry'));
     await tester.tap(find.byType(NodeLaneSwitch));
-    expect(actions, [7, 6, 1, 4]);
+    expect(actions, [6, 1, 4]);
     expect(tester.takeException(), isNull);
   });
 

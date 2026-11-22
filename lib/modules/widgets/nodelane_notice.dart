@@ -12,6 +12,7 @@ import 'package:mangayomi/services/crash_report.dart';
 import 'package:mangayomi/utils/localized_message.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 
 enum NodeLaneNoticeKind {
   info,
@@ -262,8 +263,8 @@ NodeLaneNoticeHandle showNodeLaneNotice(
           ? child
           : FadeTransition(opacity: controller, child: child),
     ),
-    animationDuration: NodeLaneTokens.disclosureDuration,
-    animationReverseDuration: NodeLaneTokens.disclosureDuration,
+    animationDuration: NodeLaneMotion.duration,
+    animationReverseDuration: NodeLaneMotion.duration,
     duration: kind == NodeLaneNoticeKind.progress
         ? null
         : Duration(

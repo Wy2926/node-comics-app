@@ -858,6 +858,7 @@ Future<T?> showUnifiedPlayerSettings<T>(
 }) {
   return showModalBottomSheet<T>(
     context: context,
+    sheetAnimationStyle: NodeLaneMotion.style(context),
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
     useSafeArea: true,
@@ -916,6 +917,7 @@ Future<void> showDesktopPlayerSettingsMenu(
   }
   return showMenu<void>(
     context: anchor,
+    popUpAnimationStyle: NodeLaneMotion.style(anchor),
     position: position,
     color: Theme.of(anchor).colorScheme.surfaceContainerHigh,
     surfaceTintColor: Colors.transparent,

@@ -13,7 +13,6 @@ class NodeLaneIcons {
   IconData get updatesSelected => CupertinoIcons.bell_fill;
   IconData get browserSelected => CupertinoIcons.square_fill_on_square_fill;
   IconData get manga => CupertinoIcons.book;
-  IconData get mangaSelected => CupertinoIcons.book_fill;
   IconData get anime => CupertinoIcons.play_circle;
   IconData get novel => CupertinoIcons.doc_text;
   IconData get add => CupertinoIcons.plus;
@@ -69,7 +68,6 @@ class NodeLaneIcons {
   IconData get pin => CupertinoIcons.pin;
   IconData get pinSelected => CupertinoIcons.pin_fill;
   IconData get ascending => CupertinoIcons.arrow_up;
-  IconData get descending => CupertinoIcons.arrow_down;
   IconData get count => CupertinoIcons.number;
   IconData get refresh => CupertinoIcons.refresh;
   IconData get shuffle => CupertinoIcons.shuffle;
@@ -103,9 +101,7 @@ class NodeLaneIcons {
   IconData get brightness => CupertinoIcons.sun_max;
   IconData get animation => CupertinoIcons.film;
   IconData get navigation => CupertinoIcons.compass;
-  IconData get flash => CupertinoIcons.bolt;
   IconData get contrast => CupertinoIcons.circle_lefthalf_fill;
-  IconData get grayscale => CupertinoIcons.drop;
   IconData get image => CupertinoIcons.photo;
   IconData get saveImage => CupertinoIcons.square_arrow_down;
   IconData get reset => CupertinoIcons.arrow_counterclockwise;
@@ -135,7 +131,6 @@ class NodeLaneIcons {
   IconData get unlock => CupertinoIcons.lock_open;
   IconData get wifi => CupertinoIcons.wifi;
   IconData get rotate => CupertinoIcons.rotate_right;
-  IconData get zoomOut => CupertinoIcons.zoom_out;
   IconData get speed => CupertinoIcons.speedometer;
   IconData get fastForward => CupertinoIcons.forward;
   IconData get fullscreen => CupertinoIcons.arrow_up_left_arrow_down_right;

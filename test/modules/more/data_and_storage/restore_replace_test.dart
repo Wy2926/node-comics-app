@@ -31,7 +31,6 @@ import 'package:mangayomi/modules/more/data_and_storage/providers/proto/BackupMi
 import 'package:mangayomi/modules/more/data_and_storage/providers/proto/BackupSource.pb.dart';
 import 'package:mangayomi/modules/more/data_and_storage/providers/restore.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
-import 'package:mangayomi/router/router.dart';
 import 'package:path/path.dart' as p;
 
 Manga _manga(String name) => Manga(
@@ -49,16 +48,6 @@ Manga _manga(String name) => Manga(
   favorite: true,
 );
 
-/// The real one subscribes to the app's router, which these tests don't
-/// build; restore only asks it to refresh.
-class _NoRouterLocation extends RouterCurrentLocationState {
-  @override
-  String? build() => null;
-
-  @override
-  void refresh() {}
-}
-
 Iterable<String?> _library() => mangaRepository.getAll().map((m) => m.name);
 
 /// Pumps an app shell and hands back the context and ref doRestore needs,
@@ -68,9 +57,6 @@ Future<(BuildContext, WidgetRef)> _pumpShell(WidgetTester tester) async {
   late WidgetRef widgetRef;
   await tester.pumpWidget(
     ProviderScope(
-      overrides: [
-        routerCurrentLocationStateProvider.overrideWith(_NoRouterLocation.new),
-      ],
       child: MaterialApp(
         builder: BotToastInit(),
         navigatorObservers: [BotToastNavigatorObserver()],

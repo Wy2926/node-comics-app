@@ -54,23 +54,19 @@ void main() {
     );
   }
 
-  testWidgets('uses the standard attached bar when the preference is off', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app(useFloatingNav: false));
+  testWidgets(
+    'changing the preference replaces the attached and floating bars',
+    (tester) async {
+      await tester.pumpWidget(app(useFloatingNav: false));
 
-    expect(find.byType(NavigationBar), findsOneWidget);
-    expect(find.byType(FloatingNavBar), findsNothing);
-  });
+      expect(find.byType(NavigationBar), findsOneWidget);
+      expect(find.byType(FloatingNavBar), findsNothing);
+      await tester.pumpWidget(app(useFloatingNav: true));
 
-  testWidgets('uses the floating bar when the preference is on', (
-    tester,
-  ) async {
-    await tester.pumpWidget(app(useFloatingNav: true));
-
-    expect(find.byType(FloatingNavBar), findsOneWidget);
-    expect(find.byType(NavigationBar), findsNothing);
-  });
+      expect(find.byType(FloatingNavBar), findsOneWidget);
+      expect(find.byType(NavigationBar), findsNothing);
+    },
+  );
 
   testWidgets(
     'switching retained tabs dismisses progress without reopening it on later updates',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/category.dart';
@@ -534,7 +535,12 @@ class _TvAnimeHomeViewState extends ConsumerState<TvAnimeHomeView> {
                 Expanded(
                   child: Stack(
                     children: [
-                      Positioned.fill(child: content),
+                      Positioned.fill(
+                        child: NodeLaneContentMotion(
+                          value: (selectedId, searching),
+                          child: content,
+                        ),
+                      ),
                       // The hero's backdrop is full-bleed, so scrolling it up
                       // under the pills leaves the viewport's clip cutting
                       // straight across it. The hero fades at its *own* top

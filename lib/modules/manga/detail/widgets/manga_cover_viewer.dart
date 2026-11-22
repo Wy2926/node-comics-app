@@ -16,7 +16,8 @@ import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/repositories/track_repository.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/others.dart';
-import 'package:mangayomi/utils/global_style.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/utils/manga_cover_actions.dart';
 import 'package:mangayomi/utils/share.dart';
 import 'package:path/path.dart' as p;
@@ -33,7 +34,7 @@ void showMangaCoverViewer(
   required Manga manga,
   required ImageProvider imageProvider,
 }) {
-  showDialog(
+  showNodeLaneDialog(
     context: context,
     builder: (context) {
       return Scaffold(
@@ -222,7 +223,9 @@ void showMangaCoverViewer(
                                   ),
                                 ),
                                 PopupMenuButton(
-                                  popUpAnimationStyle: popupAnimationStyle,
+                                  popUpAnimationStyle: NodeLaneMotion.style(
+                                    context,
+                                  ),
                                   itemBuilder: (context) {
                                     return [
                                       if (manga.customCoverImage != null ||

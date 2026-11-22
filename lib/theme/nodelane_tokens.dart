@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:flutter/cupertino.dart';
 
 /// Presentation tokens shared by mobile screens and Android navigation.
@@ -22,7 +21,6 @@ class NodeLaneTokens {
   final Color canvas, surface, soft, ink, muted, line, accent, onAccent;
   final Color searchSurface, searchLine;
   final TextStyle typeface;
-  static const disclosureDuration = NodeLaneMotion.duration;
   static const space4 = 4.0, space8 = 8.0, space12 = 12.0;
   static const space16 = 16.0, space20 = 20.0, space24 = 24.0;
   static const gutter = space20, coverRadius = 10.0, controlRadius = 12.0;
@@ -56,18 +54,11 @@ class NodeLaneTokens {
   static const chapterRowHeight = 72.0;
   static const defaultMobileAccent = Color(0xff006eff);
   // Reader concept: all overlays use the same geometry, type and controls.
-  static const readerSheetFraction = .78, readerDisplayFraction = .86;
+  static const readerSheetFraction = .78;
   static const readerRowHeight = 62.0;
   static const readerChapterHeight = 68.0, readerActionHeight = 64.0;
   static const readerImageActionHeight = 72.0;
-  static const readerFilterRowHeight = 56.0;
-  static const readerPickerRowHeight = 56.0;
-  static const readerPickerPreviewRowHeight = 88.0;
-  static const readerPickerColorRowHeight = 80.0;
-  static const readerPickerLeadingWidth = 44.0, readerPickerSwatchSize = 40.0;
   static const readerValueSwatchSize = 28.0;
-  static const readerPickerIconSize = 28.0;
-  static const readerPickerPreviewSize = Size(42, 48);
   static const readerIconSize = 24.0, readerSliderTrack = 3.0;
   static const readerSheetShape = RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(modalRadius)),
@@ -128,8 +119,7 @@ class NodeLaneTokens {
   static const tabletPaneBreakpoint = 720.0, tabletSupportingWidth = 320.0;
   static const paneMaxFraction = .43, detailSideFraction = .28;
   static const tabletCategoryWidth = 216.0, tabletOverviewWidth = 440.0;
-  static const tabletColumnWidth = 640.0, tabletFormWidth = 840.0;
-  static const tabletDashboardWidth = 1120.0, sourceCardMinWidth = 272.0;
+  static const tabletFormWidth = 840.0, sourceCardMinWidth = 272.0;
   static const browserInlineActionsWidth = 352.0;
   static const searchMaxWidth = 560.0;
   static const browserAddressHeight = 44.0, browserBackWidth = 64.0;

@@ -1,5 +1,6 @@
 import 'package:mangayomi/modules/widgets/nodelane_catalog_widgets.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
@@ -45,7 +46,7 @@ Widget btnToShowChapterListDialog(
         ),
       );
     } else {
-      await showDialog(
+      await showNodeLaneDialog(
         context: context,
         builder: (context) {
           return Dialog(

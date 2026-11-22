@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/manga/reader/controllers/reader_viewport_anchor.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/settings.dart';
@@ -140,9 +141,7 @@ class ReaderPageContent extends StatelessWidget {
 
     return TweenAnimationBuilder<Color?>(
       tween: ColorTween(end: backgroundColor),
-      duration: MediaQuery.disableAnimationsOf(context)
-          ? Duration.zero
-          : NodeLaneTokens.disclosureDuration,
+      duration: NodeLaneMotion.time(context),
       builder: (context, animColor, animChild) {
         return Material(
           color: animColor,

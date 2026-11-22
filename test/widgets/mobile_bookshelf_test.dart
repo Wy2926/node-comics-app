@@ -11,10 +11,12 @@ import 'package:mangayomi/models/category.dart';
 import 'package:mangayomi/modules/library/library_screen.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_header.dart';
 import 'package:mangayomi/modules/main_view/widgets/nodelane_mobile_navigation.dart';
+import 'package:mangayomi/modules/main_view/widgets/mobile_navigation_destinations.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/utils/item_type_filters.dart';
 
 final coverImage = MemoryImage(
   base64Decode(
@@ -65,7 +67,7 @@ void main() {
     },
   );
   testWidgets(
-    'Android rail reflows to phone tabs without losing the active library or page',
+    'Android rail reflows to phone tabs without losing the page or library tab',
     (tester) async {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(1180, 720);
@@ -115,7 +117,7 @@ void main() {
       expect(find.text('追踪'), findsNothing);
       expect(find.text('keep my place'), findsOneWidget);
       await tester.tap(find.text('书架'));
-      expect(location, '/NovelLibrary');
+      expect(location, mobileLibraryTab);
       tester.view.physicalSize = const Size(600, 900);
       await tester.pumpAndSettle();
       expect(
@@ -815,63 +817,79 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets(
-    'mobile navigation remembers media, exposes overflow and respects hidden routes',
-    (tester) async {
-      tester.view.physicalSize = const Size(320, 700);
-      tester.view.devicePixelRatio = 1;
-      addTearDown(tester.view.reset);
-      var location = '/NovelLibrary';
-      var routes = [
-        '/MangaLibrary',
-        '/AnimeLibrary',
-        '/NovelLibrary',
-        '/updates',
-        '/browse',
-        '/browser',
-        '/more',
-        '/trackerLibrary',
-      ];
-      Future<void> render() => tester.pumpWidget(
-        app(
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: NodeLaneMobileNavigation(
-              routes: routes,
-              location: location,
-              visible: true,
-              nativeIos: false,
-              onSelected: (value) => location = value,
-              child: const SizedBox.expand(),
-            ),
-          ),
-          scale: 2,
-          dark: true,
-        ),
-      );
-      await render();
+  test(
+    'shelf entry uses the last visible library or the current nav order',
+    () {
+      const visible = ['/browse', '/AnimeLibrary', '/NovelLibrary', '/more'];
+      expect(preferredLibraryRoute(visible, '/NovelLibrary'), '/NovelLibrary');
+      for (final last in [null, '/MangaLibrary', '/more']) {
+        expect(preferredLibraryRoute(visible, last), '/AnimeLibrary');
+      }
       expect(
-        tester
-            .widget<NodeLaneFlutterTabBar>(find.byType(NodeLaneFlutterTabBar))
-            .items
-            .length,
-        5,
+        preferredLibraryRoute(visible.reversed.toList(), null),
+        '/NovelLibrary',
       );
-      await tester.tap(find.text('浏览器'));
-      await render();
-      await tester.tap(find.text('书架'));
-      expect(location, '/NovelLibrary');
-      await render();
-      await tester.tap(find.text('更多'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('追踪'));
-      await tester.pumpAndSettle();
-      expect(location, '/trackerLibrary');
-      routes = ['/AnimeLibrary', '/updates', '/browse', '/more'];
-      await render();
-      await tester.tap(find.text('书架'));
-      expect(location, '/AnimeLibrary');
-      expect(tester.takeException(), isNull);
+      expect(preferredLibraryRoute(['/more'], '/NovelLibrary'), isNull);
     },
   );
+
+  testWidgets('mobile navigation exposes overflow and omits hidden routes', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(320, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    var location = '/NovelLibrary';
+    var routes = [
+      '/MangaLibrary',
+      '/AnimeLibrary',
+      '/NovelLibrary',
+      '/updates',
+      '/browse',
+      '/browser',
+      '/more',
+      '/trackerLibrary',
+    ];
+    Future<void> render() => tester.pumpWidget(
+      app(
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: NodeLaneMobileNavigation(
+            routes: routes,
+            location: location,
+            visible: true,
+            nativeIos: false,
+            onSelected: (value) => location = value,
+            child: const SizedBox.expand(),
+          ),
+        ),
+        scale: 2,
+        dark: true,
+      ),
+    );
+    await render();
+    expect(
+      tester
+          .widget<NodeLaneFlutterTabBar>(find.byType(NodeLaneFlutterTabBar))
+          .items
+          .length,
+      5,
+    );
+    await tester.tap(find.text('浏览器'));
+    await render();
+    await tester.tap(find.text('书架'));
+    expect(location, mobileLibraryTab);
+    await render();
+    await tester.tap(find.text('更多'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('追踪'));
+    await tester.pumpAndSettle();
+    expect(location, '/trackerLibrary');
+    routes = ['/AnimeLibrary', '/updates', '/browse', '/more'];
+    await render();
+    expect(find.text('追踪'), findsNothing);
+    await tester.tap(find.text('更多'));
+    expect(location, '/more');
+    expect(tester.takeException(), isNull);
+  });
 }

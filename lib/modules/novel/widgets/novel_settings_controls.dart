@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/modules/novel/utils/novel_reader_palette.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -242,7 +243,7 @@ class NovelColorPicker extends StatelessWidget {
   void _showColorPickerDialog(BuildContext context) {
     Color selectedColor = _parseColor(color);
 
-    showDialog(
+    showNodeLaneDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(

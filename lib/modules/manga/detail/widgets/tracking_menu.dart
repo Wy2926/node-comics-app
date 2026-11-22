@@ -1,4 +1,3 @@
-import 'package:draggable_menu/draggable_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -15,6 +14,8 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
+import 'package:mangayomi/theme/nodelane_tokens.dart';
 
 import 'mobile_tracking_menu.dart';
 
@@ -35,9 +36,13 @@ void openTrackingMenu({
     );
     return;
   }
-  DraggableMenu.open(
-    context,
-    Consumer(
+  showModalBottomSheet<void>(
+    context: context,
+    useSafeArea: true,
+    showDragHandle: true,
+    sheetAnimationStyle: NodeLaneMotion.style(context),
+    shape: NodeLaneTokens.readerSheetShape,
+    builder: (_) => Consumer(
       builder: (context, ref, _) {
         final isPureBlack = ref.watch(pureBlackDarkModeStateProvider);
         final theme = Theme.of(context);
@@ -45,88 +50,80 @@ void openTrackingMenu({
             ? theme.scaffoldBackgroundColor.withValues(alpha: 0.9)
             : theme.cardColor;
 
-        return DraggableMenu(
-          ui: ClassicDraggableMenu(
-            radius: 20,
-            barItem: Container(),
-            color: theme.scaffoldBackgroundColor,
-          ),
-          allowToShrink: true,
-          child: Material(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(20),
-            clipBehavior: Clip.antiAlias,
-            child: Padding(
-              // Breathing room at the bottom, plus clearance for the system
-              // navigation bar / gesture area so the last tracker row is not
-              // flush against (or behind) the on-screen buttons on Android.
-              padding: EdgeInsets.fromLTRB(
-                8,
-                8,
-                8,
-                8 + MediaQuery.viewPaddingOf(context).bottom,
-              ),
-              child: SuperListView.separated(
-                padding: const EdgeInsets.all(0),
-                itemCount: entries.length,
-                primary: false,
-                shrinkWrap: true,
-                itemBuilder: (context, index) {
-                  return StreamBuilder(
-                    stream: trackRepository.watchBySyncIdAndMangaId(
-                      entries[index].syncId,
-                      manga.id!,
-                    ),
-                    builder: (context, snapshot) {
-                      List<Track>? trackRes = snapshot.hasData
-                          ? snapshot.data
-                          : [];
-                      return trackRes!.isNotEmpty
-                          ? TrackerWidget(
-                              mangaId: manga.id!,
-                              syncId: entries[index].syncId!,
-                              trackRes: trackRes.first,
-                              itemType: manga.itemType,
-                            )
-                          : TrackListile(
-                              text: l10nLocalizations(context)!.add_tracker,
-                              onTap: () async {
-                                final trackSearch =
-                                    await trackersSearchDraggableMenu(
-                                      context,
-                                      itemType: manga.itemType,
-                                      track: Track(
-                                        status: TrackStatus.planToRead,
-                                        syncId: entries[index].syncId!,
-                                        title: manga.name!,
-                                      ),
-                                    ) as TrackSearch?;
-                                if (trackSearch != null) {
-                                  await ref
-                                      .read(
-                                        trackStateProvider(
-                                          track: null,
-                                          itemType: manga.itemType,
-                                          widgetRef: ref,
-                                        ).notifier,
-                                      )
-                                      .setTrackSearch(
-                                        trackSearch,
-                                        manga.id!,
-                                        entries[index].syncId!,
-                                      );
-                                }
-                              },
-                              id: entries[index].syncId!,
-                              entries: const [],
-                            );
-                    },
-                  );
-                },
-                separatorBuilder: (BuildContext context, int index) {
-                  return const Divider();
-                },
-              ),
+        return Material(
+          color: bgColor,
+          borderRadius: BorderRadius.circular(20),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            // Breathing room at the bottom, plus clearance for the system
+            // navigation bar / gesture area so the last tracker row is not
+            // flush against (or behind) the on-screen buttons on Android.
+            padding: EdgeInsets.fromLTRB(
+              8,
+              8,
+              8,
+              8 + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+            child: SuperListView.separated(
+              padding: const EdgeInsets.all(0),
+              itemCount: entries.length,
+              primary: false,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return StreamBuilder(
+                  stream: trackRepository.watchBySyncIdAndMangaId(
+                    entries[index].syncId,
+                    manga.id!,
+                  ),
+                  builder: (context, snapshot) {
+                    List<Track>? trackRes = snapshot.hasData
+                        ? snapshot.data
+                        : [];
+                    return trackRes!.isNotEmpty
+                        ? TrackerWidget(
+                            mangaId: manga.id!,
+                            syncId: entries[index].syncId!,
+                            trackRes: trackRes.first,
+                            itemType: manga.itemType,
+                          )
+                        : TrackListile(
+                            text: l10nLocalizations(context)!.add_tracker,
+                            onTap: () async {
+                              final trackSearch =
+                                  await trackersSearchDraggableMenu(
+                                    context,
+                                    itemType: manga.itemType,
+                                    track: Track(
+                                      status: TrackStatus.planToRead,
+                                      syncId: entries[index].syncId!,
+                                      title: manga.name!,
+                                    ),
+                                  ) as TrackSearch?;
+                              if (trackSearch != null) {
+                                await ref
+                                    .read(
+                                      trackStateProvider(
+                                        track: null,
+                                        itemType: manga.itemType,
+                                        widgetRef: ref,
+                                      ).notifier,
+                                    )
+                                    .setTrackSearch(
+                                      trackSearch,
+                                      manga.id!,
+                                      entries[index].syncId!,
+                                    );
+                              }
+                            },
+                            id: entries[index].syncId!,
+                            entries: const [],
+                          );
+                  },
+                );
+              },
+              separatorBuilder: (BuildContext context, int index) {
+                return const Divider();
+              },
             ),
           ),
         );

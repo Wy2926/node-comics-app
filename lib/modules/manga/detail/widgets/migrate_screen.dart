@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/more/categories/mobile_categories.dart';
 import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/eval/model/m_pages.dart';
 import 'package:mangayomi/models/manga.dart';
@@ -12,6 +13,7 @@ import 'package:mangayomi/modules/browse/mobile_repositories.dart';
 import 'package:mangayomi/modules/browse/widgets/mobile_browse_page.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/library/widgets/search_text_form_field.dart';
 import 'package:mangayomi/modules/manga/detail/providers/track_state_providers.dart';
@@ -497,12 +499,8 @@ class _MigrationMangaGlobalImageCardState
                 : () => categoryRepository.watchByItemType(
                     widget.oldManga.itemType,
                   ),
-            onEditCategories: () async {
-              await context.push(
-                '/categories',
-                extra: (true, widget.oldManga.itemType.index),
-              );
-            },
+            onEditCategories: () =>
+                showCategoryManager(context, widget.oldManga.itemType),
             onConfirm: (preview, categoryIds) => widget.trackSearch == null
                 ? _migrateManga(preview)
                 : _addTrackedManga(categoryIds),
@@ -529,7 +527,7 @@ class _MigrationMangaGlobalImageCardState
         )
         .then((preview) {
           if (context.mounted) {
-            showDialog(
+            showNodeLaneDialog(
               context: context,
               builder: (ctx) {
                 return AlertDialog(
@@ -641,7 +639,7 @@ class _MigrationMangaGlobalImageCardState
 
   Future<void> _addTrackManga(BuildContext context) async {
     List<int> categoryIds = [];
-    showDialog(
+    showNodeLaneDialog(
       context: context,
       builder: (context) {
         return StatefulBuilder(
@@ -689,20 +687,10 @@ class _MigrationMangaGlobalImageCardState
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
-                      onPressed: () {
-                        context.push(
-                          "/categories",
-                          extra: (
-                            true,
-                            widget.oldManga.itemType == ItemType.manga
-                                ? 0
-                                : widget.oldManga.itemType == ItemType.anime
-                                ? 1
-                                : 2,
-                          ),
-                        );
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => showCategoryManager(
+                        context,
+                        widget.oldManga.itemType,
+                      ),
                       child: Text(l10n.edit),
                     ),
                     Row(

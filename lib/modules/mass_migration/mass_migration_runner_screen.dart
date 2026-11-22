@@ -1,4 +1,5 @@
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 
@@ -62,12 +63,15 @@ class _MassMigrationRunnerScreenState
       canPop: _phase != _MassMigrationPhase.applying,
       child: Scaffold(
         appBar: AppBar(title: Text(l10n.mass_migration_title)),
-        body: switch (_phase) {
-          _MassMigrationPhase.matching => _buildMatchingPhase(context),
-          _MassMigrationPhase.review => _buildReviewPhase(context),
-          _MassMigrationPhase.applying => _buildApplyingPhase(context),
-          _MassMigrationPhase.summary => _buildSummaryPhase(context),
-        },
+        body: NodeLaneContentMotion(
+          value: _phase,
+          child: switch (_phase) {
+            _MassMigrationPhase.matching => _buildMatchingPhase(context),
+            _MassMigrationPhase.review => _buildReviewPhase(context),
+            _MassMigrationPhase.applying => _buildApplyingPhase(context),
+            _MassMigrationPhase.summary => _buildSummaryPhase(context),
+          },
+        ),
       ),
     );
   }
@@ -129,108 +133,113 @@ class _MassMigrationRunnerScreenState
                     : NodeLaneIcons.of(context).back,
               )
             : null,
-        body: switch (_phase) {
-          _MassMigrationPhase.matching => MobileMassMigrationProgress(
-            heading: l10n.mass_migration_finding_matches(
-              target.name ?? '',
-              completeLanguageName(target.lang ?? ''),
+        body: NodeLaneContentMotion(
+          value: _phase,
+          child: switch (_phase) {
+            _MassMigrationPhase.matching => MobileMassMigrationProgress(
+              heading: l10n.mass_migration_finding_matches(
+                target.name ?? '',
+                completeLanguageName(target.lang ?? ''),
+              ),
+              progressLabel: l10n.mass_migration_processing_item(
+                group.items.isEmpty ? 0 : _currentIndex + 1,
+                group.count,
+              ),
+              completed: _resolvedItems.length,
+              total: group.count,
+              current: current == null ? null : _mobileSourceBook(current),
+              note: _isWaitingForNextItem
+                  ? l10n.mass_migration_waiting_next_item
+                  : null,
+              status:
+                  '${l10n.mass_migration_matched_so_far(matched)} · ${l10n.mass_migration_no_match_count(_resolvedItems.length - matched)}',
             ),
-            progressLabel: l10n.mass_migration_processing_item(
-              group.items.isEmpty ? 0 : _currentIndex + 1,
-              group.count,
-            ),
-            completed: _resolvedItems.length,
-            total: group.count,
-            current: current == null ? null : _mobileSourceBook(current),
-            note: _isWaitingForNextItem
-                ? l10n.mass_migration_waiting_next_item
-                : null,
-            status:
-                '${l10n.mass_migration_matched_so_far(matched)} · ${l10n.mass_migration_no_match_count(_resolvedItems.length - matched)}',
-          ),
-          _MassMigrationPhase.review => CustomScrollView(
-            key: const PageStorageKey('mass-migration-review'),
-            slivers: [
-              SliverToBoxAdapter(
-                child: NodeLaneGroupSurface(
-                  margin: const EdgeInsets.fromLTRB(
-                    NodeLaneTokens.gutter,
-                    0,
-                    NodeLaneTokens.gutter,
-                    NodeLaneTokens.space12,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(18),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          route,
-                          style: Theme.of(context).textTheme.titleMedium,
-                        ),
-                        const SizedBox(height: 8),
-                        Text(l10n.mass_migration_found_matches(matched)),
-                        Text(
-                          l10n.mass_migration_no_matches(
-                            _resolvedItems.length - matched,
+            _MassMigrationPhase.review => CustomScrollView(
+              key: const PageStorageKey('mass-migration-review'),
+              slivers: [
+                SliverToBoxAdapter(
+                  child: NodeLaneGroupSurface(
+                    margin: const EdgeInsets.fromLTRB(
+                      NodeLaneTokens.gutter,
+                      0,
+                      NodeLaneTokens.gutter,
+                      NodeLaneTokens.space12,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            route,
+                            style: Theme.of(context).textTheme.titleMedium,
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 8),
+                          Text(l10n.mass_migration_found_matches(matched)),
+                          Text(
+                            l10n.mass_migration_no_matches(
+                              _resolvedItems.length - matched,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              SliverList.builder(
-                itemCount: _resolvedItems.length,
-                itemBuilder: (_, index) => MobileMassMigrationMatchCard(
-                  key: ValueKey(index),
-                  item: _resolvedItems[index],
-                  source: group.source,
-                  destination: target,
-                  loading: _loadingCandidateIndexes.contains(index),
-                  canChoose: _loadingCandidateIndexes.isEmpty,
-                  onSelect: (value) => _updateShouldMigrate(index, value),
-                  onChoose:
-                      _resolvedItems[index]
-                              .searchResult
-                              .candidates
-                              .isNotEmpty &&
-                          (_resolvedItems[index]
-                                      .searchResult
-                                      .candidates
-                                      .length >
-                                  1 ||
-                              !_resolvedItems[index].canMigrate)
-                      ? () => _pickAnotherCandidate(index)
-                      : null,
+                SliverList.builder(
+                  itemCount: _resolvedItems.length,
+                  itemBuilder: (_, index) => MobileMassMigrationMatchCard(
+                    key: ValueKey(index),
+                    item: _resolvedItems[index],
+                    source: group.source,
+                    destination: target,
+                    loading: _loadingCandidateIndexes.contains(index),
+                    canChoose: _loadingCandidateIndexes.isEmpty,
+                    onSelect: (value) => _updateShouldMigrate(index, value),
+                    onChoose:
+                        _resolvedItems[index]
+                                .searchResult
+                                .candidates
+                                .isNotEmpty &&
+                            (_resolvedItems[index]
+                                        .searchResult
+                                        .candidates
+                                        .length >
+                                    1 ||
+                                !_resolvedItems[index].canMigrate)
+                        ? () => _pickAnotherCandidate(index)
+                        : null,
+                  ),
                 ),
-              ),
-            ],
-          ),
-          _MassMigrationPhase.applying => MobileMassMigrationProgress(
-            heading: l10n.mass_migration_migrating_selected(target.name ?? ''),
-            progressLabel: l10n.mass_migration_migrating_item(
-              _currentIndex + 1,
-              selected.length,
+              ],
             ),
-            completed: _migratedCount + _failedItems.length,
-            total: selected.length,
-            current: applying == null
-                ? null
-                : _mobileSourceBook(applying.sourceItem),
-            destination: applying?.selectedCandidate == null
-                ? null
-                : _mobileTargetBook(applying!.selectedCandidate!),
-          ),
-          _MassMigrationPhase.summary => MobileMassMigrationSummary(
-            route: route,
-            total: group.count,
-            matched: matched,
-            migrated: _migratedCount,
-            skipped: _skippedCount,
-            failures: _failedItems,
-          ),
-        },
+            _MassMigrationPhase.applying => MobileMassMigrationProgress(
+              heading: l10n.mass_migration_migrating_selected(
+                target.name ?? '',
+              ),
+              progressLabel: l10n.mass_migration_migrating_item(
+                _currentIndex + 1,
+                selected.length,
+              ),
+              completed: _migratedCount + _failedItems.length,
+              total: selected.length,
+              current: applying == null
+                  ? null
+                  : _mobileSourceBook(applying.sourceItem),
+              destination: applying?.selectedCandidate == null
+                  ? null
+                  : _mobileTargetBook(applying!.selectedCandidate!),
+            ),
+            _MassMigrationPhase.summary => MobileMassMigrationSummary(
+              route: route,
+              total: group.count,
+              matched: matched,
+              migrated: _migratedCount,
+              skipped: _skippedCount,
+              failures: _failedItems,
+            ),
+          },
+        ),
         bottomAction: _phase == _MassMigrationPhase.review
             ? Column(
                 mainAxisSize: MainAxisSize.min,

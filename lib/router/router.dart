@@ -38,7 +38,6 @@ import 'package:mangayomi/modules/more/statistics/statistics_screen.dart';
 import 'package:mangayomi/modules/novel/novel_reader_view.dart';
 import 'package:mangayomi/modules/tracker_library/tracker_library_screen.dart';
 import 'package:mangayomi/modules/updates/updates_screen.dart';
-import 'package:mangayomi/modules/more/categories/categories_screen.dart';
 import 'package:mangayomi/modules/more/settings/downloads/downloads_screen.dart';
 import 'package:mangayomi/modules/more/settings/player/player_screen.dart';
 import 'package:mangayomi/modules/more/settings/sync/sync.dart';
@@ -80,7 +79,6 @@ part 'router.g.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 @riverpod
 GoRouter router(Ref ref) {
-  final router = RouterNotifier();
   final hiddenItems = ref.read(hideItemsStateProvider);
   // This is a launch preference. Reordering the visible tabs must not replace
   // the router and discard the settings page or retained tab stacks.
@@ -93,305 +91,250 @@ GoRouter router(Ref ref) {
     observers: [BotToastNavigatorObserver(), CrashRouteObserver()],
     initialLocation: initLocation,
     debugLogDiagnostics: kDebugMode,
-    refreshListenable: router,
-    routes: router._routes,
+    routes: _routes,
     navigatorKey: navigatorKey,
     onException: (context, state, router) => router.go(initLocation),
   );
 }
 
-@riverpod
-class RouterCurrentLocationState extends _$RouterCurrentLocationState {
-  bool _didSubscribe = false;
-  @override
-  String? build() {
-    ref.keepAlive();
-    // Delay listener‐registration until after the first frame.
-    if (!_didSubscribe) {
-      _didSubscribe = true;
-      // Schedule the registration to run after the first build/frame:
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _listener();
-      });
-    }
-    return null;
-  }
-
-  void _listener() {
-    final router = ref.read(routerProvider);
-    router.routerDelegate.addListener(() {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final RouteMatchList matches =
-            router.routerDelegate.currentConfiguration;
-        final RouteMatch lastMatch = matches.last;
-        final RouteMatchList matchList = lastMatch is ImperativeRouteMatch
-            ? lastMatch.matches
-            : matches;
-        state = matchList.uri.toString();
-      });
-    });
-  }
-
-  void refresh() {
-    _listener();
-  }
-}
-
-class RouterNotifier extends ChangeNotifier {
-  List<RouteBase> get _routes => [
-    // Each tab lives in its own StatefulShellBranch so switching tabs keeps
-    // the other screens mounted (scroll position, queries, images preserved).
-    //
-    // Except on a television, where that retention is not affordable. Measured
-    // on a Fire TV: every branch left mounted holds roughly 14 MB of GPU
-    // surfaces, three tabs took Graphics from 27 MB to 69 MB, and the box has
-    // around 300 MB free with most of its swap already spent. Off TV the
-    // trade is the other way round and IndexedStack stays.
-    StatefulShellRoute(
-      pageBuilder: (_, state, shell) => _page(state, MainScreen(child: shell)),
-      navigatorContainerBuilder: (_, shell, children) =>
-          NodeLaneBranchStack(index: shell.currentIndex, children: children),
-      branches: [
-        _branch(
-          _genericRoute<String?>(
-            name: "MangaLibrary",
-            builder: (id) =>
-                LibraryScreen(itemType: ItemType.manga, presetInput: id),
-          ),
+List<RouteBase> get _routes => [
+  // Each tab lives in its own StatefulShellBranch so switching tabs keeps
+  // the other screens mounted (scroll position, queries, images preserved).
+  //
+  // Except on a television, where that retention is not affordable. Measured
+  // on a Fire TV: every branch left mounted holds roughly 14 MB of GPU
+  // surfaces, three tabs took Graphics from 27 MB to 69 MB, and the box has
+  // around 300 MB free with most of its swap already spent. Off TV the
+  // trade is the other way round and IndexedStack stays.
+  StatefulShellRoute(
+    pageBuilder: (_, state, shell) => _page(state, MainScreen(child: shell)),
+    navigatorContainerBuilder: (_, shell, children) =>
+        NodeLaneBranchStack(index: shell.currentIndex, children: children),
+    branches: [
+      _branch(
+        _genericRoute<String?>(
+          name: "MangaLibrary",
+          builder: (id) =>
+              LibraryScreen(itemType: ItemType.manga, presetInput: id),
         ),
-        _branch(
-          _genericRoute<String?>(
-            name: "AnimeLibrary",
-            builder: (id) =>
-                LibraryScreen(itemType: ItemType.anime, presetInput: id),
-          ),
-        ),
-        _branch(
-          _genericRoute<String?>(
-            name: "NovelLibrary",
-            builder: (id) =>
-                LibraryScreen(itemType: ItemType.novel, presetInput: id),
-          ),
-        ),
-        _branch(
-          _genericRoute<String?>(
-            name: "trackerLibrary",
-            builder: (id) => TrackerLibraryScreen(presetInput: id),
-          ),
-        ),
-        _branch(
-          _genericRoute(name: "browser", child: const MobileBrowserHome()),
-        ),
-        _branch(_genericRoute(name: "updates", child: const UpdatesScreen())),
-        _branch(
-          _genericRoute(
-            name: "browse",
-            child: isMobile && !isTv
-                ? const MobileSourcesScreen()
-                : const BrowseScreen(),
-          ),
-        ),
-        _branch(_genericRoute(name: "more", child: const MoreScreen())),
-      ],
-    ),
-    _genericRoute<(Source?, bool)>(
-      name: "mangaHome",
-      builder: (id) => MangaHomeScreen(source: id.$1!, isLatest: id.$2),
-    ),
-    _genericRoute<int>(
-      path: "/manga-reader/detail",
-      builder: (id) => MangaReaderDetail(mangaId: id),
-    ),
-    _genericRoute<int>(
-      name: "mangaReaderView",
-      // Keyed by chapter id so a chapter-to-chapter pushReplacement fully
-      // remounts instead of reusing the Element and going stale.
-      builder: (id) =>
-          MangaReaderView(key: ValueKey('mangaReader-$id'), chapterId: id),
-    ),
-    _genericRoute<int>(
-      name: "animePlayerView",
-      builder: (id) =>
-          AnimePlayerView(key: ValueKey('animePlayer-$id'), episodeId: id),
-    ),
-    _genericRoute<int>(
-      name: "novelReaderView",
-      builder: (id) =>
-          NovelReaderView(key: ValueKey('novelReader-$id'), chapterId: id),
-    ),
-    if (!(isMobile && !isTv))
-      _genericRoute<ItemType>(
-        name: "ExtensionLang",
-        builder: (itemType) => ExtensionsLang(itemType: itemType),
       ),
-    if (!(isMobile && !isTv))
-      _genericRoute(name: "settings", child: const SettingsScreen()),
-    _genericRoute(name: "appearance", child: const AppearanceScreen()),
-    _genericRoute<Source>(
-      name: "extension_detail",
-      builder: (source) => ExtensionDetail(source: source),
-    ),
-    _genericRoute<(String?, ItemType)>(
-      name: "globalSearch",
-      builder: (data) => GlobalSearchScreen(search: data.$1, itemType: data.$2),
-    ),
-    _genericRoute(name: "about", child: const AboutScreen()),
-    _genericRoute<UpdateInfo?>(
-      name: 'appUpdate',
-      builder: (update) => SoftwareUpdateScreen(update: update),
-    ),
-    _genericRoute(name: "errorReports", child: const ErrorReportsScreen()),
-    _genericRoute(name: "track", child: const TrackScreen()),
-    _genericRoute(name: "sync", child: const SyncScreen()),
-    if (!(isMobile && !isTv))
-      _genericRoute<ItemType>(
-        name: "sourceFilter",
-        builder: (itemType) => SourcesFilterScreen(itemType: itemType),
+      _branch(
+        _genericRoute<String?>(
+          name: "AnimeLibrary",
+          builder: (id) =>
+              LibraryScreen(itemType: ItemType.anime, presetInput: id),
+        ),
       ),
-    _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
-    _genericRoute<Map<String, dynamic>>(
-      name: "mangawebview",
-      builder: (data) =>
-          isMobile && !(Platform.isAndroid && data['sourceSession'] == true)
-          ? MobileComicBrowser(
-              url: data['url']!,
-              title: data['title']!,
-              tabId: data['tabId'],
-              clipAnchor: data['clipAnchor'],
-            )
-          : MangaWebView(url: data["url"]!, title: data['title']!),
-    ),
-    _genericRoute<(bool, int)>(
-      name: "categories",
-      builder: (data) => CategoriesScreen(data: data),
-    ),
-    _genericRoute(name: "statistics", child: const StatisticsScreen()),
-    _genericRoute(name: "general", child: const GeneralScreen()),
-    _genericRoute(name: "readerMode", child: const ReaderScreen()),
-    _genericRoute(name: "novelReaderMode", child: const NovelReaderScreen()),
-    if (isMobile && !isTv)
-      _genericRoute(
-        name: "ttsSettings",
-        child: const MobileTtsSettingsScreen(),
+      _branch(
+        _genericRoute<String?>(
+          name: "NovelLibrary",
+          builder: (id) =>
+              LibraryScreen(itemType: ItemType.novel, presetInput: id),
+        ),
       ),
-    _genericRoute(name: "browseS", child: const BrowseSScreen()),
-    _genericRoute(
-      name: "extensionServer",
-      child: const ExtensionServerScreen(),
-    ),
+      _branch(
+        _genericRoute<String?>(
+          name: "trackerLibrary",
+          builder: (id) => TrackerLibraryScreen(presetInput: id),
+        ),
+      ),
+      _branch(_genericRoute(name: "browser", child: const MobileBrowserHome())),
+      _branch(_genericRoute(name: "updates", child: const UpdatesScreen())),
+      _branch(
+        _genericRoute(
+          name: "browse",
+          child: isMobile && !isTv
+              ? const MobileSourcesScreen()
+              : const BrowseScreen(),
+        ),
+      ),
+      _branch(_genericRoute(name: "more", child: const MoreScreen())),
+    ],
+  ),
+  _genericRoute<(Source?, bool)>(
+    name: "mangaHome",
+    builder: (id) => MangaHomeScreen(source: id.$1!, isLatest: id.$2),
+  ),
+  _genericRoute<int>(
+    path: "/manga-reader/detail",
+    builder: (id) => MangaReaderDetail(mangaId: id),
+  ),
+  _genericRoute<int>(
+    name: "mangaReaderView",
+    // Keyed by chapter id so a chapter-to-chapter pushReplacement fully
+    // remounts instead of reusing the Element and going stale.
+    builder: (id) =>
+        MangaReaderView(key: ValueKey('mangaReader-$id'), chapterId: id),
+  ),
+  _genericRoute<int>(
+    name: "animePlayerView",
+    builder: (id) =>
+        AnimePlayerView(key: ValueKey('animePlayer-$id'), episodeId: id),
+  ),
+  _genericRoute<int>(
+    name: "novelReaderView",
+    builder: (id) =>
+        NovelReaderView(key: ValueKey('novelReader-$id'), chapterId: id),
+  ),
+  if (!(isMobile && !isTv))
     _genericRoute<ItemType>(
-      name: "SourceRepositories",
-      builder: (itemType) => SourceRepositories(itemType: itemType),
+      name: "ExtensionLang",
+      builder: (itemType) => ExtensionsLang(itemType: itemType),
     ),
-    _genericRoute(name: "downloads", child: const DownloadsScreen()),
-    _genericRoute(name: "dataAndStorage", child: const DataAndStorage()),
-    _genericRoute(name: "security", child: const SecurityScreen()),
-    _genericRoute(name: "manageTrackers", child: const ManageTrackersScreen()),
-    _genericRoute<TrackPreference>(
-      name: "trackingDetail",
-      builder: (trackerPref) => TrackingDetail(trackerPref: trackerPref),
+  if (!(isMobile && !isTv))
+    _genericRoute(name: "settings", child: const SettingsScreen()),
+  _genericRoute(name: "appearance", child: const AppearanceScreen()),
+  _genericRoute<Source>(
+    name: "extension_detail",
+    builder: (source) => ExtensionDetail(source: source),
+  ),
+  _genericRoute<(String?, ItemType)>(
+    name: "globalSearch",
+    builder: (data) => GlobalSearchScreen(search: data.$1, itemType: data.$2),
+  ),
+  _genericRoute(name: "about", child: const AboutScreen()),
+  _genericRoute<UpdateInfo?>(
+    name: 'appUpdate',
+    builder: (update) => SoftwareUpdateScreen(update: update),
+  ),
+  _genericRoute(name: "errorReports", child: const ErrorReportsScreen()),
+  _genericRoute(name: "track", child: const TrackScreen()),
+  _genericRoute(name: "sync", child: const SyncScreen()),
+  if (!(isMobile && !isTv))
+    _genericRoute<ItemType>(
+      name: "sourceFilter",
+      builder: (itemType) => SourcesFilterScreen(itemType: itemType),
     ),
-    _genericRoute(name: "playerOverview", child: const PlayerOverviewScreen()),
-    _genericRoute(name: "playerMode", child: const PlayerScreen()),
-    _genericRoute<int>(
-      name: "codeEditor",
-      builder: (sourceId) => CodeEditorPage(sourceId: sourceId),
-    ),
-    _genericRoute<Source?>(
-      name: "createExtension",
-      builder: (source) => CreateExtension(editSource: source),
-    ),
-    _genericRoute(name: "createBackup", child: const CreateBackup()),
-    _genericRoute(
-      name: "customNavigationSettings",
-      child: const CustomNavigationSettings(),
-    ),
-    _genericRoute(
-      name: "customButtonScreen",
-      child: const CustomButtonScreen(),
-    ),
-    _genericRoute(
-      name: "playerDecoderScreen",
-      child: const PlayerDecoderScreen(),
-    ),
-    _genericRoute(name: "playerAudioScreen", child: const PlayerAudioScreen()),
-    _genericRoute(
-      name: "playerAdvancedScreen",
-      child: const PlayerAdvancedScreen(),
-    ),
-    _genericRoute<ItemType?>(
-      name: "calendarScreen",
-      builder: (itemType) => CalendarScreen(itemType: itemType),
-    ),
-    _genericRoute<Manga>(
-      name: "migrate",
-      builder: (manga) => MigrationScreen(manga: manga),
-    ),
-    _genericRoute<dynamic>(
-      name: "massMigration",
-      builder: (data) {
-        if (data is (ItemType, Manga?, List<Manga>?)) {
-          return MassMigrationSourceSelectionScreen(
-            itemType: data.$1,
-            prioritizedManga: data.$2,
-            selectedMangas: data.$3,
+  _genericRoute(name: "downloadQueue", child: const DownloadQueueScreen()),
+  _genericRoute<Map<String, dynamic>>(
+    name: "mangawebview",
+    builder: (data) =>
+        isMobile && !(Platform.isAndroid && data['sourceSession'] == true)
+        ? MobileComicBrowser(
+            url: data['url']!,
+            title: data['title']!,
+            tabId: data['tabId'],
+            clipAnchor: data['clipAnchor'],
+          )
+        : MangaWebView(url: data["url"]!, title: data['title']!),
+  ),
+  _genericRoute(name: "statistics", child: const StatisticsScreen()),
+  _genericRoute(name: "general", child: const GeneralScreen()),
+  _genericRoute(name: "readerMode", child: const ReaderScreen()),
+  _genericRoute(name: "novelReaderMode", child: const NovelReaderScreen()),
+  if (isMobile && !isTv)
+    _genericRoute(name: "ttsSettings", child: const MobileTtsSettingsScreen()),
+  _genericRoute(name: "browseS", child: const BrowseSScreen()),
+  _genericRoute(name: "extensionServer", child: const ExtensionServerScreen()),
+  _genericRoute<ItemType>(
+    name: "SourceRepositories",
+    builder: (itemType) => SourceRepositories(itemType: itemType),
+  ),
+  _genericRoute(name: "downloads", child: const DownloadsScreen()),
+  _genericRoute(name: "dataAndStorage", child: const DataAndStorage()),
+  _genericRoute(name: "security", child: const SecurityScreen()),
+  _genericRoute(name: "manageTrackers", child: const ManageTrackersScreen()),
+  _genericRoute<TrackPreference>(
+    name: "trackingDetail",
+    builder: (trackerPref) => TrackingDetail(trackerPref: trackerPref),
+  ),
+  _genericRoute(name: "playerOverview", child: const PlayerOverviewScreen()),
+  _genericRoute(name: "playerMode", child: const PlayerScreen()),
+  _genericRoute<int>(
+    name: "codeEditor",
+    builder: (sourceId) => CodeEditorPage(sourceId: sourceId),
+  ),
+  _genericRoute<Source?>(
+    name: "createExtension",
+    builder: (source) => CreateExtension(editSource: source),
+  ),
+  _genericRoute(name: "createBackup", child: const CreateBackup()),
+  _genericRoute(
+    name: "customNavigationSettings",
+    child: const CustomNavigationSettings(),
+  ),
+  _genericRoute(name: "customButtonScreen", child: const CustomButtonScreen()),
+  _genericRoute(
+    name: "playerDecoderScreen",
+    child: const PlayerDecoderScreen(),
+  ),
+  _genericRoute(name: "playerAudioScreen", child: const PlayerAudioScreen()),
+  _genericRoute(
+    name: "playerAdvancedScreen",
+    child: const PlayerAdvancedScreen(),
+  ),
+  _genericRoute<ItemType?>(
+    name: "calendarScreen",
+    builder: (itemType) => CalendarScreen(itemType: itemType),
+  ),
+  _genericRoute<Manga>(
+    name: "migrate",
+    builder: (manga) => MigrationScreen(manga: manga),
+  ),
+  _genericRoute<dynamic>(
+    name: "massMigration",
+    builder: (data) {
+      if (data is (ItemType, Manga?, List<Manga>?)) {
+        return MassMigrationSourceSelectionScreen(
+          itemType: data.$1,
+          prioritizedManga: data.$2,
+          selectedMangas: data.$3,
+        );
+      }
+      if (data is (ItemType, Manga?)) {
+        return MassMigrationSourceSelectionScreen(
+          itemType: data.$1,
+          prioritizedManga: data.$2,
+        );
+      }
+      return MassMigrationSourceSelectionScreen(itemType: data as ItemType);
+    },
+  ),
+  _genericRoute<(Manga, TrackSearch)>(
+    name: "migrate/tracker",
+    builder: (data) => MigrationScreen(manga: data.$1, trackSearch: data.$2),
+  ),
+  _genericRoute<(String, ItemType)>(
+    name: "related",
+    builder: (data) => RelatedScreen(name: data.$1, itemType: data.$2),
+  ),
+  _genericRoute<(MediaLookupContext, AlgorithmWeights)>(
+    name: "recommendations",
+    builder: (data) =>
+        RecommendationScreen(media: data.$1, algorithmWeights: data.$2),
+  ),
+  _genericRoute<(MediaLookupContext, Track?)>(
+    name: "watchOrder",
+    builder: (data) => WatchOrderScreen(media: data.$1, track: data.$2),
+  ),
+];
+
+StatefulShellBranch _branch(GoRoute route) =>
+    StatefulShellBranch(routes: [route]);
+
+GoRoute _genericRoute<T>({
+  String? name,
+  String? path,
+  Widget Function(T extra)? builder,
+  Widget? child,
+}) {
+  Widget pageChild(GoRouterState state) {
+    final page = builder != null ? builder(state.extra as T) : child!;
+    final target = state.uri.queryParametersAll['setting'];
+    return target == null || target.isEmpty
+        ? page
+        : NodeLaneRevealScope(
+            key: ValueKey(state.uri),
+            path: target,
+            child: page,
           );
-        }
-        if (data is (ItemType, Manga?)) {
-          return MassMigrationSourceSelectionScreen(
-            itemType: data.$1,
-            prioritizedManga: data.$2,
-          );
-        }
-        return MassMigrationSourceSelectionScreen(itemType: data as ItemType);
-      },
-    ),
-    _genericRoute<(Manga, TrackSearch)>(
-      name: "migrate/tracker",
-      builder: (data) => MigrationScreen(manga: data.$1, trackSearch: data.$2),
-    ),
-    _genericRoute<(String, ItemType)>(
-      name: "related",
-      builder: (data) => RelatedScreen(name: data.$1, itemType: data.$2),
-    ),
-    _genericRoute<(MediaLookupContext, AlgorithmWeights)>(
-      name: "recommendations",
-      builder: (data) =>
-          RecommendationScreen(media: data.$1, algorithmWeights: data.$2),
-    ),
-    _genericRoute<(MediaLookupContext, Track?)>(
-      name: "watchOrder",
-      builder: (data) => WatchOrderScreen(media: data.$1, track: data.$2),
-    ),
-  ];
-
-  StatefulShellBranch _branch(GoRoute route) =>
-      StatefulShellBranch(routes: [route]);
-
-  GoRoute _genericRoute<T>({
-    String? name,
-    String? path,
-    Widget Function(T extra)? builder,
-    Widget? child,
-  }) {
-    Widget pageChild(GoRouterState state) {
-      final page = builder != null ? builder(state.extra as T) : child!;
-      final target = state.uri.queryParametersAll['setting'];
-      return target == null || target.isEmpty
-          ? page
-          : NodeLaneRevealScope(
-              key: ValueKey(state.uri),
-              path: target,
-              child: page,
-            );
-    }
-
-    return GoRoute(
-      path: path ?? (name != null ? "/$name" : "/"),
-      name: name,
-      pageBuilder: (_, state) => _page(state, pageChild(state)),
-    );
   }
+
+  return GoRoute(
+    path: path ?? (name != null ? "/$name" : "/"),
+    name: name,
+    pageBuilder: (_, state) => _page(state, pageChild(state)),
+  );
 }
 
 MaterialPage<Object?> _page(GoRouterState state, Widget child) =>

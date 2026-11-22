@@ -2,7 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_glass_surface.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+
+Future<T?> showNodeLaneDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool barrierDismissible = true,
+  bool useRootNavigator = true,
+}) => showDialog<T>(
+  context: context,
+  builder: builder,
+  barrierDismissible: barrierDismissible,
+  useRootNavigator: useRootNavigator,
+  animationStyle: NodeLaneMotion.style(context),
+);
 
 /// Shared styling only; callers retain navigation, state and persistence.
 class NodeLaneModalScope extends StatelessWidget {
@@ -199,7 +213,7 @@ Future<bool> showNodeLaneConfirmation(
   required String confirmLabel,
   bool destructive = false,
 }) async =>
-    await showDialog<bool>(
+    await showNodeLaneDialog<bool>(
       context: context,
       builder: (dialogContext) => NodeLaneAlertDialog(
         title: Text(title),

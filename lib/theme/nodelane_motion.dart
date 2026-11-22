@@ -10,11 +10,108 @@ abstract final class NodeLaneMotion {
   static const curve = Curves.easeOutCubic;
   static Duration time(BuildContext context) =>
       MediaQuery.disableAnimationsOf(context) ? Duration.zero : duration;
-  static AnimationStyle menu(BuildContext context) => AnimationStyle(
-    duration: time(context),
-    reverseDuration: time(context),
+  static Duration get _systemTime =>
+      WidgetsBinding
+          .instance
+          .platformDispatcher
+          .accessibilityFeatures
+          .disableAnimations
+      ? Duration.zero
+      : duration;
+  static const _style = AnimationStyle(
+    duration: duration,
+    reverseDuration: duration,
     curve: curve,
+    reverseCurve: curve,
   );
+  static AnimationStyle style(BuildContext context) =>
+      MediaQuery.disableAnimationsOf(context)
+      ? AnimationStyle.noAnimation
+      : _style;
+
+  static final _bubbleScale = Tween(
+    begin: .93,
+    end: 1.0,
+  ).chain(CurveTween(curve: curve));
+  static final _bubbleFade = CurveTween(
+    curve: const Interval(0, .72, curve: Curves.easeOut),
+  );
+
+  /// Only the bounded overlay participates; its Navigator owns the clock in both directions.
+  static Widget anchored(
+    BuildContext context,
+    Animation<double> animation,
+    Alignment pivot,
+    Widget child,
+  ) {
+    final progress = MediaQuery.disableAnimationsOf(context)
+        ? kAlwaysCompleteAnimation
+        : animation;
+    return FadeTransition(
+      opacity: progress.drive(_bubbleFade),
+      child: ScaleTransition(
+        alignment: pivot,
+        scale: progress.drive(_bubbleScale),
+        child: RepaintBoundary(child: child),
+      ),
+    );
+  }
+
+  static const _travel = .055;
+  static final _enter = Tween(
+    begin: const Offset(_travel, 0),
+    end: Offset.zero,
+  ).chain(CurveTween(curve: curve));
+  static const _still = AlwaysStoppedAnimation(Offset.zero);
+
+  static Widget _content(
+    BuildContext context,
+    Animation<Offset> position,
+    Widget child, {
+    bool reverse = false,
+  }) {
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    // Lists and platform views already isolate their own paint. At rest this
+    // outlet needs neither a clip layer nor a full-page raster cache.
+    return ValueListenableBuilder<Offset>(
+      valueListenable: position,
+      child: child,
+      builder: (_, offset, child) => ClipRect(
+        clipBehavior: offset == Offset.zero ? Clip.none : Clip.hardEdge,
+        child: FractionalTranslation(
+          translation: rtl != reverse ? -offset : offset,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  /// For a tab body replaced in place. A swipeable TabBarView already moves itself.
+  static Widget tabBody(
+    BuildContext context,
+    TabController tabs,
+    Widget child,
+  ) {
+    final index = tabs.index, distance = (index - tabs.previousIndex).abs();
+    final still =
+        !tabs.indexIsChanging ||
+        distance == 0 ||
+        MediaQuery.disableAnimationsOf(context);
+    return _content(
+      context,
+      still
+          ? _still
+          : tabs.animation!.drive(
+              Animatable<Offset>.fromCallback(
+                (v) => Offset(
+                  ((index - v) / distance).clamp(-1.0, 1.0) * _travel,
+                  0,
+                ),
+              ),
+            ),
+      child,
+    );
+  }
 
   static TabController tabs({
     required int length,
@@ -74,14 +171,7 @@ class _MotionTabs extends TabController {
     required super.initialIndex,
   });
   @override
-  Duration get animationDuration =>
-      WidgetsBinding
-          .instance
-          .platformDispatcher
-          .accessibilityFeatures
-          .disableAnimations
-      ? Duration.zero
-      : NodeLaneMotion.duration;
+  Duration get animationDuration => NodeLaneMotion._systemTime;
   @override
   void animateTo(
     int value, {
@@ -97,9 +187,9 @@ class _MotionTabs extends TabController {
 class _RouteMotion extends PageTransitionsBuilder {
   const _RouteMotion();
   @override
-  Duration get transitionDuration => NodeLaneMotion.duration;
+  Duration get transitionDuration => NodeLaneMotion._systemTime;
   @override
-  Duration get reverseTransitionDuration => NodeLaneMotion.duration;
+  Duration get reverseTransitionDuration => transitionDuration;
 
   @override
   Widget buildTransitions<T>(
@@ -142,8 +232,7 @@ class _RouteMotion extends PageTransitionsBuilder {
   ).chain(CurveTween(curve: NodeLaneMotion.curve));
 }
 
-/// Animate a change of destination, never a data refresh. Only the incoming
-/// child paints; the veil is a solid rect, not opacity on the whole subtree.
+/// Animate only the current destination, with no outgoing tree or full-page opacity.
 class NodeLaneContentMotion extends StatefulWidget {
   const NodeLaneContentMotion({
     super.key,
@@ -161,64 +250,44 @@ class NodeLaneContentMotion extends StatefulWidget {
 
 class _ContentMotionState extends State<NodeLaneContentMotion>
     with SingleTickerProviderStateMixin {
-  late final _clock = AnimationController(
-    vsync: this,
-    duration: NodeLaneMotion.duration,
-    value: 1,
-  );
+  AnimationController? _clock;
 
   @override
   void didUpdateWidget(NodeLaneContentMotion oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value &&
+        TickerMode.valuesOf(context).enabled &&
         !MediaQuery.disableAnimationsOf(context)) {
-      _clock.forward(from: 0);
+      (_clock ??= AnimationController(
+        vsync: this,
+        duration: NodeLaneMotion.duration,
+      )).forward(from: 0);
     }
   }
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (MediaQuery.disableAnimationsOf(context) && _clock.isAnimating) {
-      _clock.value = 1;
+    if ((MediaQuery.disableAnimationsOf(context) ||
+            !TickerMode.valuesOf(context).enabled) &&
+        _clock?.isAnimating == true) {
+      _clock!.value = 1;
     }
   }
 
   @override
   void dispose() {
-    _clock.dispose();
+    _clock?.dispose();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) {
-    final direction =
-        (Directionality.of(context) == TextDirection.rtl) != widget.reverse
-        ? -1
-        : 1;
-    final surface = Theme.of(context).scaffoldBackgroundColor;
-    return ClipRect(
-      child: AnimatedBuilder(
-        animation: _clock,
-        child: RepaintBoundary(child: widget.child),
-        builder: (_, child) {
-          final remaining = 1 - NodeLaneMotion.curve.transform(_clock.value);
-          return Transform.translate(
-            offset: Offset(direction * 24 * remaining, 0),
-            child: DecoratedBox(
-              position: DecorationPosition.foreground,
-              decoration: BoxDecoration(
-                color: remaining == 0
-                    ? null
-                    : surface.withValues(alpha: remaining),
-              ),
-              child: child,
-            ),
-          );
-        },
-      ),
-    );
-  }
+  Widget build(BuildContext context) => NodeLaneMotion._content(
+    context,
+    _clock?.drive(NodeLaneMotion._enter) ?? NodeLaneMotion._still,
+    widget.child,
+    reverse: widget.reverse,
+  );
 }
 
 /// For a pane in a Stack. Change constraints at the ends, then move and clip

@@ -764,12 +764,7 @@ class _NodeLaneDisclosureState extends State<NodeLaneDisclosure> {
       key: PageStorageKey(widget.key ?? widget.title),
       controller: _controller,
       maintainState: false,
-      animationStyle: MediaQuery.disableAnimationsOf(context)
-          ? AnimationStyle.noAnimation
-          : const AnimationStyle(
-              duration: NodeLaneTokens.disclosureDuration,
-              curve: Curves.easeInOut,
-            ),
+      animationStyle: NodeLaneMotion.style(context),
       headerBuilder: (context, animation) => Semantics(
         expanded: _controller.isExpanded,
         child: NodeLaneRow(
@@ -1396,7 +1391,7 @@ class NodeLaneMenuButton<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final motion = NodeLaneMotion.menu(context);
+    final motion = NodeLaneMotion.style(context);
     if (label != null) {
       final t = NodeLaneTokens.of(context);
       return PopupMenuButton<T>(
@@ -1839,27 +1834,29 @@ class NodeLaneOptionSwitch<T> extends StatelessWidget {
         );
     Widget option(T id, String label, double width) {
       final selected = id == value;
+      final radius = BorderRadius.circular(NodeLaneTokens.controlRadius);
       return Semantics(
         container: true,
         button: true,
         selected: selected,
         inMutuallyExclusiveGroup: true,
-        child: Material(
-          color: selected ? t.accentSoft : t.surface,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(NodeLaneTokens.controlRadius),
-            side: BorderSide(
+        // Paint onto the group's Material instead of clipping a separate layer for every choice.
+        child: Ink(
+          width: width,
+          decoration: BoxDecoration(
+            color: selected ? t.accentSoft : t.surface,
+            borderRadius: radius,
+            border: Border.all(
               color: selected ? t.accent : t.line,
               width: NodeLaneTokens.glassStroke,
             ),
           ),
-          clipBehavior: Clip.antiAlias,
           child: InkWell(
+            borderRadius: radius,
             onTap: () {
               if (!selected) onChanged(id);
             },
             child: Container(
-              width: width,
               constraints: const BoxConstraints(
                 minHeight: NodeLaneTokens.minTapTarget,
               ),
@@ -1910,7 +1907,10 @@ class NodeLaneOptionSwitch<T> extends StatelessWidget {
                 textScaler: MediaQuery.textScalerOf(context),
               )..layout();
               final needed =
-                  labels.width.ceilToDouble() + 2 * inset + mark + gap;
+                  labels.width.ceilToDouble() +
+                  2 * (inset + NodeLaneTokens.glassStroke) +
+                  mark +
+                  gap;
               labels.dispose();
               final columns = ((box.maxWidth + gap) / (needed + gap))
                   .floor()

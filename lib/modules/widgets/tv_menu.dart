@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/widgets/tv_pill.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 
 /// One row in a [showTvMenu].
@@ -27,7 +28,7 @@ Future<int?> showTvMenu(
   required String title,
   required List<TvMenuOption> options,
 }) {
-  return showDialog<int>(
+  return showNodeLaneDialog<int>(
     context: context,
     builder: (ctx) => _TvMenu(title: title, options: options),
   );

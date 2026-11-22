@@ -1,5 +1,6 @@
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:mangayomi/modules/widgets/nodelane_modal.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/track.dart';
@@ -296,7 +297,7 @@ Future<dynamic> trackersSearchDraggableMenu(
     );
   }
   var padding = MediaQuery.of(context).padding;
-  return await showDialog(
+  return await showNodeLaneDialog(
     context: context,
     builder: (context) => Scaffold(
       backgroundColor: Colors.transparent,
