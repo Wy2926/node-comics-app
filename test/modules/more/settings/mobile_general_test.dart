@@ -80,28 +80,21 @@ void main() {
         autoLibraryUpdateIntervalStateProvider.notifier,
       ) as _Interval;
       expect(interval.writes, isEmpty);
-      Future<void> choose(int value) async {
+      Future<void> choose(String label) async {
         await openUpdate();
-        final tiles = tester
-            .widgetList<NodeLaneRow>(inBubble(find.byType(NodeLaneRow)))
-            .toList();
-        final index = [0, 12, 24, 48, 168].indexOf(value);
-        final tile = find.byWidget(tiles[index]);
-        await tester.ensureVisible(tile);
-        await tester.pumpAndSettle();
-        await tester.tap(tile);
+        await tester.tap(await revealBubble(tester, find.text(label)));
         await tester.pumpAndSettle();
       }
 
-      await choose(24);
+      await choose('Daily');
       final wifi = find.byType(NodeLaneSwitchRow).first;
       await tester.ensureVisible(wifi);
       await tester.pumpAndSettle();
       await tester.tap(wifi);
       await tester.pumpAndSettle();
       expect(container.read(autoLibraryUpdateWifiOnlyStateProvider), isFalse);
-      await choose(0);
-      await choose(24);
+      await choose('Never');
+      await choose('Daily');
       expect(container.read(autoLibraryUpdateWifiOnlyStateProvider), isFalse);
       expect(interval.writes, [24, 0, 24]);
 
