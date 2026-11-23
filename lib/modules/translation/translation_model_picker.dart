@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:mangayomi/modules/translation/translation_upgrade.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -10,7 +11,6 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class TranslationModelRow extends ConsumerStatefulWidget {
   const TranslationModelRow({super.key});
@@ -75,59 +75,16 @@ class _ModelChoices extends StatefulWidget {
   State<_ModelChoices> createState() => _ModelChoicesState();
 }
 
-class _ModelChoicesState extends State<_ModelChoices>
-    with WidgetsBindingObserver {
+class _ModelChoicesState extends State<_ModelChoices> {
   final _cancel = TranslationCancellation();
   late var _models = widget.service.readModels(_cancel);
-  late final String? _account;
-  bool _pricingOpen = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _account = widget.service.accountId;
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  bool _current() =>
-      mounted &&
-      _account == widget.service.accountId &&
-      ModalRoute.isCurrentOf(context) == true;
-
-  Future<void> _upgrade() async {
-    if (_pricingOpen || !_current()) return;
-    final unavailable = context.l10n.translation_upgrade_unavailable;
-    _pricingOpen = true;
-    try {
-      if (!await launchUrl(
-        Uri.https('comics.nodelane.net', '/pricing/'),
-        mode: LaunchMode.externalApplication,
-      )) {
-        throw const TranslationFailure('BILLING_UNAVAILABLE');
-      }
-    } catch (_) {
-      _pricingOpen = false;
-      if (_current()) {
-        showNodeLaneNotice(unavailable, kind: NodeLaneNoticeKind.error);
-      }
-    }
-  }
 
   void _reload() => setState(() {
     _models = widget.service.readModels(_cancel);
   });
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _pricingOpen) {
-      _pricingOpen = false;
-      if (_current()) _reload();
-    }
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     _cancel.cancel();
     super.dispose();
   }
@@ -147,7 +104,7 @@ class _ModelChoicesState extends State<_ModelChoices>
         Localizations.localeOf(context).toLanguageTag(),
       );
       final upgrade = TextButton(
-        onPressed: _upgrade,
+        onPressed: () => openPricingPage(context),
         child: Text(l.translation_upgrade_quota, textAlign: TextAlign.center),
       );
       SettingOption<TranslationModel?> choice(TranslationModelOption option) {

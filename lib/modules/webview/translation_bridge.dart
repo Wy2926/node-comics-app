@@ -66,7 +66,7 @@ class WebTranslationBridge {
   final TranslationViewController view;
   final String tabId;
   final Future<void> Function(TranslationTarget)? onImageMenu;
-  final Future<void> Function(TranslationTarget)? onUpgrade;
+  final Future<void> Function()? onUpgrade;
   final void Function(bool chapter, String? next)? onReading;
   Map<String, Object> _theme;
   AppLocalizations _l10n;
@@ -180,7 +180,7 @@ class WebTranslationBridge {
       }
       if (action == TranslationAction.upgrade) {
         if (onUpgrade == null) return false;
-        await onUpgrade!(target);
+        await onUpgrade!();
       } else {
         await view.perform(target, action);
       }

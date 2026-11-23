@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,6 +25,8 @@ import 'package:mangayomi/modules/manga/reader/settings/comic_reader_scope.dart'
 import 'package:mangayomi/modules/manga/reader/widgets/reader_overlays.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
+
+import '../../helpers/pricing_launcher.dart';
 
 class _LocalRuntime implements ChannelRuntime {
   final _changes = StreamController<void>.broadcast();
@@ -82,17 +85,6 @@ class _LocalRuntime implements ChannelRuntime {
 }
 
 class _LocalService extends TranslationService {
-  int upgrades = 0;
-  @override
-  Future<bool> openBillingUpgrade(
-    ChannelRuntime? expectedRuntime,
-    bool Function() isCurrent,
-  ) async {
-    if (!identical(runtime, expectedRuntime) || !isCurrent()) return false;
-    upgrades++;
-    return true;
-  }
-
   _LocalService(ChannelRuntime value) {
     runtime = value;
   }
@@ -119,6 +111,7 @@ void main() {
           actions: {TranslationAction.retry},
         );
       final service = _LocalService(runtime);
+      final launcher = PricingLauncher.install();
       int navigation = 0;
       void turn() => navigation++;
       await tester.pumpWidget(
@@ -128,6 +121,8 @@ void main() {
             locale: const Locale('zh'),
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
+            builder: BotToastInit(),
+            navigatorObservers: [BotToastNavigatorObserver()],
             home: Scaffold(
               body: ComicReaderScope(
                 profile: const ComicBookSettings(mode: ComicReadingMode.paged)
@@ -179,9 +174,16 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('额度不足'), findsOneWidget);
       expect(find.textContaining('连接失败'), findsNothing);
+      launcher.pending = Completer<bool>();
       await tester.tap(find.text('升级'));
+      launcher.pending!.complete(false);
       await tester.pumpAndSettle();
-      expect(service.upgrades, 1);
+      expect(find.text('网页暂时无法打开'), findsOneWidget);
+      launcher.pending = null;
+      await tester.tap(find.text('升级'));
+      await tester.pump(const Duration(seconds: 7));
+      await tester.pumpAndSettle();
+      expect(launcher.urls, [publicPricingUrl, publicPricingUrl]);
       expect(runtime.performed, [TranslationAction.retry]);
       expect(navigation, 0);
       await tester.tapAt(const Offset(12, 200));

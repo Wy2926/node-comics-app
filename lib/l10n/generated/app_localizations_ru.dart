@@ -5413,10 +5413,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get translation_upgrade_quota => 'Улучшить план';
 
   @override
-  String get translation_upgrade_unavailable =>
-      'Не удалось открыть страницу оплаты. Попробуйте позже.';
-
-  @override
   String get translation_unsupported_language =>
       'Сервис не поддерживает этот целевой язык.';
 

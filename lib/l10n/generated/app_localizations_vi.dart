@@ -5350,10 +5350,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translation_upgrade_quota => 'Nâng cấp';
 
   @override
-  String get translation_upgrade_unavailable =>
-      'Không thể mở trang thanh toán. Vui lòng thử lại sau.';
-
-  @override
   String get translation_unsupported_language =>
       'Dịch vụ không hỗ trợ ngôn ngữ đích này.';
 

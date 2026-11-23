@@ -5072,9 +5072,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_upgrade_quota => '升级';
 
   @override
-  String get translation_upgrade_unavailable => '未能打开官网支付页，请稍后重试';
-
-  @override
   String get translation_unsupported_language => '服务暂不支持此目标语言';
 
   @override
@@ -10319,9 +10316,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get translation_upgrade_quota => '升級';
-
-  @override
-  String get translation_upgrade_unavailable => '無法開啟官網付款頁，請稍後再試';
 
   @override
   String get translation_unsupported_language => '服務暫不支援此目標語言';

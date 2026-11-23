@@ -340,13 +340,13 @@ void main() {
         runtime = _Runtime()
           ..failure = const TranslationFailure('DAILY_QUOTA_EXHAUSTED');
     final reader = TranslationViewController()..attach(runtime);
-    final upgrades = <TranslationTarget>[];
+    var upgrades = 0;
     final connected = WebTranslationBridge(
       engine,
       reader,
       'quota',
       l10n: AppLocalizationsEn(),
-      onUpgrade: (target) async => upgrades.add(target),
+      onUpgrade: () async => upgrades++,
     );
     addTearDown(reader.dispose);
     addTearDown(connected.dispose);
@@ -369,7 +369,7 @@ void main() {
     expect(await upgrade('current'), isTrue);
     runtime.failure = const TranslationFailure('RATE_LIMITED');
     expect(await upgrade('current'), isFalse);
-    expect(upgrades, [reader.targets.single]);
+    expect(upgrades, 1);
   });
 
   test('archived SVG uses the original viewport and falls back to its bytes if pixel export fails', () async {

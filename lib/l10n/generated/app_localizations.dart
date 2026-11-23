@@ -9437,12 +9437,6 @@ abstract class AppLocalizations {
   /// **'Upgrade'**
   String get translation_upgrade_quota;
 
-  /// No description provided for @translation_upgrade_unavailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Couldn’t open the payment page. Try again later.'**
-  String get translation_upgrade_unavailable;
-
   /// No description provided for @translation_unsupported_language.
   ///
   /// In en, this message translates to:

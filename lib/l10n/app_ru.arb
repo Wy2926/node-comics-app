@@ -2252,7 +2252,6 @@
   "translation_rate_limited": "Запросы ограничены. Перевод возобновится автоматически.",
   "translation_quota_exhausted": "Недостаточная квота перевода.",
   "translation_upgrade_quota": "Улучшить план",
-  "translation_upgrade_unavailable": "Не удалось открыть страницу оплаты. Попробуйте позже.",
   "translation_unsupported_language": "Сервис не поддерживает этот целевой язык.",
   "translation_upgrade_required": "Протокол трансляции несовместим. Обновите приложение.",
   "translation_remote_failed": "Не удалось перевести эту страницу. Вы можете повторить попытку вручную.",

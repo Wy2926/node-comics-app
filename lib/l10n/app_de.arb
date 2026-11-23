@@ -2252,7 +2252,6 @@
   "translation_rate_limited": "Die Anfragen sind begrenzt. Die Übersetzung wird automatisch fortgesetzt.",
   "translation_quota_exhausted": "Unzureichende Übersetzungsquote.",
   "translation_upgrade_quota": "Upgrade",
-  "translation_upgrade_unavailable": "Die Zahlungsseite konnte nicht geöffnet werden. Bitte versuche es später erneut.",
   "translation_unsupported_language": "Der Dienst unterstützt diese Zielsprache nicht.",
   "translation_upgrade_required": "Das Übersetzungsprotokoll ist inkompatibel. Aktualisieren Sie die App.",
   "translation_remote_failed": "Die Übersetzung dieser Seite ist fehlgeschlagen. Sie können es manuell erneut versuchen.",

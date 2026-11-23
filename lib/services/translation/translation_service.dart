@@ -10,7 +10,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:mangayomi/models/translation_entry.dart';
 import 'package:mangayomi/services/nodelane_private_storage.dart';
 import 'package:mangayomi/repositories/translation_repository.dart';
@@ -75,32 +74,6 @@ class TranslationService extends ChangeNotifier {
   bool accountAuthRequired = false;
   Future<void>? _accountRequest;
   TranslationCancellation? _accountCancellation;
-  TranslationCancellation? _openingBilling;
-
-  Future<bool> openBillingUpgrade(
-    ChannelRuntime? expectedRuntime,
-    bool Function() isCurrent,
-  ) async {
-    bool current() =>
-        !busy &&
-        expectedRuntime != null &&
-        identical(runtime, expectedRuntime) &&
-        isCurrent();
-    if (_openingBilling != null || !current()) return false;
-    final cancel = _openingBilling = TranslationCancellation();
-    try {
-      final uri = await _session.billingUpgradeLink(cancel);
-      if (cancel.isCancelled || !current()) return false;
-      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-        throw const TranslationFailure('BILLING_UNAVAILABLE');
-      }
-      return true;
-    } on TranslationCancelled {
-      return false;
-    } finally {
-      if (identical(_openingBilling, cancel)) _openingBilling = null;
-    }
-  }
 
   String _modelPreferenceKey(String? user) =>
       'model-preference:${translationKey([_session.base.toString(), user])}';
@@ -195,7 +168,6 @@ class TranslationService extends ChangeNotifier {
   }
 
   Future<void> _replaceRuntime({bool clearResults = false}) async {
-    _openingBilling?.cancel();
     final old = runtime;
     runtime = null;
     notifyListeners();
@@ -285,7 +257,6 @@ class TranslationService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _openingBilling?.cancel();
     _clearAccount();
     runtime?.dispose();
     super.dispose();

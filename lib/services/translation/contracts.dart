@@ -214,7 +214,6 @@ class TranslationFailure implements Exception {
   String get message => localizedMessage(
     (l10n) => switch (code) {
       'AUTH_REQUIRED' => l10n.translation_auth_required,
-      'BILLING_UNAVAILABLE' => l10n.translation_upgrade_unavailable,
       'RESULT_READ_FAILED' => l10n.translation_read_failed,
       'ACTION_FAILED' => l10n.operation_retry,
       'SOURCE_CHANGED' => l10n.translation_source_changed,

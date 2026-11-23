@@ -156,8 +156,7 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
                   onAction: status.action == null
                       ? null
                       : status.action == TranslationAction.upgrade
-                      ? () =>
-                            openTranslationUpgrade(context, controller, target)
+                      ? () => openPricingPage(context)
                       : () => controller.perform(target, status.action!),
                 );
                 Widget position() {

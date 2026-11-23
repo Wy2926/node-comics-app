@@ -132,7 +132,7 @@ __PAINT_FIXTURE__
   await call('state',{active:true,translated:true,theme,items:[{...failed,label:'额度不足',detail:'',action:'upgrade',actionLabel:'升级'}]});
   assert(badge.shadowRoot.querySelector('[role=status]').innerText==='额度不足' && button.textContent==='升级','quota badge added a generic failure');
   button.click(); await wait(1);
-  assert(actions.length===1,'a scripted click opened the external payment page');
+  assert(actions.length===1,'a scripted click opened the external pricing page');
   await call('state',{active:true,translated:false,items:[{...failed,label:'状态待确认',action:'verify',actionLabel:'核实'}]});
   assert(badge.style.display!=='none','original display hid image status');
   button.click(); await wait(1);

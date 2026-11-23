@@ -5341,10 +5341,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translation_upgrade_quota => 'Upgrade';
 
   @override
-  String get translation_upgrade_unavailable =>
-      'Couldn’t open the payment page. Try again later.';
-
-  @override
   String get translation_unsupported_language =>
       'The service does not support this target language.';
 

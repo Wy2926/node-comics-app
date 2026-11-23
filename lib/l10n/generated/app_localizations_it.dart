@@ -5410,10 +5410,6 @@ class AppLocalizationsIt extends AppLocalizations {
   String get translation_upgrade_quota => 'Migliora piano';
 
   @override
-  String get translation_upgrade_unavailable =>
-      'Impossibile aprire la pagina di pagamento. Riprova più tardi.';
-
-  @override
   String get translation_unsupported_language =>
       'Il servizio non supporta questa lingua di destinazione.';
 

@@ -5214,10 +5214,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get translation_upgrade_quota => 'アップグレード';
 
   @override
-  String get translation_upgrade_unavailable =>
-      'お支払いページを開けませんでした。しばらくしてからお試しください。';
-
-  @override
   String get translation_unsupported_language => 'このサービスはこのターゲット言語をサポートしていません。';
 
   @override

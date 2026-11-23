@@ -1738,8 +1738,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       widget.tab.id,
       l10n: context.l10n,
       theme: translationImageTheme(context),
-      onUpgrade: (target) =>
-          openTranslationUpgrade(context, widget.tab.translation, target),
+      onUpgrade: () => openPricingPage(context),
       onReading: (chapter, next) {
         if (!mounted ||
             widget.tab.chapter == chapter && widget.tab.nextChapter == next) {

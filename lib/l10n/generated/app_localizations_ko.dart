@@ -5217,10 +5217,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get translation_upgrade_quota => '업그레이드';
 
   @override
-  String get translation_upgrade_unavailable =>
-      '결제 페이지를 열 수 없습니다. 나중에 다시 시도해 주세요.';
-
-  @override
   String get translation_unsupported_language => '서비스는 이 대상 언어를 지원하지 않습니다.';
 
   @override

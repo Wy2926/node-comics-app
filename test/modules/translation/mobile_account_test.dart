@@ -10,6 +10,8 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
+import '../../helpers/pricing_launcher.dart';
+
 void main() {
   Future<void> mount(
     WidgetTester tester,
@@ -127,6 +129,38 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  for (final free in [true, false]) {
+    final label = free ? '查看订阅方案' : '在官网管理';
+    testWidgets(
+      '$label opens its public page; only account management refreshes on return',
+      (tester) async {
+        final service = _Service()
+          ..ready.complete()
+          ..signedIn = true
+          ..account = _account(free: free);
+        final launcher = PricingLauncher.install();
+        await mount(tester, service);
+        await tester.pumpAndSettle();
+        final reads = service.reads;
+        final button = find.text(label);
+        await reveal(tester, button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+        expect(launcher.urls, [
+          free ? publicPricingUrl : 'https://comics.nodelane.net/account/',
+        ]);
+        expect(service.reads, reads);
+        tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+        tester.binding.handleAppLifecycleStateChanged(
+          AppLifecycleState.resumed,
+        );
+        await tester.pumpAndSettle();
+        expect(service.reads, free ? reads : reads + 1);
+        expect(service.calls, isEmpty);
+      },
+    );
+  }
 
   testWidgets(
     'failed refresh keeps the paid snapshot, then retry updates without changing translation',

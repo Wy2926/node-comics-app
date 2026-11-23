@@ -2252,7 +2252,6 @@
   "translation_rate_limited": "請求受限，稍後自動恢復",
   "translation_quota_exhausted": "額度不足",
   "translation_upgrade_quota": "升級",
-  "translation_upgrade_unavailable": "無法開啟官網付款頁，請稍後再試",
   "translation_unsupported_language": "服務暫不支援此目標語言",
   "translation_upgrade_required": "翻譯協議不相容，請更新應用",
   "translation_remote_failed": "本頁翻譯失敗，可手動重試",

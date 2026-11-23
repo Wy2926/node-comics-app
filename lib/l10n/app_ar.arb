@@ -2252,7 +2252,6 @@
   "translation_rate_limited": "الطلبات محدودة. سيتم استئناف الترجمة تلقائيًا.",
   "translation_quota_exhausted": "حصة الترجمة غير كافية.",
   "translation_upgrade_quota": "ترقية",
-  "translation_upgrade_unavailable": "تعذر فتح صفحة الدفع. حاول مرة أخرى لاحقًا.",
   "translation_unsupported_language": "الخدمة لا تدعم هذه اللغة الهدف.",
   "translation_upgrade_required": "بروتوكول الترجمة غير متوافق. قم بتحديث التطبيق.",
   "translation_remote_failed": "فشلت الترجمة لهذه الصفحة. يمكنك إعادة المحاولة يدويًا.",

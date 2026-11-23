@@ -15,10 +15,9 @@ import 'package:mangayomi/services/translation/channels/nodelane/protocol.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
-import 'package:url_launcher_platform_interface/link.dart';
-import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 import '../../helpers/bubble_finders.dart';
+import '../../helpers/pricing_launcher.dart';
 
 const _freeName = 'Free (Preview)（1.0倍消耗）';
 const _paidName = 'Paid Translation Model (Preview) (0.8 倍消耗)';
@@ -45,18 +44,6 @@ class _Runtime extends Fake implements ChannelRuntime {
 }
 
 class _Source extends Fake implements SourceImageReader {}
-
-class _PricingLauncher extends UrlLauncherPlatform {
-  final urls = <String>[];
-  @override
-  LinkDelegate? get linkDelegate => null;
-  @override
-  Future<bool> launchUrl(String url, LaunchOptions options) async {
-    expect(options.mode, PreferredLaunchMode.externalApplication);
-    urls.add(url);
-    return true;
-  }
-}
 
 class _AccountService extends TranslationService {
   Completer<void>? pending;
@@ -388,10 +375,7 @@ void main() {
     'model rows show compact rates and upgrade in place of locked choices',
     (tester) async {
       await mount(tester);
-      final previous = UrlLauncherPlatform.instance,
-          launcher = _PricingLauncher();
-      UrlLauncherPlatform.instance = launcher;
-      addTearDown(() => UrlLauncherPlatform.instance = previous);
+      final launcher = PricingLauncher.install();
       await tester.tap(find.byTooltip('Translation'));
       await tester.pumpAndSettle();
       final row = find.widgetWithText(NodeLaneRow, '翻译模型');
@@ -437,23 +421,18 @@ void main() {
         findsNothing,
       );
       final upgrade = find.descendant(of: paidRow, matching: find.text('升级'));
+      launcher.pending = Completer<bool>();
       await tester.tap(upgrade);
       await tester.tap(upgrade);
-      expect(launcher.urls, ['https://comics.nodelane.net/pricing/']);
+      expect(launcher.urls, [publicPricingUrl]);
+      launcher.pending!.complete(true);
       expect(service.model, isNull);
       service.paidAllowed = true;
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(service.catalogReads, 3);
-      expect(upgrade, findsNothing);
-      expect(
-        find.descendant(
-          of: paidRow,
-          matching: find.byIcon(Icons.radio_button_unchecked),
-        ),
-        findsOneWidget,
-      );
+      expect(service.catalogReads, 2);
+      expect(upgrade, findsOneWidget);
       expect(service.model, isNull);
       await tester.tap(inBubble(find.text(_freeName)));
       await tester.pumpAndSettle();
@@ -463,6 +442,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(row);
       await tester.pumpAndSettle();
+      expect(service.catalogReads, 3);
+      expect(upgrade, findsNothing);
       final selected = tester.widget<NodeLaneRow>(
         inBubble(find.widgetWithText(NodeLaneRow, _freeName)),
       );

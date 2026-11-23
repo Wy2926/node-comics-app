@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_settings_widgets.dart';
+import 'package:mangayomi/modules/translation/translation_upgrade.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
@@ -42,7 +43,7 @@ class _AccountViewState extends ConsumerState<_AccountView>
     with WidgetsBindingObserver {
   late final service = ref.read(translationServiceProvider);
   bool _initializing = true, _initFailed = false;
-  bool _websiteOpen = false, _confirming = false;
+  bool _managingAccount = false, _confirming = false;
 
   @override
   void initState() {
@@ -71,8 +72,8 @@ class _AccountViewState extends ConsumerState<_AccountView>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_websiteOpen && state == AppLifecycleState.resumed) {
-      _websiteOpen = false;
+    if (_managingAccount && state == AppLifecycleState.resumed) {
+      _managingAccount = false;
       unawaited(service.refreshAccount());
     }
   }
@@ -85,33 +86,19 @@ class _AccountViewState extends ConsumerState<_AccountView>
 
   bool get _disabled => _initializing || _initFailed || service.busy;
 
-  Future<void> _website(bool free) async {
-    if (_websiteOpen) return;
-    _websiteOpen = true;
+  Future<void> _manageAccount() async {
+    if (_managingAccount) return;
+    _managingAccount = true;
     try {
-      if (free) {
-        if (!await service.openBillingUpgrade(
-          service.runtime,
-          () => mounted && ModalRoute.of(context)?.isCurrent != false,
-        )) {
-          _websiteOpen = false;
-        }
-        return;
-      }
       final opened = await launchUrl(
         Uri.https('comics.nodelane.net', '/account/'),
         mode: LaunchMode.externalApplication,
       );
       if (!opened) throw StateError('Unavailable');
     } catch (_) {
-      _websiteOpen = false;
+      _managingAccount = false;
       if (mounted) {
-        showNodeLaneNotice(
-          free
-              ? context.l10n.translation_upgrade_unavailable
-              : context.l10n.failed,
-          kind: NodeLaneNoticeKind.error,
-        );
+        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
       }
     }
   }
@@ -355,7 +342,9 @@ class _AccountViewState extends ConsumerState<_AccountView>
               title: account.isFree
                   ? l.nodelane_view_plans
                   : l.nodelane_manage_account,
-              onTap: () => _website(account.isFree),
+              onTap: account.isFree
+                  ? () => openPricingPage(context)
+                  : _manageAccount,
               trailing: Icon(
                 NodeLaneIcons.of(context).external,
                 size: NodeLaneTokens.smallIconSize,

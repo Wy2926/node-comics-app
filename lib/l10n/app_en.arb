@@ -2263,7 +2263,6 @@
   "translation_rate_limited": "Requests are limited. Translation will resume automatically.",
   "translation_quota_exhausted": "Insufficient translation quota.",
   "translation_upgrade_quota": "Upgrade",
-  "translation_upgrade_unavailable": "Couldn’t open the payment page. Try again later.",
   "translation_unsupported_language": "The service does not support this target language.",
   "translation_upgrade_required": "The translation protocol is incompatible. Update the app.",
   "translation_remote_failed": "Translation failed for this page. You can retry manually.",

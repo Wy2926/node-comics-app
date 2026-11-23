@@ -2252,7 +2252,6 @@
   "translation_rate_limited": "Yêu cầu bị hạn chế. Quá trình dịch sẽ tự động tiếp tục.",
   "translation_quota_exhausted": "Hạn ngạch dịch không đủ.",
   "translation_upgrade_quota": "Nâng cấp",
-  "translation_upgrade_unavailable": "Không thể mở trang thanh toán. Vui lòng thử lại sau.",
   "translation_unsupported_language": "Dịch vụ không hỗ trợ ngôn ngữ đích này.",
   "translation_upgrade_required": "Giao thức dịch thuật không tương thích. Cập nhật ứng dụng.",
   "translation_remote_failed": "Dịch trang này không thành công. Bạn có thể thử lại bằng tay.",
