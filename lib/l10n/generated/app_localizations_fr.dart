@@ -4249,7 +4249,39 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Vérifiez votre connexion et réessayez.';
+      'Connexion impossible. Vérifiez votre connexion et réessayez.';
+
+  @override
+  String get reader_request_timeout =>
+      'Le délai de chargement du chapitre a expiré. Réessayez dans un instant.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Impossible de lire le fichier local. Vérifiez sa présence et les autorisations d’accès de l’application.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Le format des données du chapitre ne permet pas leur lecture.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Ce chapitre ne figure plus dans la liste. Revenez à la fiche de l’œuvre et actualisez la liste.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Le site demande de se connecter',
+      'denied': 'Le site a refusé l’accès',
+      'missing': 'La ressource demandée est introuvable',
+      'limited': 'Trop de requêtes. Réessayez plus tard',
+      'server': 'Le serveur n’a pas pu traiter la requête. Réessayez plus tard',
+      'other': 'La requête a échoué',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Ouvrir le navigateur intégré';
 
   @override
   String get reader_no_pages => 'Aucune image trouvée pour ce chapitre';

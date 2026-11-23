@@ -27,6 +27,7 @@ String jsExtensionErrorMessage({
   required String reported,
 }) {
   final detail = reported.trim();
-  return 'Extension "$sourceName" failed while $whileDoing'
+  // Call arguments can contain a signed URL and obscure the actual diagnostic.
+  return 'Extension "$sourceName" failed while ${whileDoing.split('(').first}'
       '${detail.isEmpty ? '' : ': $detail'}';
 }

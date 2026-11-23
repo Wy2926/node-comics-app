@@ -7466,8 +7466,44 @@ abstract class AppLocalizations {
   /// No description provided for @reader_loading_retry_hint.
   ///
   /// In en, this message translates to:
-  /// **'Check your connection and try again.'**
+  /// **'Could not connect. Check your connection and try again.'**
   String get reader_loading_retry_hint;
+
+  /// No description provided for @reader_request_timeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The chapter request timed out. Try again in a moment.'**
+  String get reader_request_timeout;
+
+  /// No description provided for @reader_file_unavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not read the local file. Check that it still exists and the app can access it.'**
+  String get reader_file_unavailable;
+
+  /// No description provided for @reader_invalid_chapter_data.
+  ///
+  /// In en, this message translates to:
+  /// **'The chapter data is in an unexpected format and could not be read.'**
+  String get reader_invalid_chapter_data;
+
+  /// No description provided for @reader_chapter_missing.
+  ///
+  /// In en, this message translates to:
+  /// **'This chapter is no longer in the chapter list. Go back to the title and refresh the list.'**
+  String get reader_chapter_missing;
+
+  /// No description provided for @reader_http_failure.
+  ///
+  /// In en, this message translates to:
+  /// **'{reason, select, login{The site requires sign-in} denied{The site refused access} missing{The requested resource was not found} limited{Too many requests. Try again later} server{The server could not complete the request. Try again later} other{The request failed}} (HTTP {status}).'**
+  String reader_http_failure(String reason, String status);
+
+  /// No description provided for @reader_open_browser.
+  ///
+  /// In en, this message translates to:
+  /// **'Open in-app browser'**
+  String get reader_open_browser;
 
   /// No description provided for @reader_no_pages.
   ///

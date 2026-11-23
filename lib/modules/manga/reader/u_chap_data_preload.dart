@@ -24,6 +24,7 @@ class UChapDataPreload {
 
   // Present only on the pending chapter boundary; cleared on success/disposal.
   ChapterLoadState? chapterState;
+  Object? chapterError;
   VoidCallback? onRetryChapter;
   Rect? srcRect;
 

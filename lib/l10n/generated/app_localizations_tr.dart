@@ -4203,7 +4203,39 @@ class AppLocalizationsTr extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Bağlantınızı kontrol edin ve tekrar deneyin.';
+      'Bağlantı kurulamadı. Bağlantınızı kontrol edip tekrar deneyin.';
+
+  @override
+  String get reader_request_timeout =>
+      'Bölüm isteği zaman aşımına uğradı. Biraz sonra tekrar deneyin.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Yerel dosya okunamadı. Dosyanın hâlâ mevcut olduğunu ve uygulamanın erişim izni olduğunu kontrol edin.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Bölüm verileri beklenmeyen bir biçimde olduğu için okunamadı.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Bu bölüm artık listede yok. Eserin ayrıntılarına dönüp bölüm listesini yenileyin.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Site oturum açmanızı istiyor',
+      'denied': 'Site erişimi reddetti',
+      'missing': 'İstenen kaynak bulunamadı',
+      'limited': 'Çok fazla istek gönderildi. Daha sonra tekrar deneyin',
+      'server': 'Sunucu isteği işleyemedi. Daha sonra tekrar deneyin',
+      'other': 'İstek başarısız oldu',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Uygulama içi tarayıcıyı aç';
 
   @override
   String get reader_no_pages => 'Bu bölüm için resim bulunamadı';

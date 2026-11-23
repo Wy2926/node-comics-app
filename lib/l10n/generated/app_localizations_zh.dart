@@ -4031,7 +4031,35 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reader_loading_failed => '暂时无法加载';
 
   @override
-  String get reader_loading_retry_hint => '请检查网络后重试';
+  String get reader_loading_retry_hint => '无法建立连接，请检查网络后重试。';
+
+  @override
+  String get reader_request_timeout => '获取章节超时，请稍后重试。';
+
+  @override
+  String get reader_file_unavailable => '无法读取本地文件，请确认文件仍在，并允许应用访问。';
+
+  @override
+  String get reader_invalid_chapter_data => '章节数据格式异常，无法读取。';
+
+  @override
+  String get reader_chapter_missing => '章节记录已不存在，请返回作品详情刷新章节列表。';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': '网站要求先登录',
+      'denied': '网站拒绝了访问请求',
+      'missing': '找不到请求的资源',
+      'limited': '请求过于频繁，请稍后重试',
+      'server': '服务器暂时无法处理请求，请稍后重试',
+      'other': '请求失败',
+    });
+    return '$_temp0（HTTP $status）。';
+  }
+
+  @override
+  String get reader_open_browser => '打开应用内浏览器';
 
   @override
   String get reader_no_pages => '本话暂无可阅读图片';
@@ -9276,7 +9304,35 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get reader_loading_failed => '暫時無法載入';
 
   @override
-  String get reader_loading_retry_hint => '請檢查網路後重試';
+  String get reader_loading_retry_hint => '無法建立連線，請檢查網路後重試。';
+
+  @override
+  String get reader_request_timeout => '取得章節逾時，請稍後重試。';
+
+  @override
+  String get reader_file_unavailable => '無法讀取本機檔案，請確認檔案仍在，並允許應用程式存取。';
+
+  @override
+  String get reader_invalid_chapter_data => '章節資料格式異常，無法讀取。';
+
+  @override
+  String get reader_chapter_missing => '章節記錄已不存在，請返回作品詳情重新整理章節清單。';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': '網站要求先登入',
+      'denied': '網站拒絕了存取要求',
+      'missing': '找不到要求的資源',
+      'limited': '要求過於頻繁，請稍後重試',
+      'server': '伺服器暫時無法處理要求，請稍後重試',
+      'other': '要求失敗',
+    });
+    return '$_temp0（HTTP $status）。';
+  }
+
+  @override
+  String get reader_open_browser => '開啟內建瀏覽器';
 
   @override
   String get reader_no_pages => '本話暫無可閱讀圖片';

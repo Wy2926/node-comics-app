@@ -4199,7 +4199,40 @@ class AppLocalizationsId extends AppLocalizations {
   String get reader_loading_failed => 'Tidak dapat memuat bab ini';
 
   @override
-  String get reader_loading_retry_hint => 'Periksa koneksi Anda dan coba lagi.';
+  String get reader_loading_retry_hint =>
+      'Tidak dapat terhubung. Periksa koneksi Anda dan coba lagi.';
+
+  @override
+  String get reader_request_timeout =>
+      'Waktu tunggu permintaan bab habis. Coba lagi sebentar.';
+
+  @override
+  String get reader_file_unavailable =>
+      'File lokal tidak dapat dibaca. Pastikan file masih ada dan aplikasi memiliki izin untuk mengaksesnya.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Data bab tidak dapat dibaca karena formatnya tidak sesuai.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Bab ini tidak ada lagi dalam daftar. Kembali ke detail judul dan muat ulang daftar bab.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Situs meminta Anda untuk masuk',
+      'denied': 'Situs menolak akses',
+      'missing': 'Sumber daya yang diminta tidak ditemukan',
+      'limited': 'Terlalu banyak permintaan. Coba lagi nanti',
+      'server': 'Server tidak dapat memproses permintaan. Coba lagi nanti',
+      'other': 'Permintaan gagal',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Buka peramban dalam aplikasi';
 
   @override
   String get reader_no_pages => 'Tidak ada gambar yang ditemukan untuk bab ini';

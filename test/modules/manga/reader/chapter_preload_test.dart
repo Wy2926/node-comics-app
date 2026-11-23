@@ -224,6 +224,7 @@ void main() {
             boundary.chapterState,
             empty ? ChapterLoadState.empty : ChapterLoadState.failed,
           );
+          expect(boundary.chapterError, empty ? isNull : isA<RangeError>());
 
           await manager.loadAdjacentChapter(
             direction,
@@ -236,6 +237,7 @@ void main() {
           retry();
           expect(calls, 2);
           expect(boundary.chapterState, ChapterLoadState.loading);
+          expect(boundary.chapterError, isNull);
           expect(boundary.onRetryChapter, isNull);
           pendingRetry.complete(model([page(next, 0)]));
           await Future<void>.delayed(Duration.zero);

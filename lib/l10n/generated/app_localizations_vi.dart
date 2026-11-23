@@ -4203,7 +4203,39 @@ class AppLocalizationsVi extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Hãy kiểm tra kết nối của bạn và thử lại.';
+      'Không thể kết nối. Hãy kiểm tra kết nối mạng rồi thử lại.';
+
+  @override
+  String get reader_request_timeout =>
+      'Đã hết thời gian chờ tải chương. Vui lòng thử lại sau ít phút.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Không thể đọc tệp cục bộ. Hãy kiểm tra xem tệp còn tồn tại và ứng dụng có quyền truy cập hay không.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Không thể đọc dữ liệu chương vì định dạng không đúng.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Chương này không còn trong danh sách. Hãy quay lại trang chi tiết và làm mới danh sách chương.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Trang web yêu cầu đăng nhập',
+      'denied': 'Trang web từ chối truy cập',
+      'missing': 'Không tìm thấy tài nguyên được yêu cầu',
+      'limited': 'Quá nhiều yêu cầu. Vui lòng thử lại sau',
+      'server': 'Máy chủ không xử lý được yêu cầu. Vui lòng thử lại sau',
+      'other': 'Yêu cầu không thành công',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Mở trình duyệt trong ứng dụng';
 
   @override
   String get reader_no_pages => 'Không tìm thấy hình ảnh cho chương này';

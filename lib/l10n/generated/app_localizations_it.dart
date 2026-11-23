@@ -4237,7 +4237,41 @@ class AppLocalizationsIt extends AppLocalizations {
   String get reader_loading_failed => 'Impossibile caricare questo capitolo';
 
   @override
-  String get reader_loading_retry_hint => 'Controlla la connessione e riprova.';
+  String get reader_loading_retry_hint =>
+      'Connessione non riuscita. Controlla la connessione e riprova.';
+
+  @override
+  String get reader_request_timeout =>
+      'Tempo scaduto durante il caricamento del capitolo. Riprova tra poco.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Impossibile leggere il file locale. Verifica che esista e che l’app possa accedervi.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'I dati del capitolo sono in un formato imprevisto e non possono essere letti.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Il capitolo non è più nell’elenco. Torna ai dettagli dell’opera e aggiorna l’elenco.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Il sito richiede di effettuare l’accesso',
+      'denied': 'Il sito ha negato l’accesso',
+      'missing': 'La risorsa richiesta non è stata trovata',
+      'limited': 'Troppe richieste. Riprova più tardi',
+      'server':
+          'Il server non ha potuto elaborare la richiesta. Riprova più tardi',
+      'other': 'Richiesta non riuscita',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Apri il browser integrato';
 
   @override
   String get reader_no_pages => 'Nessuna immagine trovata per questo capitolo';

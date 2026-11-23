@@ -4232,7 +4232,39 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Проверьте подключение и повторите попытку.';
+      'Не удалось подключиться. Проверьте соединение и повторите попытку.';
+
+  @override
+  String get reader_request_timeout =>
+      'Время ожидания главы истекло. Попробуйте чуть позже.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Не удалось прочитать локальный файл. Проверьте, существует ли он и есть ли у приложения доступ.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Не удалось прочитать данные главы: неожиданный формат.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Этой главы больше нет в списке. Вернитесь на страницу произведения и обновите список глав.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Требуется войти на сайт',
+      'denied': 'Сайт отказал в доступе',
+      'missing': 'Запрошенный ресурс не найден',
+      'limited': 'Слишком много запросов. Попробуйте позже',
+      'server': 'Сервер не смог обработать запрос. Попробуйте позже',
+      'other': 'Запрос не выполнен',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Открыть встроенный браузер';
 
   @override
   String get reader_no_pages => 'Для этой главы изображений не найдено.';

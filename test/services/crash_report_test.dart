@@ -16,6 +16,14 @@ void main() {
         redact('Failed to load https://example.test/manga/one-piece/ch-1.jpg'),
         'Failed to load https://example.test/...',
       );
+      expect(
+        redact('Failed: https://user:pass@example.test?signature=private'),
+        'Failed: https://example.test/...',
+      );
+      expect(
+        redact("Failed: https://example.test/reader's-copy(1)?sig=private"),
+        'Failed: https://example.test/...',
+      );
     });
 
     test(
@@ -34,10 +42,11 @@ void main() {
 
     test('anything credential-shaped is removed, not just masked in part', () {
       final out = redact(
-        '{cookie: cf_clearance=abc123, authorization: Bearer x}',
+        '{cookie: first=abc123; second=private, authorization: Bearer private}',
       );
       expect(out, isNot(contains('abc123')));
       expect(out, isNot(contains('Bearer')));
+      expect(out, isNot(contains('private')));
       expect(out, contains('<removed>'));
     });
 

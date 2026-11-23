@@ -74,6 +74,7 @@ void main() {
             pageIndex: 1,
           )
           ..chapterState = ChapterLoadState.failed
+          ..chapterError = 'HTTP error 429\n\nstatusCode: 500'
           ..onRetryChapter = () => retries++;
     await tester.pumpWidget(
       MaterialApp(
@@ -109,6 +110,8 @@ void main() {
     );
     scroll.jumpTo(scroll.position.maxScrollExtent);
     await tester.pump();
+    expect(find.textContaining('Too many requests'), findsOneWidget);
+    expect(find.textContaining('HTTP 429'), findsOneWidget);
     expect(
       tester.getBottomRight(find.byType(ReaderContentStatus)).dy,
       lessThanOrEqualTo(514),
@@ -143,7 +146,7 @@ void main() {
                 const SizedBox(height: 80),
                 ReaderContentStatus(
                   message: '下一章暂时无法加载',
-                  description: '请检查网络后重试',
+                  description: '网站拒绝了访问请求（HTTP 403）。',
                   onRetry: () => retries++,
                 ),
                 const Text('Following manga page'),

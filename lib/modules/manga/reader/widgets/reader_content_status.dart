@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_interactive_region.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/services/chapter_load_error.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
@@ -200,8 +201,8 @@ class ReaderChapterBoundary extends StatelessWidget {
         ChapterLoadState.exhausted || null =>
           previous ? l10n.reader_reached_start : l10n.you_have_finished_reading,
       },
-      description: state == ChapterLoadState.failed
-          ? l10n.reader_loading_retry_hint
+      description: state == ChapterLoadState.failed && data.chapterError != null
+          ? chapterLoadErrorDescription(l10n, data.chapterError!)
           : null,
       loading: state == ChapterLoadState.loading,
       onRetry: data.onRetryChapter,

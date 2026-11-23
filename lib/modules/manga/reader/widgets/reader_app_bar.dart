@@ -10,7 +10,7 @@ import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/btn_chapter_list_dialog.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
-import 'package:mangayomi/utils/extensions/string_extensions.dart';
+import 'package:mangayomi/modules/webview/browser_url.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/utils.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
@@ -198,28 +198,30 @@ class ReaderAppBar extends ConsumerWidget {
   }
 }
 
-/// Builds the web view navigation data.
-Future<Map<String, dynamic>?> buildWebViewData(
-  Chapter chapter,
-  String proxyServer,
-) async {
+Future<String?> chapterBrowserUrl(Chapter chapter, String proxyServer) async {
   final manga = chapter.manga.value;
-  if (manga == null) return null;
+  final link = chapter.url?.trim();
+  if (link == null ||
+      link.isEmpty ||
+      manga?.isLocalArchive == true ||
+      (chapter.archivePath?.isNotEmpty ?? false)) {
+    return null;
+  }
 
-  final source = getSource(
-    manga.lang!,
-    manga.source!,
-    manga.sourceId,
-    installedOnly: true,
-  );
-  if (source == null) return null;
-
-  final url = source.sourceCodeLanguage == SourceCodeLanguage.mihon
-      ? await MihonExtensionService(
-          source,
-          proxyServer,
-        ).getWebUrl(chapter.url!, chapter: true)
-      : "${source.baseUrl}${chapter.url!.getUrlWithoutDomain}";
-
-  return {'url': url, 'sourceId': source.id.toString(), 'title': chapter.name!};
+  final source = manga == null
+      ? null
+      : getSource(
+          manga.lang ?? '',
+          manga.source ?? '',
+          manga.sourceId,
+          installedOnly: true,
+        );
+  if (source != null && source.sourceCodeLanguage == SourceCodeLanguage.mihon) {
+    final url = await MihonExtensionService(
+      source,
+      proxyServer,
+    ).getWebUrl(link, chapter: true);
+    return isBrowserUrl(url) ? url : null;
+  }
+  return resolveBrowserLink(link, source?.baseUrl);
 }

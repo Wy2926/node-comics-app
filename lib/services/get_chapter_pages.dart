@@ -5,6 +5,7 @@ import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/services/isolate_service.dart';
 import 'package:mangayomi/services/chapter_cache.dart';
+import 'package:mangayomi/services/chapter_load_error.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/page.dart';
@@ -125,9 +126,12 @@ Future<GetChapterPagesModel> getChapterPages(
           chapter.manga.value!.source!,
           chapter.manga.value!.sourceId,
           installedOnly: true,
-        )!;
+        );
+        if (source == null) throw ChapterDataError.missingSource;
+        final url = chapter.url;
+        if (url == null) throw ChapterDataError.missingUrl;
         pageUrls = await getIsolateService.get<List<PageUrl>>(
-          url: chapter.url!,
+          url: url,
           source: source,
           serviceType: 'getPageList',
           proxyServer: ref.read(androidProxyServerStateProvider),

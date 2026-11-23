@@ -44,6 +44,7 @@ import 'reader_page_image.dart';
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/services/chapter_cache.dart';
+import 'package:mangayomi/services/chapter_load_error.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/double_page_zoom_pan.dart';
@@ -70,12 +71,15 @@ Future<void> _openChapterWebView(
   Chapter chapter,
 ) async {
   try {
-    final data = await buildWebViewData(
+    final url = await chapterBrowserUrl(
       chapter,
       ref.read(androidProxyServerStateProvider),
     );
-    if (context.mounted && data != null) {
-      await context.push('/mangawebview', extra: data);
+    if (context.mounted && url != null) {
+      await context.push(
+        '/mangawebview',
+        extra: {'url': url, 'title': chapter.name ?? ''},
+      );
     }
   } catch (error) {
     if (context.mounted) {
@@ -106,16 +110,23 @@ class MangaReaderView extends ConsumerWidget {
     }
 
     Widget entryState({String? failure, Object? error}) {
+      final description = error == null
+          ? null
+          : chapterLoadErrorDescription(l10n, error);
       if (isMobile && !isTv) {
         return MobileReaderEntryState(
           cover: manga == null ? null : resolveCoverImage(manga, ref),
           bookTitle: manga?.name,
           chapterTitle: chapter?.name,
           failureMessage: failure,
+          failureDescription: description,
+          resolveBrowserUrl: chapter == null
+              ? null
+              : () => chapterBrowserUrl(
+                  chapter,
+                  ref.read(androidProxyServerStateProvider),
+                ),
           onRetry: failure == null ? null : retry,
-          onOpenWebView: chapter != null && !(manga?.isLocalArchive ?? false)
-              ? () => _openChapterWebView(context, ref, chapter)
-              : null,
           onBack: () {
             restoreSystemUI();
             Navigator.of(context).pop();
@@ -128,7 +139,7 @@ class MangaReaderView extends ConsumerWidget {
             ? const NodeLaneEmptyState.loading()
             : NodeLaneEmptyState.error(
                 title: failure,
-                message: error?.toString(),
+                message: description,
                 onRetry: retry,
               ),
         restoreUi: failure != null,
@@ -145,8 +156,7 @@ class MangaReaderView extends ConsumerWidget {
         final chapter = data.chapter;
         final model = data.pages;
 
-        if (model.pageUrls.isEmpty &&
-            !(chapter.manga.value?.isLocalArchive ?? false)) {
+        if (model.pageUrls.isEmpty) {
           return entryState(failure: l10n.reader_no_pages);
         }
 

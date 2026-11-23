@@ -1760,7 +1760,19 @@
   "reader_open_chapter": "Open chapter",
   "reader_loading_pages": "Getting chapter images…",
   "reader_loading_failed": "Could not load this chapter",
-  "reader_loading_retry_hint": "Check your connection and try again.",
+  "reader_loading_retry_hint": "Could not connect. Check your connection and try again.",
+  "reader_request_timeout": "The chapter request timed out. Try again in a moment.",
+  "reader_file_unavailable": "Could not read the local file. Check that it still exists and the app can access it.",
+  "reader_invalid_chapter_data": "The chapter data is in an unexpected format and could not be read.",
+  "reader_chapter_missing": "This chapter is no longer in the chapter list. Go back to the title and refresh the list.",
+  "reader_http_failure": "{reason, select, login{The site requires sign-in} denied{The site refused access} missing{The requested resource was not found} limited{Too many requests. Try again later} server{The server could not complete the request. Try again later} other{The request failed}} (HTTP {status}).",
+  "@reader_http_failure": {
+    "placeholders": {
+      "reason": { "type": "String" },
+      "status": { "type": "String" }
+    }
+  },
+  "reader_open_browser": "Open in-app browser",
   "reader_no_pages": "No images found for this chapter",
   "reader_loading_previous": "Loading previous chapter…",
   "reader_previous_failed": "Could not load the previous chapter",

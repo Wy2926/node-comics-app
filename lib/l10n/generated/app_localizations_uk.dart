@@ -4221,7 +4221,39 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Перевірте підключення та повторіть спробу.';
+      'Не вдалося підключитися. Перевірте з’єднання та повторіть спробу.';
+
+  @override
+  String get reader_request_timeout =>
+      'Час очікування розділу вичерпано. Спробуйте трохи пізніше.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Не вдалося прочитати локальний файл. Перевірте, чи він існує та чи має застосунок доступ.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Не вдалося прочитати дані розділу через неочікуваний формат.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Цього розділу більше немає у списку. Поверніться на сторінку твору й оновіть список розділів.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Потрібно увійти на сайт',
+      'denied': 'Сайт відмовив у доступі',
+      'missing': 'Запитаний ресурс не знайдено',
+      'limited': 'Забагато запитів. Спробуйте пізніше',
+      'server': 'Сервер не зміг обробити запит. Спробуйте пізніше',
+      'other': 'Не вдалося виконати запит',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Відкрити вбудований браузер';
 
   @override
   String get reader_no_pages => 'Для цього розділу не знайдено зображень';

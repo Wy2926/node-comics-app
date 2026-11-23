@@ -1,5 +1,6 @@
 import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
+import 'package:mangayomi/services/chapter_load_error.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,9 +19,7 @@ final readerChapterProvider = FutureProvider.autoDispose.family<Chapter, int>((
   chapterId,
 ) async {
   final chap = await chapterRepository.findById(chapterId);
-  if (chap == null) {
-    throw Exception('Chapter #$chapterId not found');
-  }
+  if (chap == null) throw ChapterDataError.missingChapter;
   return chap;
 });
 

@@ -86,10 +86,10 @@ class BrowserSessionStore extends ChangeNotifier {
   Future<void> save(List<Map<String, dynamic>> values) =>
       _change(() => _publish(values));
 
-  static Map<String, dynamic> _blank() => {
+  static Map<String, dynamic> _tab({String url = '', String title = ''}) => {
     'id': translationUuid(),
-    'url': '',
-    'title': '',
+    'url': url,
+    'title': title,
     'active': true,
   };
 
@@ -101,7 +101,7 @@ class BrowserSessionStore extends ChangeNotifier {
         final removed = remaining.removeAt(index);
         String? blank;
         if (remaining.isEmpty) {
-          remaining.add(_blank());
+          remaining.add(_tab());
           blank = remaining.single['id'] as String;
         } else if (!remaining.any((e) => e['active'] == true)) {
           remaining.last = {...remaining.last, 'active': true};
@@ -138,14 +138,19 @@ class BrowserSessionStore extends ChangeNotifier {
         _closed = null;
       });
 
-  Future<bool> createBlank() => _change(() async {
-    if (entries.length >= maxTabs) return false;
-    await _publish([
-      for (final entry in entries) {...entry, 'active': false},
-      _blank(),
-    ]);
-    return true;
-  });
+  Future<String?> createTab({String url = '', String title = ''}) =>
+      _change(() async {
+        if (url.isNotEmpty && !isBrowserUrl(url)) {
+          throw const FormatException('Invalid browser tab URL');
+        }
+        if (entries.length >= maxTabs) return null;
+        final tab = _tab(url: url, title: title);
+        await _publish([
+          for (final entry in entries) {...entry, 'active': false},
+          tab,
+        ]);
+        return tab['id'] as String;
+      });
 
   Future<void> select(String id) => _change(() async {
     if (!entries.any((entry) => entry['id'] == id)) return;

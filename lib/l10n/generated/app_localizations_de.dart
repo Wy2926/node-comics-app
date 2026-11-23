@@ -4230,7 +4230,39 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Überprüfen Sie Ihre Verbindung und versuchen Sie es erneut.';
+      'Keine Verbindung möglich. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.';
+
+  @override
+  String get reader_request_timeout =>
+      'Zeitüberschreitung beim Laden des Kapitels. Versuchen Sie es gleich noch einmal.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Die lokale Datei konnte nicht gelesen werden. Prüfen Sie, ob sie noch vorhanden ist und die App darauf zugreifen darf.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Die Kapiteldaten haben ein unerwartetes Format und können nicht gelesen werden.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Dieses Kapitel ist nicht mehr in der Liste. Gehen Sie zur Detailansicht zurück und aktualisieren Sie die Kapitelliste.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Die Website verlangt eine Anmeldung',
+      'denied': 'Die Website hat den Zugriff verweigert',
+      'missing': 'Die angeforderte Ressource wurde nicht gefunden',
+      'limited': 'Zu viele Anfragen. Versuchen Sie es später erneut',
+      'server': 'Der Server konnte die Anfrage nicht verarbeiten. Versuchen Sie es später erneut',
+      'other': 'Die Anfrage ist fehlgeschlagen',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Integrierten Browser öffnen';
 
   @override
   String get reader_no_pages =>

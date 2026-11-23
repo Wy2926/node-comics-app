@@ -4100,7 +4100,38 @@ class AppLocalizationsKo extends AppLocalizations {
   String get reader_loading_failed => '이 장을 로드할 수 없습니다.';
 
   @override
-  String get reader_loading_retry_hint => '연결을 확인하고 다시 시도하십시오.';
+  String get reader_loading_retry_hint =>
+      '연결할 수 없습니다. 네트워크 연결을 확인한 후 다시 시도하세요.';
+
+  @override
+  String get reader_request_timeout => '챕터 요청 시간이 초과되었습니다. 잠시 후 다시 시도하세요.';
+
+  @override
+  String get reader_file_unavailable =>
+      '로컬 파일을 읽을 수 없습니다. 파일이 있는지, 앱에 접근 권한이 있는지 확인하세요.';
+
+  @override
+  String get reader_invalid_chapter_data => '챕터 데이터 형식이 올바르지 않아 읽을 수 없습니다.';
+
+  @override
+  String get reader_chapter_missing =>
+      '목록에 없는 챕터입니다. 작품 상세 화면으로 돌아가 챕터 목록을 새로 고치세요.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': '사이트 로그인이 필요합니다',
+      'denied': '사이트에서 접근을 거부했습니다',
+      'missing': '요청한 리소스를 찾을 수 없습니다',
+      'limited': '요청이 너무 많습니다. 잠시 후 다시 시도하세요',
+      'server': '서버가 요청을 처리할 수 없습니다. 잠시 후 다시 시도하세요',
+      'other': '요청에 실패했습니다',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => '앱 내 브라우저 열기';
 
   @override
   String get reader_no_pages => '이 장에 대한 이미지를 찾을 수 없습니다.';

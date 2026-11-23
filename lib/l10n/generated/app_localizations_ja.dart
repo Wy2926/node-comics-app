@@ -4096,7 +4096,36 @@ class AppLocalizationsJa extends AppLocalizations {
   String get reader_loading_failed => 'この章をロードできませんでした';
 
   @override
-  String get reader_loading_retry_hint => '接続を確認して、再試行してください。';
+  String get reader_loading_retry_hint => '接続できません。ネットワーク接続を確認して再試行してください。';
+
+  @override
+  String get reader_request_timeout => '章の取得がタイムアウトしました。しばらくしてから再試行してください。';
+
+  @override
+  String get reader_file_unavailable =>
+      'ローカルファイルを読み取れません。ファイルの場所とアクセス権限を確認してください。';
+
+  @override
+  String get reader_invalid_chapter_data => '章データの形式が正しくないため、読み取れません。';
+
+  @override
+  String get reader_chapter_missing => '章が一覧にありません。作品の詳細に戻り、章一覧を更新してください。';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'サイトへのログインが必要です',
+      'denied': 'サイトにアクセスを拒否されました',
+      'missing': 'リソースが見つかりません',
+      'limited': 'リクエストが多すぎます。しばらくしてから再試行してください',
+      'server': 'サーバーが応答できません。しばらくしてから再試行してください',
+      'other': 'リクエストに失敗しました',
+    });
+    return '$_temp0（HTTP $status）。';
+  }
+
+  @override
+  String get reader_open_browser => 'アプリ内ブラウザーを開く';
 
   @override
   String get reader_no_pages => 'この章の画像は見つかりませんでした';

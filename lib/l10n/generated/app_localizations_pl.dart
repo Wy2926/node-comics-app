@@ -4235,7 +4235,39 @@ class AppLocalizationsPl extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Sprawdź połączenie i spróbuj ponownie.';
+      'Nie udało się połączyć. Sprawdź połączenie i spróbuj ponownie.';
+
+  @override
+  String get reader_request_timeout =>
+      'Upłynął czas oczekiwania na rozdział. Spróbuj ponownie za chwilę.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Nie można odczytać pliku lokalnego. Sprawdź, czy istnieje i czy aplikacja ma do niego dostęp.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'Nie można odczytać danych rozdziału, ponieważ mają nieoczekiwany format.';
+
+  @override
+  String get reader_chapter_missing =>
+      'Tego rozdziału nie ma już na liście. Wróć do szczegółów tytułu i odśwież listę rozdziałów.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'Witryna wymaga zalogowania',
+      'denied': 'Witryna odmówiła dostępu',
+      'missing': 'Nie znaleziono żądanego zasobu',
+      'limited': 'Zbyt wiele żądań. Spróbuj ponownie później',
+      'server': 'Serwer nie mógł obsłużyć żądania. Spróbuj ponownie później',
+      'other': 'Żądanie nie powiodło się',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Otwórz wbudowaną przeglądarkę';
 
   @override
   String get reader_no_pages => 'Nie znaleziono obrazów dla tego rozdziału';

@@ -95,11 +95,12 @@ class DefaultExtension extends MProvider {
     test('says which call failed when it is a call', () {
       final message = jsExtensionErrorMessage(
         sourceName: 'AnimeWorld',
-        whileDoing: 'getVideoList("/ep/1")',
+        whileDoing: 'getPageList("/ep/1?signature=private")',
         reported: 'TypeError: undefined',
       );
 
-      expect(message, contains('getVideoList'));
+      expect(message, contains('getPageList: TypeError: undefined'));
+      expect(message, isNot(contains('signature')));
     });
 
     test('still says something when the source said nothing', () {

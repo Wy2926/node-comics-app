@@ -5,10 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/modules/manga/reader/mixins/reader_gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_widgets.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/mobile_reader_entry_state.dart';
+import 'package:mangayomi/modules/webview/browser_pinned_sources_provider.dart';
+import 'package:mangayomi/modules/webview/browser_session_store.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 
 void main() {
   Future<void> mount(
@@ -43,7 +49,7 @@ void main() {
     tester,
   ) async {
     final retry = Completer<void>();
-    var retries = 0, backs = 0, webViews = 0;
+    var retries = 0, backs = 0;
     String? failure;
     late StateSetter change;
     await mount(
@@ -55,12 +61,12 @@ void main() {
             bookTitle: 'A long comic title with retained context',
             chapterTitle: 'Chapter 12 — The letter from the sea',
             failureMessage: failure,
+            failureDescription: 'The site refused access (HTTP 403).',
             onRetry: () {
               retries++;
               return retry.future;
             },
             onBack: () => backs++,
-            onOpenWebView: () => webViews++,
           );
         },
       ),
@@ -71,12 +77,13 @@ void main() {
     final before = tester.getTopLeft(title);
     expect(find.text('Getting chapter images…'), findsOneWidget);
     expect(find.widgetWithText(FilledButton, 'Retry'), findsNothing);
-    expect(find.byTooltip('Open in browser'), findsNothing);
+    expect(find.byTooltip('Open in-app browser'), findsNothing);
+    expect(find.textContaining('HTTP 403'), findsNothing);
     change(() => failure = 'Could not load this chapter');
     await tester.pump();
     expect(tester.getTopLeft(title), before);
-    await tester.tap(find.byTooltip('Open in browser'));
-    expect(webViews, 1);
+    expect(find.byTooltip('Open in-app browser'), findsOneWidget);
+    expect(find.textContaining('HTTP 403'), findsOneWidget);
     final button = find.widgetWithText(FilledButton, 'Retry');
     await tester.ensureVisible(button);
     await tester.tap(button);
@@ -85,7 +92,8 @@ void main() {
     await tester.pump();
     expect(find.text('Chapter 12 — The letter from the sea'), findsOneWidget);
     expect(button, findsNothing);
-    expect(find.byTooltip('Open in browser'), findsNothing);
+    expect(find.byTooltip('Open in-app browser'), findsNothing);
+    expect(find.textContaining('HTTP 403'), findsNothing);
     await tester.tap(find.byTooltip('Back'));
     expect(backs, 1);
     await tester.pumpWidget(const SizedBox.shrink());
@@ -93,6 +101,120 @@ void main() {
     await tester.pump();
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets(
+    'each chapter browser visit selects a fresh tab, even for the same URL',
+    (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
+      const url = 'https://example.test/chapter';
+      final saved = {
+        'id': 'reading',
+        'url': url,
+        'active': true,
+        'y': 426,
+        'history': ['https://example.test/series', url],
+      };
+      await browserSessionStore.save([saved]);
+      final requests = <Completer<String?>>[];
+      final router = GoRouter(
+        routes: [
+          StatefulShellRoute.indexedStack(
+            builder: (_, _, shell) => shell,
+            branches: [
+              for (final path in ['/', '/browser'])
+                StatefulShellBranch(
+                  routes: [
+                    GoRoute(
+                      path: path,
+                      builder: (_, _) => Scaffold(body: Text('Tab $path')),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+          GoRoute(
+            path: '/mangawebview',
+            builder: (_, state) => Scaffold(
+              appBar: AppBar(),
+              body: Text((state.extra! as Map)['url'] as String),
+            ),
+          ),
+          GoRoute(
+            path: '/reader',
+            builder: (_, _) => MobileReaderEntryState(
+              failureMessage: 'No images found for this chapter',
+              resolveBrowserUrl: () {
+                final request = Completer<String?>();
+                requests.add(request);
+                return request.future;
+              },
+              onBack: () {},
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [browserPinnedSourcesProvider.overrideWithValue([])],
+          child: MaterialApp.router(
+            routerConfig: router,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          ),
+        ),
+      );
+      unawaited(router.push('/reader'));
+      await tester.pumpAndSettle();
+      expect(find.text('No images found for this chapter'), findsOneWidget);
+      expect(find.textContaining('connection'), findsNothing);
+      final open = find.byTooltip('Open in-app browser');
+      await tester.tap(open);
+      requests.single.complete(null);
+      await tester.pumpAndSettle();
+      expect(find.byType(MobileBrowserHome), findsOneWidget);
+      final blank = browserSessionStore.entries.last;
+      expect(blank['url'], '');
+      expect(blank['active'], true);
+      tester
+          .widget<MobileBrowserStartPage>(find.byType(MobileBrowserStartPage))
+          .onOpen(url, '');
+      await tester.pumpAndSettle();
+      expect(find.text(url), findsOneWidget);
+      expect((router.state.extra as Map)['tabId'], blank['id']);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.byType(MobileBrowserHome), findsOneWidget);
+      await tester.tap(find.byTooltip('Back'));
+      await tester.pumpAndSettle();
+      expect(find.text('No images found for this chapter'), findsOneWidget);
+      for (final count in [3, 4]) {
+        await tester.tap(open);
+        await tester.tap(open);
+        expect(requests.length, count - 1);
+        requests.last.complete(url);
+        await tester.pumpAndSettle();
+        expect(find.text(url), findsOneWidget);
+        final tabs = browserSessionStore.entries;
+        expect(tabs.map((tab) => tab['id']).toSet(), hasLength(count));
+        expect(tabs.where((tab) => tab['active'] == true).single, tabs.last);
+        expect(tabs.last['url'], url);
+        expect((router.state.extra as Map)['tabId'], tabs.last['id']);
+        expect(tabs.first, {...saved, 'active': false});
+        await tester.tap(find.byTooltip('Back'));
+        await tester.pumpAndSettle();
+        expect(open, findsOneWidget);
+      }
+      final reopened = BrowserSessionStore();
+      await reopened.load();
+      expect(
+        reopened.entries.map((tab) => tab['id']),
+        browserSessionStore.entries.map((tab) => tab['id']),
+      );
+      reopened.dispose();
+      expect(tester.takeException(), isNull);
+    },
+  );
 
   testWidgets(
     'reader chrome keeps page geometry and yields hidden input and semantics',

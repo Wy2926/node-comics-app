@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:mangayomi/modules/webview/browser_session_store.dart';
+import 'package:mangayomi/modules/webview/mobile_browser_home.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
+import 'package:mangayomi/router/router.dart' show createRoute;
+import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 
-/// Presentation for the chapter route before pages are ready. Fetching, cache
-/// invalidation and navigation stay with the existing reader controller.
+/// Presentation for the chapter route before pages are ready.
 class MobileReaderEntryState extends StatefulWidget {
   const MobileReaderEntryState({
     super.key,
@@ -13,15 +17,16 @@ class MobileReaderEntryState extends StatefulWidget {
     this.bookTitle,
     this.chapterTitle,
     this.failureMessage,
+    this.failureDescription,
     this.onRetry,
-    this.onOpenWebView,
+    this.resolveBrowserUrl,
     required this.onBack,
   });
 
   final ImageProvider? cover;
-  final String? bookTitle, chapterTitle, failureMessage;
+  final String? bookTitle, chapterTitle, failureMessage, failureDescription;
   final Future<void> Function()? onRetry;
-  final VoidCallback? onOpenWebView;
+  final Future<String?> Function()? resolveBrowserUrl;
   final VoidCallback onBack;
 
   @override
@@ -30,9 +35,59 @@ class MobileReaderEntryState extends StatefulWidget {
 
 class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
   bool _retrying = false;
+  bool _openingBrowser = false;
+
+  Future<void> _openBrowser() async {
+    if (_openingBrowser || _retrying) return;
+    setState(() => _openingBrowser = true);
+    try {
+      String? url;
+      try {
+        url = await widget.resolveBrowserUrl?.call();
+      } catch (_) {
+        // A source without a usable website URL can still open a fresh start page.
+      }
+      if (!mounted || ModalRoute.isCurrentOf(context) != true) return;
+      final title = url == null ? '' : widget.chapterTitle ?? '';
+      final String? tabId;
+      try {
+        tabId = await browserSessionStore.createTab(
+          url: url ?? '',
+          title: title,
+        );
+      } catch (_) {
+        if (mounted && ModalRoute.isCurrentOf(context) == true) {
+          showNodeLaneNotice(
+            context.l10n.browser_save_failed,
+            kind: NodeLaneNoticeKind.error,
+          );
+        }
+        return;
+      }
+      if (!mounted || ModalRoute.isCurrentOf(context) != true) return;
+      if (tabId == null) {
+        showNodeLaneNotice(
+          context.l10n.browser_tab_limit(BrowserSessionStore.maxTabs),
+        );
+      } else if (url != null) {
+        // Select by ID: another tab for this chapter may have its own history and position.
+        await context.push(
+          '/mangawebview',
+          extra: {'url': url, 'title': title, 'tabId': tabId},
+        );
+      } else {
+        await Navigator.push(
+          context,
+          createRoute(page: const MobileBrowserHome()),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _openingBrowser = false);
+    }
+  }
 
   Future<void> _retry() async {
-    if (_retrying || widget.onRetry == null) return;
+    if (_retrying || _openingBrowser || widget.onRetry == null) return;
     setState(() => _retrying = true);
     try {
       await widget.onRetry!();
@@ -60,11 +115,12 @@ class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
                 : l10n.reader_opening_chapter,
             onBack: widget.onBack,
             actions: [
-              if (failed && widget.onOpenWebView != null)
-                IconButton(
-                  tooltip: l10n.open_in_browser,
-                  onPressed: widget.onOpenWebView,
-                  icon: const Icon(Icons.public),
+              if (failed)
+                NodeLaneIconButton(
+                  tooltip: l10n.reader_open_browser,
+                  icon: NodeLaneIcons.of(context).browser,
+                  busy: _openingBrowser,
+                  onPressed: _openBrowser,
                 ),
             ],
           ),
@@ -153,7 +209,7 @@ class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
                                       ? widget.failureMessage!
                                       : l10n.reader_loading_pages,
                                   description: failed
-                                      ? l10n.reader_loading_retry_hint
+                                      ? widget.failureDescription
                                       : null,
                                   kind: failed
                                       ? NodeLaneNoticeKind.info
@@ -164,7 +220,7 @@ class _MobileReaderEntryStateState extends State<MobileReaderEntryState> {
                                     height: NodeLaneTokens.space16,
                                   ),
                                   FilledButton(
-                                    onPressed: _retry,
+                                    onPressed: _openingBrowser ? null : _retry,
                                     child: Text(l10n.retry),
                                   ),
                                 ],

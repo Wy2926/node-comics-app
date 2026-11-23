@@ -4193,7 +4193,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Check your connection and try again.';
+      'Could not connect. Check your connection and try again.';
+
+  @override
+  String get reader_request_timeout =>
+      'The chapter request timed out. Try again in a moment.';
+
+  @override
+  String get reader_file_unavailable =>
+      'Could not read the local file. Check that it still exists and the app can access it.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'The chapter data is in an unexpected format and could not be read.';
+
+  @override
+  String get reader_chapter_missing =>
+      'This chapter is no longer in the chapter list. Go back to the title and refresh the list.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'The site requires sign-in',
+      'denied': 'The site refused access',
+      'missing': 'The requested resource was not found',
+      'limited': 'Too many requests. Try again later',
+      'server': 'The server could not complete the request. Try again later',
+      'other': 'The request failed',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Open in-app browser';
 
   @override
   String get reader_no_pages => 'No images found for this chapter';

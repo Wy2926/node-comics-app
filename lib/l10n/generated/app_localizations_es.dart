@@ -4239,7 +4239,39 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get reader_loading_retry_hint =>
-      'Verifique su conexión e inténtelo nuevamente.';
+      'No se pudo conectar. Compruebe la conexión y vuelva a intentarlo.';
+
+  @override
+  String get reader_request_timeout =>
+      'Se agotó el tiempo de espera al solicitar el capítulo. Inténtelo de nuevo en un momento.';
+
+  @override
+  String get reader_file_unavailable =>
+      'No se pudo leer el archivo local. Compruebe que existe y que la aplicación puede acceder a él.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'No se pudieron leer los datos del capítulo porque su formato es inesperado.';
+
+  @override
+  String get reader_chapter_missing =>
+      'El capítulo ya no está en la lista. Vuelva a los detalles de la obra y actualice la lista.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'El sitio requiere iniciar sesión',
+      'denied': 'El sitio ha denegado el acceso',
+      'missing': 'No se encontró el recurso solicitado',
+      'limited': 'Demasiadas solicitudes. Inténtelo de nuevo más tarde',
+      'server': 'El servidor no pudo procesar la solicitud. Inténtelo de nuevo más tarde',
+      'other': 'La solicitud ha fallado',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'Abrir el navegador de la aplicación';
 
   @override
   String get reader_no_pages =>

@@ -187,6 +187,10 @@ void main() {
     vault.failRead = false;
     await store.load();
     await expectLater(store.close('old'), throwsA(isA<PlatformException>()));
+    await expectLater(
+      store.createTab(url: 'https://example.org/old'),
+      throwsA(isA<PlatformException>()),
+    );
     expect(store.entries.single['id'], 'old');
     vault.fail = false;
     final entries = [
@@ -203,7 +207,7 @@ void main() {
         },
     ];
     await store.save(entries);
-    expect(await store.createBlank(), isFalse);
+    expect(await store.createTab(), isNull);
     final reopened = BrowserSessionStore();
     await reopened.load();
     expect(reopened.entries.last['history'], entries.last['history']);
@@ -325,6 +329,25 @@ void main() {
     ]) {
       expect(resolveBrowserInput(input), isNull, reason: input);
     }
+  });
+
+  test('chapter links preserve a reader host or resolve relative to the source directory', () {
+    const base = 'https://catalog.example/books';
+    const mirror = 'https://reader.example/read/12?edition=a#page3';
+    expect(resolveBrowserLink(mirror, base), mirror);
+    expect(resolveBrowserLink(mirror, null), mirror);
+    expect(resolveBrowserLink('read/12?q=a#p3', base), '$base/read/12?q=a#p3');
+    expect(
+      resolveBrowserLink('/read/12', base),
+      'https://catalog.example/read/12',
+    );
+    expect(resolveBrowserLink('12', null), isNull);
+    expect(resolveBrowserLink('javascript:alert(1)', base), isNull);
+    expect(
+      resolveBrowserLink('https://user:pass@reader.example/ch', base),
+      isNull,
+    );
+    expect(resolveBrowserLink('/read/\u0000', base), isNull);
   });
 
   test('history survives tabs, deduplicates per day, and restores preferences and bookmarks', () async {

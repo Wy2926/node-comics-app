@@ -70,6 +70,7 @@ class ChapterPreloadManager {
           );
     _loading.add(direction);
     boundary.chapterState = ChapterLoadState.loading;
+    boundary.chapterError = null;
     boundary.onRetryChapter = null;
 
     Future<void> publish(VoidCallback change) async {
@@ -144,8 +145,11 @@ class ChapterPreloadManager {
         boundary.chapterState = null;
       });
       return !_disposed;
-    } catch (_) {
-      if (!_disposed) boundary.chapterState = ChapterLoadState.failed;
+    } catch (error) {
+      if (!_disposed) {
+        boundary.chapterState = ChapterLoadState.failed;
+        boundary.chapterError = error;
+      }
       return false;
     } finally {
       if (!_disposed) {
@@ -243,6 +247,7 @@ class ChapterPreloadManager {
     // Clear pages
     for (final page in _pages) {
       page.onRetryChapter = null;
+      page.chapterError = null;
       page.resolvedFilePath = null;
     }
     _pages.clear();

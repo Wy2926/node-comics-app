@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mangayomi/modules/feedback/support_request_page.dart';
 import 'package:mangayomi/services/support_requests.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
@@ -101,7 +102,7 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   }
 
   Future<void> _new() async {
-    if (!await browserSessionStore.createBlank() && mounted) {
+    if (await browserSessionStore.createTab() == null && mounted) {
       showNodeLaneNotice(
         context.l10n.browser_tab_limit(BrowserSessionStore.maxTabs),
       );
@@ -164,6 +165,9 @@ class _MobileBrowserHomeState extends ConsumerState<MobileBrowserHome> {
   @override
   Widget build(BuildContext context) => NodeLaneSurface(
     child: Scaffold(
+      appBar: ModalRoute.of(context)?.impliesAppBarDismissal == true
+          ? nodeLaneAppBar(context, title: context.l10n.browser_title)
+          : null,
       body: failed
           ? NodeLaneEmptyState.error(
               title: context.l10n.browser_data_failed,

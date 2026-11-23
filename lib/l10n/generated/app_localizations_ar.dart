@@ -4183,7 +4183,40 @@ class AppLocalizationsAr extends AppLocalizations {
   String get reader_loading_failed => 'لا يمكن تحميل هذا الفصل';
 
   @override
-  String get reader_loading_retry_hint => 'تحقق من الاتصال وحاول مرة أخرى.';
+  String get reader_loading_retry_hint =>
+      'تعذّر الاتصال. تحقق من اتصالك بالشبكة وحاول مرة أخرى.';
+
+  @override
+  String get reader_request_timeout =>
+      'انتهت مهلة طلب الفصل. حاول مجددًا بعد قليل.';
+
+  @override
+  String get reader_file_unavailable =>
+      'تعذّرت قراءة الملف المحلي. تحقق من وجوده ومن إذن التطبيق بالوصول إليه.';
+
+  @override
+  String get reader_invalid_chapter_data =>
+      'تعذّرت قراءة بيانات الفصل لأن تنسيقها غير متوقع.';
+
+  @override
+  String get reader_chapter_missing =>
+      'لم يعد هذا الفصل في القائمة. ارجع إلى تفاصيل العمل وحدّث قائمة الفصول.';
+
+  @override
+  String reader_http_failure(String reason, String status) {
+    String _temp0 = intl.Intl.selectLogic(reason, {
+      'login': 'يتطلب الموقع تسجيل الدخول',
+      'denied': 'رفض الموقع السماح بالوصول',
+      'missing': 'لم يتم العثور على المورد المطلوب',
+      'limited': 'الطلبات كثيرة جدًا. حاول مرة أخرى لاحقًا',
+      'server': 'تعذّرت معالجة الطلب على الخادم. حاول مرة أخرى لاحقًا',
+      'other': 'فشل الطلب',
+    });
+    return '$_temp0 (HTTP $status).';
+  }
+
+  @override
+  String get reader_open_browser => 'فتح المتصفح المدمج';
 
   @override
   String get reader_no_pages => 'لم يتم العثور على صور لهذا الفصل';

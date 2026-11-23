@@ -255,8 +255,12 @@ String fingerprintOf(Object error) {
 /// also removes the account name from every file path in a stack.
 String redact(String text) {
   var out = text.replaceAllMapped(
-    RegExp(r'https?://([^\s/"\)]+)(/[^\s"\)]*)?'),
-    (m) => 'https://${m.group(1)}/...',
+    RegExp(r'https?://[^\s"]+', caseSensitive: false),
+    (m) {
+      final uri = Uri.tryParse(m[0]!);
+      if (uri == null || uri.host.isEmpty) return '<url>';
+      return '${uri.origin}/...';
+    },
   );
   out = out.replaceAll(RegExp(r'/(?:Users|home)/[^/\s]+'), '~');
   out = out.replaceAll(
@@ -266,7 +270,14 @@ String redact(String text) {
   // Anything that looks like a credential, in a header dump or a query.
   out = out.replaceAllMapped(
     RegExp(
-      r'(authorization|cookie|token|api[_-]?key|password|secret)'
+      r'''((?:authorization|cookie)["']?\s*[:=]\s*["']?)[^,"'}\r\n]+''',
+      caseSensitive: false,
+    ),
+    (m) => '${m[1]}<removed>',
+  );
+  out = out.replaceAllMapped(
+    RegExp(
+      r'(token|api[_-]?key|password|secret)'
       r'''(["']?\s*[:=]\s*["']?)([^\s,;"'}\)]+)''',
       caseSensitive: false,
     ),

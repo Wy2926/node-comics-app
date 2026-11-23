@@ -1,8 +1,10 @@
+final _controlCharacters = RegExp(r'[\x00-\x1f\x7f]');
+
 /// The same navigation boundary is used by address input and WebView requests.
 bool isBrowserUrl(dynamic value) {
   if (value is! String ||
       value.length > 8192 ||
-      RegExp(r'[\x00-\x1f\x7f]').hasMatch(value)) {
+      _controlCharacters.hasMatch(value)) {
     return false;
   }
   final uri = Uri.tryParse(value);
@@ -11,6 +13,25 @@ bool isBrowserUrl(dynamic value) {
       uri.host.isNotEmpty &&
       !RegExp(r'\s|%').hasMatch(uri.host) &&
       uri.userInfo.isEmpty;
+}
+
+/// Source base paths are directories; a chapter may also name its own reader host.
+String? resolveBrowserLink(String link, String? baseUrl) {
+  if (isBrowserUrl(link)) return link;
+  final relative = Uri.tryParse(link);
+  if (link.isEmpty ||
+      _controlCharacters.hasMatch(link) ||
+      relative == null ||
+      relative.hasScheme ||
+      !isBrowserUrl(baseUrl)) {
+    return null;
+  }
+  final base = Uri.parse(baseUrl!);
+  final directory = base.path.endsWith('/')
+      ? base
+      : base.replace(path: '${base.path}/');
+  final url = directory.resolveUri(relative).toString();
+  return isBrowserUrl(url) ? url : null;
 }
 
 String? normalizeBrowserAddress(String value) {
@@ -47,7 +68,7 @@ String? resolveBrowserInput(
   BrowserSearchEngine engine = BrowserSearchEngine.google,
 }) {
   final text = input.trim();
-  if (text.isEmpty || RegExp(r'[\x00-\x1f\x7f]').hasMatch(text)) return null;
+  if (text.isEmpty || _controlCharacters.hasMatch(text)) return null;
   final address = normalizeBrowserAddress(text);
   if (address != null) return address;
   if (text.contains('://') ||
