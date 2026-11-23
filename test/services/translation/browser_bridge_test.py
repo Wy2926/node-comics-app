@@ -115,15 +115,19 @@ __PAINT_FIXTURE__
   assert(JSON.stringify(await readInput(item))===JSON.stringify({meta,chunks}),'translation replacement contaminated original pixels');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'source or reading anchor mutated');
   const theme={surface:'#1e242c',ink:'#f0f3f8',line:'#353e4a',accent:'#006eff',error:'#ff8888',inset:8,gap:8,padding:12,radius:24,tap:44,fontSize:13,reduceMotion:true};
+  // A cosmetic filter can hide high-z-index inline overlays on the page.
+  const filter=document.createElement('style'); filter.textContent='[style*="z-index:"] { display:none !important }';
+  document.head.append(filter);
   const failed={...item,label:'翻译失败\n连接失败，请重试',detail:'连接失败，请重试',issue:true,working:false,action:'retry',actionLabel:'重试',actionSemanticLabel:'重试此图片'};
   await call('state',{active:true,translated:true,theme,items:[failed]});
-  const badge=document.querySelector('[data-nodelane-overlay="status"]');
+  let badge=document.querySelector('[data-nodelane-overlay="status"]');
   assert(badge,'image status missing');
+  assert(badge.getBoundingClientRect().height>0,'page filter hid the per-image status');
   assert(badge.shadowRoot.querySelector('[role=status]').innerText.includes('连接失败，请重试'),'touch users cannot see the failure reason');
   assert(badge.style.getPropertyValue('--surface')===theme.surface,'native theme tokens missing');
   assert(Math.abs(badge.getBoundingClientRect().left-img.getBoundingClientRect().left-8)<1,'badge not on image top-left');
   assert(img.src===original && img.getBoundingClientRect().top===top && scrollY===before,'status changed reading position');
-  const button=badge.shadowRoot.querySelector('button');
+  let button=badge.shadowRoot.querySelector('button');
   assert(button.getAttribute('aria-label')==='重试此图片','localized image action missing');
   await call('state',{active:true,translated:true,theme,items:[{...failed,label:'Translation failed',actionLabel:'Retry',actionSemanticLabel:'Retry this image'}]});
   assert(button.textContent==='Retry' && button.getAttribute('aria-label')==='Retry this image','locale switch did not update visible and accessible actions');
@@ -131,14 +135,23 @@ __PAINT_FIXTURE__
   assert(actions.length===1 && actions[0].id===item.id && actions[0].action==='retry','single image retry duplicated or misrouted');
   await call('state',{active:true,translated:true,theme,items:[{...failed,label:'额度不足',detail:'',action:'upgrade',actionLabel:'升级'}]});
   assert(badge.shadowRoot.querySelector('[role=status]').innerText==='额度不足' && button.textContent==='升级','quota badge added a generic failure');
+  const hit=button.getBoundingClientRect();
+  assert(badge.shadowRoot.elementFromPoint(hit.x+hit.width/2,hit.y+hit.height/2)===button,'visible image action is not tappable');
   button.click(); await wait(1);
   assert(actions.length===1,'a scripted click opened the external pricing page');
-  await call('state',{active:true,translated:false,items:[{...failed,label:'状态待确认',action:'verify',actionLabel:'核实'}]});
-  assert(badge.style.display!=='none','original display hid image status');
+  const verify={...failed,label:'状态待确认',action:'verify',actionLabel:'核实'};
+  await call('state',{active:true,translated:false,items:[verify]});
+  assert(!badge.isConnected && !img.style.content && scrollY===before,'original mode kept the badge or changed position');
+  button.click(); await wait(1);
+  assert(actions.length===1,'detached original-mode action fired');
+  await call('state',{active:true,translated:true,items:[verify]});
+  badge=document.querySelector('[data-nodelane-overlay="status"]'); button=badge.shadowRoot.querySelector('button');
   button.click(); await wait(1);
   assert(actions.at(-1).action==='verify','unknown result creates retry instead of verifying');
-  await call('state',{active:true,translated:false,items:[{...failed,label:'正在翻译',working:true,action:null,actionLabel:''}]});
+  await call('state',{active:true,translated:true,items:[{...failed,label:'正在翻译',working:true,action:null,actionLabel:'',retainResult:false}]});
+  assert(!img.style.content && badge.getBoundingClientRect().height>0 && badge.shadowRoot.querySelector('[role=status]').innerText==='正在翻译','working status hidden on the original image');
   assert(button.hidden && button.disabled,'running translation allows resubmission');
+  filter.remove();
   for (const label of ['已翻译','无可译文字']) {
     await call('state',{active:true,translated:true,items:[{...failed,label,visible:false,menu:true,action:null,actionLabel:''}]});
     assert(!document.querySelector('[data-nodelane-overlay="status"]'),'completed image has corner controls');
@@ -228,6 +241,10 @@ __PAINT_FIXTURE__
     await rejects(()=>call('resultBegin',{...dataItem,size:1}),'SOURCE_CHANGED');
     assert(!dataImage.style.content,'cached result crossed accounts');
   } finally { HTMLImageElement.prototype.decode=decode; }
+  await call('resultBegin',{...dataItem,scope:2,size:3});
+  await call('resultChunk',{id:dataItem.id,offset:0,data:'YWJj'});
+  await rejects(()=>call('resultEnd',dataItem),'INVALID_RESULT');
+  assert(!dataImage.style.content,'failed decode replaced the original image');
   await call('state',{active:true,translated:false});
   assert(!dataImage.style.content && dataImage.style.objectFit==='cover' && dataImage.style.transform==='rotate(15deg)','original CSS not restored');
   dataImage.remove();

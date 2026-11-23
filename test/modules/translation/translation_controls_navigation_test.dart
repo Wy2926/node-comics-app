@@ -2,6 +2,7 @@ import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderParagraph;
@@ -35,6 +36,11 @@ class _Runtime extends Fake implements ChannelRuntime {
   }) {}
   @override
   Future<void> restore(List<TranslationTarget> targets) async {}
+  @override
+  Future<DisplayImageLease> readResult(
+    TranslationResultRef result,
+    TranslationCancellation cancellation,
+  ) async => DisplayImageLease(file: File('fixture.png'), width: 1, height: 1);
   @override
   Stream<void> get changes => const Stream.empty();
   @override
@@ -210,6 +216,45 @@ void main() {
       expect(controller.enabled, isFalse);
       expect(controller.showTranslation, isFalse);
       expect(find.text('翻译目标语言'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'web progress follows display acknowledgement even with automatic translation off',
+    (tester) async {
+      await mount(tester, browser: true);
+      final runtime = _Runtime(
+        const PageTranslationState(
+          phase: TranslationPhase.succeeded,
+          result: TranslationResultRef('fixture', 'generated'),
+          actions: {TranslationAction.readResult},
+        ),
+      );
+      var decode = Completer<void>();
+      final target = TranslationDisplayTarget(
+        const TranslationPage('page', 'revision'),
+        _Source(),
+        (_, _) => decode.future,
+      );
+      controller
+        ..attach(runtime)
+        ..configure(enabled: false, showTranslation: true)
+        ..window([target]);
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      expect(find.text('已完成 0 / 1 张'), findsOneWidget);
+      decode.completeError(const TranslationFailure('INVALID_RESULT'));
+      await tester.pumpAndSettle();
+      controller.configure(showTranslation: false);
+      await tester.pumpAndSettle();
+      expect(find.text('已完成 0 / 1 张 · 1 张需要处理'), findsOneWidget);
+      controller.configure(showTranslation: true);
+      decode = Completer<void>();
+      final retry = controller.perform(target, TranslationAction.readResult);
+      decode.complete();
+      await retry;
+      await tester.pumpAndSettle();
+      expect(find.text('已完成 1 / 1 张'), findsOneWidget);
     },
   );
 

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
-import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
@@ -59,7 +58,7 @@ class TranslationControlsContent extends ConsumerWidget {
     final body = ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        late final states = controller.targets.map(controller.state).toList();
+        final targets = controller.targets;
         return SingleChildScrollView(
           padding: NodeLaneTokens.bubbleContentPadding,
           child: Column(
@@ -94,21 +93,17 @@ class TranslationControlsContent extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (browser &&
-                  controller.runtime != null &&
-                  controller.enabled) ...[
+              if (browser && controller.runtime != null) ...[
                 const SizedBox(height: NodeLaneTokens.space12),
                 Text(
-                  states.isEmpty
+                  targets.isEmpty
                       ? context.l10n.translation_no_images
                       : context.l10n.translation_progress(
-                          states
-                              .where(
-                                (s) => s.phase == TranslationPhase.succeeded,
-                              )
+                          targets.where(controller.isComplete).length,
+                          targets.length,
+                          targets
+                              .where((t) => controller.state(t).hasIssue)
                               .length,
-                          states.length,
-                          states.where((s) => s.hasIssue).length,
                         ),
                   style: t.readerSecondary,
                 ),

@@ -83,8 +83,6 @@ class WebTranslationBridge {
 
   final _inputQueue = DbWriteQueue(), _outputQueue = DbWriteQueue();
   final _elements = <String, Map<String, dynamic>>{};
-  final _prepared = <String, String>{};
-  final _sending = <String>{};
   String _token = '', _document = '', _state = '';
   int _sequence = 0, _epoch = 0, _displayScope = 0;
   bool _ready = false, _disposed = false;
@@ -98,7 +96,6 @@ class WebTranslationBridge {
     _sequence = 0;
     _state = '';
     _elements.clear();
-    _prepared.clear();
     view.window(const []);
   }
 
@@ -209,14 +206,18 @@ class WebTranslationBridge {
       );
       entry['page'] = page;
       entries[id] = entry;
+      final epoch = _epoch;
       targets.add(
-        TranslationTarget(page, _WebImageSource(this, id, entry, _epoch)),
+        TranslationDisplayTarget(
+          page,
+          _WebImageSource(this, id, entry, epoch),
+          (image, cancel) => _prepareDisplay(id, entry, epoch, image, cancel),
+        ),
       );
     }
     _elements
       ..clear()
       ..addAll(entries);
-    _prepared.removeWhere((id, _) => !entries.containsKey(id));
     _syncResources();
     view.window(targets);
     return true;
@@ -242,7 +243,9 @@ class WebTranslationBridge {
     }
     if (payload['error'] != null) {
       throw TranslationFailure(switch (payload['error']) {
-        'SOURCE_MISSING' || 'RESOURCE_LIMIT' => payload['error'] as String,
+        'SOURCE_MISSING' ||
+        'RESOURCE_LIMIT' ||
+        'INVALID_RESULT' => payload['error'] as String,
         _ => 'BRIDGE_INVALID',
       });
     }
@@ -297,6 +300,9 @@ class WebTranslationBridge {
               {
                 'id': entry.key,
                 'revision': entry.value['revision'],
+                'retainResult':
+                    view.isReading(target) ||
+                    view.images.containsKey(target.page.identity),
                 'menu':
                     onImageMenu != null &&
                     translationImageMenuActions(view, target).isNotEmpty,
@@ -311,7 +317,6 @@ class WebTranslationBridge {
     final state = jsonEncode(status);
     if (_state != state) {
       _state = state;
-      if (!active) _prepared.clear();
       final epoch = _epoch;
       // Display switches must not wait behind a full image's chunk transfer.
       _call('state', status, epoch).catchError((_) {
@@ -319,90 +324,80 @@ class WebTranslationBridge {
         return null;
       });
     }
-    if (!active) return;
-    for (final entry in _elements.entries) {
-      final page = entry.value['page'] as TranslationPage;
-      final image = view.images[page.identity];
-      final scope = _displayScope;
-      final signature = '$scope:${entry.value['revision']}:${image?.file.path}';
-      if (image == null && _prepared.remove(entry.key) != null) {
-        final epoch = _epoch;
-        _outputQueue
-            .run(() => _call('resultClear', {'id': entry.key}, epoch))
-            .catchError((_) => null);
+  }
+
+  Future<void> _prepareDisplay(
+    String id,
+    Map<String, dynamic> entry,
+    int epoch,
+    DisplayImageLease image,
+    TranslationCancellation cancel,
+  ) {
+    final revision = entry['revision'] as String, scope = _displayScope;
+    void check() {
+      cancel.check();
+      if (!active ||
+          epoch != _epoch ||
+          scope != _displayScope ||
+          _elements[id]?['revision'] != revision) {
+        throw const TranslationCancelled();
       }
-      if (!view.showTranslation ||
-          image == null ||
-          _prepared[entry.key] == signature ||
-          !_sending.add(entry.key)) {
-        continue;
-      }
-      final epoch = _epoch;
-      _outputQueue
-          .run(() async {
-            if (!active ||
-                epoch != _epoch ||
-                view.images[page.identity] != image) {
-              return;
-            }
-            final length = await image.file.length();
-            await _call('resultBegin', {
-              'scope': scope,
-              'id': entry.key,
-              'revision': entry.value['revision'],
-              'size': length,
-            }, epoch);
-            var offset = 0;
-            final file = await image.file.open();
-            try {
-              while (offset < length) {
-                if (!active || view.images[page.identity] != image) {
-                  throw const TranslationCancelled();
-                }
-                final bytes = await file.read(128 * 1024);
-                if (bytes.isEmpty) {
-                  throw const TranslationFailure('INVALID_RESULT');
-                }
-                await _call('resultChunk', {
-                  'id': entry.key,
-                  'offset': offset,
-                  'data': base64Encode(bytes),
-                }, epoch);
-                offset += bytes.length;
-              }
-              if (!active || view.images[page.identity] != image) {
-                throw const TranslationCancelled();
-              }
-              await _call('resultEnd', {'id': entry.key}, epoch);
-              if (epoch == _epoch) {
-                if (view.images[page.identity] == image) {
-                  _prepared[entry.key] = signature;
-                } else {
-                  await _call('resultClear', {'id': entry.key}, epoch);
-                }
-              }
-            } finally {
-              await file.close();
-            }
-          })
-          .catchError((_) async {
-            if (_ready && epoch == _epoch) {
-              await _call('resultAbort', {}, epoch).catchError((_) => null);
-            }
-          })
-          .whenComplete(() {
-            _sending.remove(entry.key);
-            if (epoch != _epoch || view.images[page.identity] != image) {
-              _changed();
-            }
-          });
     }
+
+    return _outputQueue.run(() async {
+      check();
+      final locator = {'id': id, 'revision': revision};
+      try {
+        final file = await image.file.open();
+        try {
+          final size = await file.length();
+          check();
+          await _call('resultBegin', {
+            ...locator,
+            'scope': scope,
+            'size': size,
+          }, epoch);
+          var offset = 0;
+          while (offset < size) {
+            final bytes = await file.read(128 * 1024);
+            check();
+            if (bytes.isEmpty) throw const TranslationFailure('INVALID_RESULT');
+            await _call('resultChunk', {
+              'id': id,
+              'offset': offset,
+              'data': base64Encode(bytes),
+            }, epoch);
+            offset += bytes.length;
+          }
+        } finally {
+          await file.close();
+        }
+        check();
+        if (await _call('resultEnd', locator, epoch) != true) {
+          throw const TranslationFailure('BRIDGE_INVALID');
+        }
+        check();
+      } catch (error) {
+        if (_ready && epoch == _epoch && scope == _displayScope) {
+          // Finish cleanup inside the queue, before the next image can begin.
+          await _call('resultAbort', locator, epoch).catchError((_) => null);
+        }
+        check();
+        if (error is TranslationCancelled || error is TranslationFailure) {
+          rethrow;
+        }
+        throw TranslationFailure(
+          error is FileSystemException
+              ? 'RESULT_READ_FAILED'
+              : 'BRIDGE_INVALID',
+        );
+      }
+    });
   }
 
   void _syncResources() {
     if (!identical(_resourceRuntime, view.runtime)) {
       _displayScope++;
-      _prepared.clear();
       _archive?.clear();
       _resourceRuntime = view.runtime;
     } else if (!active) {

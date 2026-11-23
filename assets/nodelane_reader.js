@@ -294,11 +294,11 @@
       let badge = badges.get(item.id);
       if (!badge) {
         const host = document.createElement('div'); host.dataset.nodelaneOverlay = 'status';
-        // Isolate typography and buttons from arbitrary website styles.
-        host.style.cssText = 'all:initial;position:fixed;z-index:2147483647;pointer-events:none';
         const root = host.attachShadow({mode:'open'}), style = document.createElement('style');
+        // Even inline `all` can expand to z-index when positioned, triggering page filters.
         style.textContent = `
-          :host { --surface: #fff; --ink: #171a21; --line: #e7eaf0; --accent: #006eff; --error: #b3261e;
+          :host { all:initial; position:fixed!important; z-index:2147483647!important; pointer-events:none!important;
+            --surface: #fff; --ink: #171a21; --line: #e7eaf0; --accent: #006eff; --error: #b3261e;
             --radius:24px; --gap:8px; --padding:12px; --tap:44px; --fontSize:13px; }
           .badge { box-sizing:border-box; display:flex; flex-wrap:wrap; align-items:center; width:fit-content;
             max-width:100%; border:1px solid var(--line); border-radius:var(--radius); background:var(--surface);
@@ -330,7 +330,7 @@
           event.preventDefault(); event.stopPropagation();
           const current=badge.item, action=current.action;
           if (action==='upgrade' && !event.isTrusted) return;
-          if (!active || button.disabled || !action) return;
+          if (!active || !translated || !button.isConnected || button.disabled || !action) return;
           try { record(current.id,current.revision); } catch (_) { dropBadge(current.id); return; }
           button.disabled=true;
           try {
@@ -472,8 +472,14 @@
       reading = args.reading === true;
       if (!reading) lastReading = null;
       if (args.theme) theme=args.theme;
-      if (args.items) { updateBadges(active ? args.items : []); updateMenus(active ? args.items : []); }
-      if (!active) { cancelPress(); for (const id of [...menus.keys()]) dropMenu(id); input?.abort?.abort(); input = null; for (const id of [...badges.keys()]) dropBadge(id); }
+      if (args.items) {
+        for (const item of args.items) {
+          if (item.retainResult === false && overlays.get(item.id)?.revision === item.revision) drop(item.id);
+        }
+      }
+      if (args.items || !active || !translated) updateBadges(active && translated ? args.items : []);
+      if (args.items || !active) updateMenus(active ? args.items : []);
+      if (!active) { cancelPress(); input?.abort?.abort(); input = null; }
       place(); if (active || reading) schedule(); return true;
     }
     if (!active) throw Error('BRIDGE_INVALID');
@@ -541,7 +547,6 @@
       value.offset += slice.size; return data;
     }
     if (operation === 'inputEnd') { const value = input; input = null; value?.abort?.abort(); if (value) record(value.id, value.revision); return true; }
-    if (operation === 'resultClear') { drop(args.id); return true; }
     if (operation === 'resultBegin') {
       if (args.scope !== displayScope) throw Error('SOURCE_CHANGED');
       record(args.id, args.revision);
@@ -564,14 +569,18 @@
       value.chunks.length = 0;
       let url = URL.createObjectURL(png);
       const preview = new Image(); preview.src = url;
+      const decode = async () => {
+        // Throw in the reader's realm, not inside Gecko's page-owned decode promise.
+        try { await preview.decode(); } catch (_) { throw Error('INVALID_RESULT'); }
+      };
       try {
-        await preview.decode();
+        await decode();
         if (!active || output !== value || disposed) throw Error('SOURCE_CHANGED');
         const {el} = record(value.id, value.revision);
         const sized = await displayUrl(el, png, preview);
         if (sized !== url) {
           URL.revokeObjectURL(url); url = sized; preview.src = url;
-          await preview.decode();
+          await decode();
         }
         if (!active || output !== value || disposed) throw Error('SOURCE_CHANGED');
         record(value.id, value.revision);
@@ -581,7 +590,11 @@
       } catch (error) { URL.revokeObjectURL(url); throw error; }
       finally { if (output === value) output = null; }
     }
-    if (operation === 'resultAbort') { output = null; return true; }
+    if (operation === 'resultAbort') {
+      output = null;
+      if (overlays.get(args.id)?.revision === args.revision) drop(args.id);
+      return true;
+    }
     throw Error('BRIDGE_INVALID');
   }
   function dispose() {

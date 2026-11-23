@@ -6,6 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 
+/// Some surfaces must prepare the pixels before a result is ready to display.
+class TranslationDisplayTarget extends TranslationTarget {
+  const TranslationDisplayTarget(super.page, super.source, this.prepareDisplay);
+
+  final Future<void> Function(DisplayImageLease, TranslationCancellation)
+  prepareDisplay;
+}
+
 /// Display lifetime and user intent, independent of any concrete channel.
 class TranslationViewController extends ChangeNotifier {
   final consumer = translationUuid();
@@ -39,7 +47,6 @@ class TranslationViewController extends ChangeNotifier {
     if (identical(value, runtime)) return;
     _epoch++;
     error = null;
-    _actions.clear();
     runtime?.pause(consumer);
     _subscription?.cancel();
     _release();
@@ -61,6 +68,7 @@ class TranslationViewController extends ChangeNotifier {
     _imageErrors.removeWhere((key, _) => !keep.contains(key));
     _expired.removeWhere((key) => !keep.contains(key));
     _restored.removeWhere((key) => !keep.contains(key));
+    _actions.removeWhere((key, _) => !keep.contains(key));
     _sync();
   }
 
@@ -75,8 +83,17 @@ class TranslationViewController extends ChangeNotifier {
   bool isPerforming(TranslationTarget target) =>
       _actions.containsKey(target.page.identity);
   bool isReading(TranslationTarget target) =>
-      _requests.containsKey(target.page.identity) &&
-      !images.containsKey(target.page.identity);
+      _requests.containsKey(target.page.identity);
+
+  bool isComplete(TranslationTarget target) {
+    final value = state(target), key = target.page.identity;
+    return value.phase == TranslationPhase.succeeded &&
+        (value.noText ||
+            (!isReading(target) &&
+                images.containsKey(key) &&
+                _attempted[key] == value.result?.operationId));
+  }
+
   PageTranslationState state(TranslationTarget target) {
     final value =
         runtime?.stateFor(target.page) ?? const PageTranslationState();
@@ -139,57 +156,72 @@ class TranslationViewController extends ChangeNotifier {
 
   void _changed() {
     if (_disposed) return;
-    if (foreground && showTranslation) {
+    if (foreground) {
       for (final target in targets) {
         final result = runtime?.stateFor(target.page).result;
         final key = target.page.identity;
-        if (result == null) {
+        if ((showTranslation && result == null) ||
+            (_attempted.containsKey(key) &&
+                _attempted[key] != result?.operationId)) {
           _requests.remove(key)?.cancel();
           _attempted.remove(key);
           _imageErrors.remove(key);
           _expired.remove(key);
           images.remove(key)?.release();
-          continue;
         }
-        if (_requests.containsKey(key) ||
-            _attempted[key] == result.operationId) {
-          continue;
+        if (showTranslation &&
+            result != null &&
+            _attempted[key] != result.operationId) {
+          unawaited(_read(target, result));
         }
-        _attempted[key] = result.operationId;
-        _imageErrors.remove(key);
-        _expired.remove(key);
-        final cancel = TranslationCancellation();
-        _requests[key] = cancel;
-        runtime!
-            .readResult(result, cancel)
-            .then((lease) {
-              if (_disposed ||
-                  cancel.isCancelled ||
-                  state(target).result?.operationId != result.operationId) {
-                lease.release();
-                return;
-              }
-              images.remove(key)?.release();
-              images[key] = lease;
-              notifyListeners();
-            })
-            .catchError((Object e) {
-              if (!cancel.isCancelled) {
-                if (e is TranslationFailure && e.code == 'RESULT_EXPIRED') {
-                  _expired.add(key);
-                }
-                _imageErrors[key] = e is TranslationFailure
-                    ? e
-                    : const TranslationFailure('RESULT_READ_FAILED');
-                notifyListeners();
-              }
-            })
-            .whenComplete(() {
-              if (identical(_requests[key], cancel)) _requests.remove(key);
-            });
       }
     }
     notifyListeners();
+  }
+
+  Future<void> _read(
+    TranslationTarget target,
+    TranslationResultRef result,
+  ) async {
+    final key = target.page.identity, cancel = TranslationCancellation();
+    _requests[key] = cancel;
+    _attempted[key] = result.operationId;
+    _imageErrors.remove(key);
+    _expired.remove(key);
+    bool current() =>
+        !cancel.isCancelled &&
+        runtime?.stateFor(target.page).result?.operationId ==
+            result.operationId;
+    DisplayImageLease? lease;
+    try {
+      lease = await runtime!.readResult(result, cancel);
+      if (!current()) return;
+      if (target is TranslationDisplayTarget) {
+        await target.prepareDisplay(lease, cancel);
+        if (!current()) return;
+      }
+      images.remove(key)?.release();
+      images[key] = lease;
+      lease = null;
+    } on TranslationCancelled {
+      if (current()) _attempted.remove(key);
+    } catch (e) {
+      if (current()) {
+        images.remove(key)?.release();
+        if (e is TranslationFailure && e.code == 'RESULT_EXPIRED') {
+          _expired.add(key);
+        }
+        _imageErrors[key] = e is TranslationFailure
+            ? e
+            : const TranslationFailure('RESULT_READ_FAILED');
+      }
+    } finally {
+      lease?.release();
+      if (identical(_requests[key], cancel)) {
+        _requests.remove(key);
+        if (!_disposed) notifyListeners();
+      }
+    }
   }
 
   Future<void> perform(
@@ -203,25 +235,34 @@ class TranslationViewController extends ChangeNotifier {
         attached == null ||
         !foreground ||
         targetFor(target.page) == null ||
-        !state(target).actions.contains(action) ||
+        (action == TranslationAction.readResult && isReading(target)) ||
         _actions.containsKey(key)) {
       return;
     }
+    final value = state(target);
+    if (!value.actions.contains(action)) return;
     final epoch = _epoch;
     final request = Object();
     _actions[key] = request;
     error = null;
     _imageErrors.remove(key);
+    final reading =
+        action == TranslationAction.readResult && value.result != null
+        ? _read(target, value.result!)
+        : null;
     notifyListeners();
     try {
+      if (reading != null) {
+        await reading;
+        return;
+      }
       await attached.perform(target, action);
-      if (_disposed || epoch != _epoch) return;
-      _attempted.remove(key);
+      if (!identical(_actions[key], request)) return;
       _changed();
     } on TranslationCancelled {
       // Navigation and account replacement invalidate the old action.
     } catch (e) {
-      if (!_disposed && epoch == _epoch && targetFor(target.page) != null) {
+      if (identical(_actions[key], request)) {
         final failure = e is TranslationFailure
             ? e
             : const TranslationFailure('ACTION_FAILED');
@@ -235,6 +276,7 @@ class TranslationViewController extends ChangeNotifier {
   }
 
   void _release() {
+    _actions.clear();
     for (final c in _requests.values) {
       c.cancel();
     }

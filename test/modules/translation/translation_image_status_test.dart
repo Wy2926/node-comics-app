@@ -24,6 +24,7 @@ class _Runtime extends Fake implements ChannelRuntime {
   final states = <String, PageTranslationState>{};
   Completer<void>? pendingAction;
   String? readFailure;
+  final reads = <String>[];
   @override
   Stream<void> get changes => updates.stream;
   @override
@@ -50,6 +51,7 @@ class _Runtime extends Fake implements ChannelRuntime {
     TranslationResultRef result,
     TranslationCancellation cancellation,
   ) async {
+    reads.add(result.operationId);
     if (readFailure != null) throw TranslationFailure(readFailure!);
     return DisplayImageLease(
       file: File('/test-result-${result.operationId}.png'),
@@ -207,7 +209,8 @@ void main() {
     await view.perform(first, TranslationAction.readResult);
     await Future<void>.delayed(Duration.zero);
     expect(view.images.keys, [first.page.identity]);
-    expect(runtime.actions, [('first', TranslationAction.readResult)]);
+    expect(runtime.actions, isEmpty);
+    expect(runtime.reads, ['first', 'first']);
     expect(
       TranslationImageStatus.forTarget(
         view,

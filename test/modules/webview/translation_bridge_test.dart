@@ -65,6 +65,7 @@ class _Controller extends Fake implements InAppWebViewController {
 
 class _Runtime extends Fake implements ChannelRuntime {
   File? resultFile;
+  int reads = 0, releases = 0;
   TranslationFailure? failure;
   void Function(List<TranslationTarget>)? onWindow;
   @override
@@ -82,9 +83,16 @@ class _Runtime extends Fake implements ChannelRuntime {
 
   @override
   PageTranslationState stateFor(TranslationPage page) => PageTranslationState(
-    phase: failure == null ? TranslationPhase.idle : TranslationPhase.failed,
+    phase: failure != null
+        ? TranslationPhase.failed
+        : resultFile != null
+        ? TranslationPhase.succeeded
+        : TranslationPhase.idle,
     failure: failure,
-    actions: {if (failure != null) TranslationAction.retry},
+    actions: {
+      if (failure != null) TranslationAction.retry,
+      if (resultFile != null) TranslationAction.readResult,
+    },
     result: resultFile == null
         ? null
         : const TranslationResultRef('local', 'op'),
@@ -93,7 +101,16 @@ class _Runtime extends Fake implements ChannelRuntime {
   Future<DisplayImageLease> readResult(
     TranslationResultRef result,
     TranslationCancellation cancel,
-  ) async => DisplayImageLease(file: resultFile!, width: 1, height: 1);
+  ) async {
+    reads++;
+    return DisplayImageLease(
+      file: resultFile!,
+      width: 1,
+      height: 1,
+      release: () => releases++,
+    );
+  }
+
   @override
   void pause(String consumer) {}
 }
@@ -103,6 +120,8 @@ class _InPageReader implements ReaderTransport {
   String? token;
   ReaderMessage? send;
   final operations = <String>[];
+  List<Map> items = [];
+  Future<Map<String, Object>?> Function(String, Map<String, dynamic>)? onOutput;
   Map? validated;
   final states = <(int, bool)>[];
   final sent = Completer<void>();
@@ -127,6 +146,11 @@ class _InPageReader implements ReaderTransport {
     operations.add(operation);
     if (operation == 'state') {
       states.add((args['scope'] as int, args['translated'] as bool));
+      items = (args['items'] as List).cast<Map>();
+    }
+    if (operation.startsWith('result') && onOutput != null) {
+      final reply = await onOutput!(operation, args);
+      if (reply != null) return reply;
     }
     if (operation == 'resultEnd' && !sent.isCompleted) sent.complete();
     if (operation == 'validate') validated = args;
@@ -140,6 +164,24 @@ class _InPageReader implements ReaderTransport {
         _ => true,
       },
     };
+  }
+}
+
+Future<void> _untilView(
+  TranslationViewController view,
+  bool Function() done,
+) async {
+  if (done()) return;
+  final ready = Completer<void>();
+  void changed() {
+    if (done() && !ready.isCompleted) ready.complete();
+  }
+
+  view.addListener(changed);
+  try {
+    await ready.future.timeout(const Duration(seconds: 3));
+  } finally {
+    view.removeListener(changed);
   }
 }
 
@@ -335,6 +377,163 @@ void main() {
     expect(engine.states.last.$1, isNot(scope));
   });
 
+  test('only decoded web results count; an explicit reread recovers just the failed image', () async {
+    final files = WebImageTestDirectory();
+    await files.setUp();
+    addTearDown(files.tearDown);
+    final runtime = _Runtime()
+      ..resultFile = await File('${files.directory.path}/result')
+          .writeAsBytes([1, 2, 3]);
+    final reader = TranslationViewController()
+      ..attach(runtime)
+      ..configure(enabled: false, showTranslation: true);
+    final engine = _InPageReader();
+    final connected = WebTranslationBridge(
+      engine,
+      reader,
+      'display',
+      l10n: AppLocalizationsEn(),
+    );
+    addTearDown(reader.dispose);
+    addTearDown(connected.dispose);
+    const origin = 'https://reader.example', url = '$origin/chapter';
+    await connected.install(Uri.parse(url));
+    var seq = 0, attempts = 0;
+    Future<bool> send(Map<String, Object> data) => engine.send!(origin, url, {
+      'token': engine.token,
+      'seq': ++seq,
+      ...data,
+    });
+    final window = {
+      'items': [
+        for (final id in ['1', '2'])
+          {'id': id, 'revision': 'r', 'kind': 'pixels', 'url': ''},
+      ],
+    };
+    final decoding = Completer<void>(), resume = Completer<void>();
+    engine.onOutput = (op, args) async {
+      if (args['id'] != '1') return null;
+      if (op == 'resultBegin') attempts++;
+      if (attempts == 1 && op == 'resultChunk') throw StateError('private URL');
+      if (op == 'resultEnd') {
+        if (attempts == 2) return {'error': 'INVALID_RESULT'};
+        if (attempts == 3) return {'value': false};
+        decoding.complete();
+        await resume.future;
+      }
+      return null;
+    };
+    await send(window);
+    final first = reader.targets.first, second = reader.targets.last;
+    await _untilView(
+      reader,
+      () => reader.state(first).hasIssue && reader.isComplete(second),
+    );
+    expect(reader.isComplete(first), isFalse);
+    expect(reader.state(first).failure?.code, 'BRIDGE_INVALID');
+    expect(engine.items.first['action'], 'readResult');
+    expect(engine.items.first['label'], isNot(contains('private URL')));
+    expect(runtime.releases, 1);
+    Future<bool> reread() =>
+        send({'id': '1', 'revision': 'r', 'action': 'readResult'});
+    reader.configure(showTranslation: false);
+    expect(engine.items.first['visible'], isFalse);
+    expect(await reread(), isFalse);
+    expect(reader.state(first).hasIssue, isTrue);
+    reader.configure(showTranslation: true);
+    await send(window);
+    expect(
+      attempts,
+      1,
+      reason: 'Scrolling or toggling must not retry a display failure',
+    );
+    expect(await reread(), isTrue);
+    expect(reader.state(first).failure?.code, 'INVALID_RESULT');
+    expect(await reread(), isTrue);
+    expect(reader.state(first).failure?.code, 'BRIDGE_INVALID');
+    final recovered = reread();
+    await decoding.future.timeout(const Duration(seconds: 3));
+    expect(reader.isComplete(first), isFalse);
+    expect(await reread(), isFalse, reason: 'No double tap during decode');
+    reader.configure(showTranslation: false);
+    resume.complete();
+    expect(await recovered, isTrue);
+    expect(reader.isComplete(first), isTrue);
+    expect(engine.items.every((item) => item['visible'] == false), isTrue);
+    reader.configure(showTranslation: true);
+    expect(attempts, 4);
+    expect(runtime.reads, 5, reason: 'The other image was read only once');
+    expect(runtime.releases, 3);
+    expect(engine.items.every((item) => item['visible'] == false), isTrue);
+  });
+
+  for (final invalidate in ['navigate', 'revision', 'background', 'account']) {
+    test(
+      'late display failure after $invalidate cannot mark a new image',
+      () async {
+        final files = WebImageTestDirectory();
+        await files.setUp();
+        addTearDown(files.tearDown);
+        final runtime = _Runtime()
+          ..resultFile = await File('${files.directory.path}/result')
+              .writeAsBytes([1]);
+        final reader = TranslationViewController()
+          ..attach(runtime)
+          ..configure(showTranslation: true);
+        final engine = _InPageReader();
+        final connected = WebTranslationBridge(
+          engine,
+          reader,
+          'late',
+          l10n: AppLocalizationsEn(),
+        );
+        addTearDown(reader.dispose);
+        addTearDown(connected.dispose);
+        const origin = 'https://reader.example', url = '$origin/chapter';
+        await connected.install(Uri.parse(url));
+        final started = Completer<void>(), resume = Completer<void>();
+        engine.onOutput = (op, args) async {
+          if (op == 'resultEnd' && !started.isCompleted) {
+            started.complete();
+            await resume.future;
+            return {'error': 'INVALID_RESULT'};
+          }
+          return null;
+        };
+        Future<bool> window(int seq) => engine.send!(origin, url, {
+          'token': engine.token,
+          'seq': seq,
+          'items': [
+            {'id': '1', 'revision': '$seq', 'kind': 'pixels', 'url': ''},
+          ],
+        });
+        await window(1);
+        await started.future.timeout(const Duration(seconds: 3));
+        final old = reader.targets.single;
+        switch (invalidate) {
+          case 'navigate':
+            await connected.install(Uri.parse(url));
+            await window(2);
+          case 'revision':
+            await window(2);
+          case 'background':
+            reader.configure(foreground: false);
+            reader.configure(foreground: true);
+          case 'account':
+            reader.attach(_Runtime()..resultFile = runtime.resultFile);
+        }
+        resume.complete();
+        await _untilView(
+          reader,
+          () => reader.isComplete(reader.targets.single),
+        );
+        expect(reader.state(old).hasIssue, isFalse);
+        expect(engine.items.single['visible'], isFalse);
+        expect(runtime.releases, 1);
+      },
+    );
+  }
+
   test('web upgrade requires a quota error on the current image revision and never runs a translation', () async {
     final engine = _InPageReader(),
         runtime = _Runtime()
@@ -365,6 +564,8 @@ void main() {
     });
     Future<bool> upgrade(String revision) =>
         send({'id': '1', 'revision': revision, 'action': 'upgrade'});
+    expect(await upgrade('current'), isFalse);
+    reader.configure(showTranslation: true);
     expect(await upgrade('old'), isFalse);
     expect(await upgrade('current'), isTrue);
     runtime.failure = const TranslationFailure('RATE_LIMITED');

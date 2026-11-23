@@ -49,6 +49,9 @@ class TranslationImageStatus {
     TranslationTarget target,
     AppLocalizations l10n,
   ) {
+    if (!controller.showTranslation) {
+      return const TranslationImageStatus('', visible: false);
+    }
     final state = controller.state(target);
     if (controller.isPerforming(target)) {
       return TranslationImageStatus(l10n.translation_processing, working: true);

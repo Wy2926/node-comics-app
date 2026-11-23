@@ -39,7 +39,7 @@
           value = await window.__nodelaneReader.call(token, operation, args);
         }
       } catch (err) {
-        error = ['SOURCE_CHANGED', 'RESOURCE_LIMIT', 'SOURCE_MISSING'].includes(err.message)
+        error = ['SOURCE_CHANGED', 'RESOURCE_LIMIT', 'SOURCE_MISSING', 'INVALID_RESULT'].includes(err.message)
           ? err.message : 'BRIDGE_INVALID';
       }
       if (port === owner) owner.postMessage({id, value: value ?? null, error: error ?? null});

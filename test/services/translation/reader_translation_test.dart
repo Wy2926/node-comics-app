@@ -161,6 +161,12 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
+      final display = ReaderTranslationHost.controllerOf(
+        tester.element(find.byType(ReaderOverlays)),
+      )!;
+      expect(find.text('重试'), findsNothing);
+      display.configure(showTranslation: true);
+      await tester.pumpAndSettle();
       await tester.tap(find.text('重试'));
       await tester.pumpAndSettle();
       expect(runtime.performed, [TranslationAction.retry]);
@@ -174,6 +180,11 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('额度不足'), findsOneWidget);
       expect(find.textContaining('连接失败'), findsNothing);
+      display.configure(showTranslation: false);
+      await tester.pumpAndSettle();
+      expect(find.text('升级'), findsNothing);
+      display.configure(showTranslation: true);
+      await tester.pumpAndSettle();
       launcher.pending = Completer<bool>();
       await tester.tap(find.text('升级'));
       launcher.pending!.complete(false);
