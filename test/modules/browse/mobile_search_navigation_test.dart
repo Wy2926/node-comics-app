@@ -515,8 +515,14 @@ void main() {
         final site = find.byType(MangaHomeScreen),
             book = find.byType(MangaReaderDetail);
         expect(site, findsNothing);
-        await tester.enterText(find.byType(TextField), 'Pane');
-        await tester.tap(find.byTooltip('Filter'));
+        final search = find.descendant(
+          of: directory,
+          matching: find.byType(TextField),
+        );
+        final filter = find.byTooltip('Filter');
+        final field = tester.state(search);
+        await tester.enterText(search, 'Pane');
+        await tester.tap(filter);
         await tester.pumpAndSettle();
         await tester.tap(find.widgetWithText(FilterChip, 'English'));
         await tester.binding.handlePopRoute();
@@ -543,6 +549,18 @@ void main() {
         await tester.pumpAndSettle();
         expect(cells.evaluate().length, lessThan(beforePressure));
         expect(row.hitTestable(), findsOneWidget);
+        await tester.drag(directory, const Offset(0, 240));
+        await tester.pumpAndSettle();
+        final sidebarSearch = tester.getRect(search.hitTestable());
+        expect(sidebarSearch.left, tester.getRect(card).left);
+        expect(sidebarSearch.right, tester.getRect(card).right);
+        for (final action in [filter, find.text('Manage')]) {
+          expect(
+            tester.getRect(action).bottom,
+            lessThanOrEqualTo(sidebarSearch.top),
+          );
+        }
+        expect(tester.state(search), same(field));
         final siteState = tester.state(site);
         final siteHeight = tester.getSize(site).height;
         final draft = find.descendant(

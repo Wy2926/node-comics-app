@@ -42,6 +42,7 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/theme/nodelane_motion.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
+import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 
@@ -60,6 +61,8 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
   final _requestEdits = PageStorageBucket();
   final _scroll = ScrollController();
   final _grids = List.generate(3, (_) => GlobalKey());
+  // Open bubbles keep their anchors when the toolbar reflows.
+  final _filterAnchor = GlobalKey(), _menuAnchor = GlobalKey();
   final _returnTiles = ValueNotifier<Map<int, (int, int)>>(const {});
   int _openIntent = 0;
   int? _anchor;
@@ -708,6 +711,7 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     List<ItemType> types,
     DirectoryFilters filters, {
     required int? count,
+    required bool compact,
   }) {
     final l10n = context.l10n;
     final media = LibraryMediaButton(
@@ -724,18 +728,58 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
       ],
       onChanged: (value) => _switchDirectory(type, value == 1),
     );
+    final filter = Builder(
+      key: _filterAnchor,
+      builder: (anchor) => Tooltip(
+        message: l10n.filter,
+        child: Semantics(
+          liveRegion: true,
+          label: count == null
+              ? l10n.filter
+              : '${l10n.filter}, ${l10n.search_result_count(count)}',
+          expanded: _filterBubble,
+          value: filters.isEmpty ? null : filters.summary(l10n, type),
+          child: TextButton.icon(
+            style: TextButton.styleFrom(
+              minimumSize: const Size.square(NodeLaneTokens.minTapTarget),
+              padding: const EdgeInsets.symmetric(
+                horizontal: NodeLaneTokens.space4,
+              ),
+              foregroundColor: _filterBubble || filters.isNotEmpty
+                  ? NodeLaneTokens.of(context).accent
+                  : NodeLaneTokens.of(context).ink,
+            ),
+            icon: Badge(
+              isLabelVisible: filters.isNotEmpty,
+              child: Icon(NodeLaneIcons.of(context).adjustments),
+            ),
+            label: ExcludeSemantics(child: Text(count?.toString() ?? '…')),
+            onPressed: () => _directoryFilters(anchor),
+          ),
+        ),
+      ),
+    );
+    final menu = SourceDirectoryMenu(
+      key: _menuAnchor,
+      type: type,
+      onOpened: () => _openIntent++,
+      onSelected: _manage,
+    );
     final navigation = Wrap(
       spacing: NodeLaneTokens.space8,
       runSpacing: NodeLaneTokens.space4,
       crossAxisAlignment: WrapCrossAlignment.center,
+      alignment: compact ? WrapAlignment.spaceBetween : WrapAlignment.start,
       children: [
         media,
+        if (compact) menu,
         SizedBox(
           width:
               NodeLaneTokens.catalogTabsWidth *
               (MediaQuery.textScalerOf(context).scale(15) / 15).clamp(1, 2),
           child: sections,
         ),
+        if (compact) filter,
       ],
     );
     return Material(
@@ -756,47 +800,12 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                   onChanged: (_) => setState(() {}),
                 ),
               ),
-              const SizedBox(width: NodeLaneTokens.space8),
-              Builder(
-                builder: (anchor) => Tooltip(
-                  message: l10n.filter,
-                  child: Semantics(
-                    liveRegion: true,
-                    label: count == null
-                        ? l10n.filter
-                        : '${l10n.filter}, ${l10n.search_result_count(count)}',
-                    expanded: _filterBubble,
-                    value: filters.isEmpty ? null : filters.summary(l10n, type),
-                    child: TextButton.icon(
-                      style: TextButton.styleFrom(
-                        minimumSize: const Size.square(
-                          NodeLaneTokens.minTapTarget,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: NodeLaneTokens.space4,
-                        ),
-                        foregroundColor: _filterBubble || filters.isNotEmpty
-                            ? NodeLaneTokens.of(context).accent
-                            : NodeLaneTokens.of(context).ink,
-                      ),
-                      icon: Badge(
-                        isLabelVisible: filters.isNotEmpty,
-                        child: Icon(NodeLaneIcons.of(context).adjustments),
-                      ),
-                      label: ExcludeSemantics(
-                        child: Text(count?.toString() ?? '…'),
-                      ),
-                      onPressed: () => _directoryFilters(anchor),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: NodeLaneTokens.space4),
-              SourceDirectoryMenu(
-                type: type,
-                onOpened: () => _openIntent++,
-                onSelected: _manage,
-              ),
+              if (!compact) ...[
+                const SizedBox(width: NodeLaneTokens.space8),
+                filter,
+                const SizedBox(width: NodeLaneTokens.space4),
+                menu,
+              ],
             ],
           ),
         ),
@@ -969,6 +978,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
                               types,
                               filters,
                               count: waitingForDirectory ? null : all.length,
+                              compact:
+                                  box.maxWidth <=
+                                  NodeLaneTokens.tabletSupportingWidth *
+                                      context.paneTextScale,
                             ),
                           ),
                         if (all.isEmpty)
