@@ -4341,9 +4341,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get browser_title => 'Browser';
 
   @override
-  String get translation_image_display => 'Image display';
-
-  @override
   String get translation_sign_in_required => 'Sign in to enable translation';
 
   @override
@@ -4355,9 +4352,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get translation_no_images =>
       'No translatable images found on this page yet';
-
-  @override
-  String get translation_waiting_image => 'Waiting for the current image';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4381,9 +4375,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get translation_model => 'Translation model';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Quota cost: $multiplier×';
-  }
+  String get translation_model_free => 'Free tier';
+
+  @override
+  String get translation_model_paid => 'Paid tier';
 
   @override
   String get translation_model_unavailable =>

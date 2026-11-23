@@ -4243,9 +4243,6 @@ class AppLocalizationsJa extends AppLocalizations {
   String get browser_title => 'ブラウザ';
 
   @override
-  String get translation_image_display => '画像表示';
-
-  @override
   String get translation_sign_in_required => 'サインインして翻訳を有効にする';
 
   @override
@@ -4256,9 +4253,6 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get translation_no_images => 'このページには翻訳可能な画像がまだ見つかりません';
-
-  @override
-  String get translation_waiting_image => '現在の画像を待っています';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4282,9 +4276,10 @@ class AppLocalizationsJa extends AppLocalizations {
   String get translation_model => '翻訳モデル';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return '利用枠の消費倍率：$multiplier 倍';
-  }
+  String get translation_model_free => '無料モデル';
+
+  @override
+  String get translation_model_paid => '有料モデル';
 
   @override
   String get translation_model_unavailable =>

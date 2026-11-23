@@ -4351,9 +4351,6 @@ class AppLocalizationsVi extends AppLocalizations {
   String get browser_title => 'Trình duyệt';
 
   @override
-  String get translation_image_display => 'Hiển thị hình ảnh';
-
-  @override
   String get translation_sign_in_required => 'Đăng nhập để bật dịch';
 
   @override
@@ -4365,9 +4362,6 @@ class AppLocalizationsVi extends AppLocalizations {
   @override
   String get translation_no_images =>
       'Chưa tìm thấy hình ảnh có thể dịch được trên trang này';
-
-  @override
-  String get translation_waiting_image => 'Đang chờ hình ảnh hiện tại';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4391,9 +4385,10 @@ class AppLocalizationsVi extends AppLocalizations {
   String get translation_model => 'Mô hình dịch';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Mức tiêu hao hạn mức: $multiplier×';
-  }
+  String get translation_model_free => 'Mô hình miễn phí';
+
+  @override
+  String get translation_model_paid => 'Mô hình trả phí';
 
   @override
   String get translation_model_unavailable =>

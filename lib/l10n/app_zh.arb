@@ -1800,12 +1800,10 @@
   "comic_save_failed": "保存失败，请重试。",
   "comic_reading": "阅读",
   "browser_title": "浏览器",
-  "translation_image_display": "图片显示",
   "translation_sign_in_required": "登录后开启翻译",
   "translation_automatic": "自动翻译",
   "translation_channel": "翻译渠道",
   "translation_no_images": "当前页面暂未发现可翻译图片",
-  "translation_waiting_image": "等待当前图片",
   "translation_progress": "已完成 {complete} / {total} 张{issues, plural, =0{} other{ · {issues} 张需要处理}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "漫画翻译",
   "translation_target_language": "目标语言",
   "translation_model": "翻译模型",
-  "translation_model_quota": "额度消耗：{multiplier} 倍",
+  "translation_model_free": "免费模型",
+  "translation_model_paid": "付费模型",
   "translation_model_unavailable": "当前无法使用所选翻译模型，请更换模型或稍后重试。",
   "translation_clear_cache": "清理译图缓存",
   "translation_saved_read_failed": "已有译图读取失败",

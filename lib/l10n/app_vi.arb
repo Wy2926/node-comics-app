@@ -1800,12 +1800,10 @@
   "comic_save_failed": "Không thể lưu. Vui lòng thử lại.",
   "comic_reading": "Đọc sách",
   "browser_title": "Trình duyệt",
-  "translation_image_display": "Hiển thị hình ảnh",
   "translation_sign_in_required": "Đăng nhập để bật dịch",
   "translation_automatic": "Dịch tự động",
   "translation_channel": "Kênh dịch thuật",
   "translation_no_images": "Chưa tìm thấy hình ảnh có thể dịch được trên trang này",
-  "translation_waiting_image": "Đang chờ hình ảnh hiện tại",
   "translation_progress": "Đã hoàn thành {complete} / {total} hình ảnh{issues, plural, =0{} =1{ · 1 hình ảnh cần chú ý} other{ · {issues} hình ảnh cần chú ý}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Dịch truyện tranh",
   "translation_target_language": "Ngôn ngữ đích",
   "translation_model": "Mô hình dịch",
-  "translation_model_quota": "Mức tiêu hao hạn mức: {multiplier}×",
+  "translation_model_free": "Mô hình miễn phí",
+  "translation_model_paid": "Mô hình trả phí",
   "translation_model_unavailable": "Mô hình dịch này không khả dụng. Hãy chọn mô hình khác hoặc thử lại sau.",
   "translation_clear_cache": "Xóa bộ đệm hình ảnh đã dịch",
   "translation_saved_read_failed": "Không thể tải bản dịch đã lưu",

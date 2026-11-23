@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_notice.dart';
@@ -9,6 +10,7 @@ import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class TranslationModelRow extends ConsumerStatefulWidget {
   const TranslationModelRow({super.key});
@@ -24,19 +26,19 @@ class _TranslationModelRowState extends ConsumerState<TranslationModelRow> {
 
   Future<void> _choose(BuildContext anchor) async {
     final account = service.accountId;
-    final choice = await NodeLaneBubbleFlow.edit<SettingOption<String?>>(
-      anchor,
-      title: context.l10n.translation_model,
-      body: (_, finish) => _ModelChoices(service: service, choose: finish),
-    );
+    final choice =
+        await NodeLaneBubbleFlow.edit<SettingOption<TranslationModel?>>(
+          anchor,
+          title: context.l10n.translation_model,
+          body: (_, finish) => _ModelChoices(service: service, choose: finish),
+        );
     if (!mounted ||
         account != service.accountId ||
         choice == null ||
-        choice.value == service.model?.id) {
+        choice.value?.id == service.model?.id) {
       return;
     }
-    final id = choice.value;
-    await service.setModel(id == null ? null : (id: id, name: choice.label));
+    await service.setModel(choice.value);
     if (mounted && service.error != null) {
       showNodeLaneNotice(service.error!, kind: NodeLaneNoticeKind.error);
     }
@@ -67,79 +69,143 @@ class _TranslationModelRowState extends ConsumerState<TranslationModelRow> {
 class _ModelChoices extends StatefulWidget {
   const _ModelChoices({required this.service, required this.choose});
   final TranslationService service;
-  final ValueChanged<SettingOption<String?>> choose;
+  final ValueChanged<SettingOption<TranslationModel?>> choose;
 
   @override
   State<_ModelChoices> createState() => _ModelChoicesState();
 }
 
-class _ModelChoicesState extends State<_ModelChoices> {
+class _ModelChoicesState extends State<_ModelChoices>
+    with WidgetsBindingObserver {
   final _cancel = TranslationCancellation();
   late var _models = widget.service.readModels(_cancel);
+  late final String? _account;
+  bool _pricingOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _account = widget.service.accountId;
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  bool _current() =>
+      mounted &&
+      _account == widget.service.accountId &&
+      ModalRoute.isCurrentOf(context) == true;
+
+  Future<void> _upgrade() async {
+    if (_pricingOpen || !_current()) return;
+    final unavailable = context.l10n.translation_upgrade_unavailable;
+    _pricingOpen = true;
+    try {
+      if (!await launchUrl(
+        Uri.https('comics.nodelane.net', '/pricing/'),
+        mode: LaunchMode.externalApplication,
+      )) {
+        throw const TranslationFailure('BILLING_UNAVAILABLE');
+      }
+    } catch (_) {
+      _pricingOpen = false;
+      if (_current()) {
+        showNodeLaneNotice(unavailable, kind: NodeLaneNoticeKind.error);
+      }
+    }
+  }
+
+  void _reload() => setState(() {
+    _models = widget.service.readModels(_cancel);
+  });
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && _pricingOpen) {
+      _pricingOpen = false;
+      if (_current()) _reload();
+    }
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _cancel.cancel();
     super.dispose();
   }
 
   @override
-  Widget build(BuildContext context) =>
-      FutureBuilder<List<TranslationModelOption>>(
-        future: _models,
-        builder: (context, snapshot) {
-          final models = snapshot.data ?? const <TranslationModelOption>[];
-          final current = widget.service.model;
-          final l = context.l10n, icons = NodeLaneIcons.of(context);
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (snapshot.connectionState != ConnectionState.done)
-                NodeLaneProgress(semanticsLabel: l.translation_model)
-              else if (snapshot.hasError)
-                NodeLaneRow(
-                  title: l.retry,
-                  subtitle: snapshot.error is TranslationFailure
-                      ? (snapshot.error as TranslationFailure).message
-                      : l.translation_connection_failed,
-                  icon: icons.refresh,
-                  onTap: () => setState(() {
-                    _models = widget.service.readModels(_cancel);
-                  }),
-                ),
-              Flexible(
-                child: SettingChoices<String?>(
-                  current: current?.id,
-                  options: [
-                    SettingOption(null, l.default0),
-                    for (final option in models)
-                      SettingOption(
-                        option.model.id,
-                        option.model.name,
-                        enabled: option.available,
-                        icon: option.available ? null : icons.lock,
-                        subtitle: option.quotaMultiplier == null
-                            ? null
-                            : l.translation_model_quota(
-                                option.quotaMultiplier!,
-                              ),
-                      ),
-                    if (current != null &&
-                        !models.any((o) => o.model.id == current.id))
-                      SettingOption(
-                        current.id,
-                        current.name,
-                        enabled: false,
-                        subtitle: snapshot.hasData
-                            ? l.translation_model_unavailable
-                            : null,
-                      ),
-                  ],
-                  choose: widget.choose,
-                ),
-              ),
-            ],
-          );
-        },
+  Widget build(
+    BuildContext context,
+  ) => FutureBuilder<List<TranslationModelOption>>(
+    future: _models,
+    builder: (context, snapshot) {
+      final models = snapshot.data ?? const <TranslationModelOption>[];
+      final saved = widget.service.model;
+      final listed = models.where((o) => o.model.id == saved?.id).firstOrNull;
+      final l = context.l10n, icons = NodeLaneIcons.of(context);
+      final rateFormat = NumberFormat(
+        '0.####',
+        Localizations.localeOf(context).toLanguageTag(),
       );
+      final upgrade = TextButton(
+        onPressed: _upgrade,
+        child: Text(l.translation_upgrade_quota, textAlign: TextAlign.center),
+      );
+      SettingOption<TranslationModel?> choice(TranslationModelOption option) {
+        final (icon, label) = switch (option.requiresPaid) {
+          false => (icons.modelFree, l.translation_model_free),
+          true => (icons.modelPaid, l.translation_model_paid),
+          null => (icons.translate, null),
+        };
+        return SettingOption(
+          option.model,
+          option.model.name,
+          icon: icon,
+          iconLabel: label,
+          badge: option.quotaMultiplier == null
+              ? null
+              : '${rateFormat.format(option.quotaMultiplier)}×',
+          trailing: option.access.selectable ? null : upgrade,
+          enabled: option.access.selectable,
+        );
+      }
+
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (snapshot.connectionState != ConnectionState.done)
+            NodeLaneProgress(semanticsLabel: l.translation_model)
+          else if (snapshot.hasError)
+            NodeLaneRow(
+              title: l.retry,
+              subtitle: snapshot.error is TranslationFailure
+                  ? (snapshot.error as TranslationFailure).message
+                  : l.translation_connection_failed,
+              icon: icons.refresh,
+              onTap: _reload,
+            ),
+          Flexible(
+            child: SettingChoices<TranslationModel?>(
+              current: listed?.model ?? saved,
+              titleMaxLines: 2,
+              options: [
+                SettingOption(null, l.default0, icon: icons.adjustments),
+                ...models.map(choice),
+                if (saved != null && listed == null)
+                  SettingOption(
+                    saved,
+                    saved.name,
+                    icon: icons.translate,
+                    trailing: snapshot.hasData
+                        ? upgrade
+                        : const SizedBox.shrink(),
+                    enabled: false,
+                  ),
+              ],
+              choose: widget.choose,
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

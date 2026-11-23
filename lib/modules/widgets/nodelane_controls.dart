@@ -345,7 +345,12 @@ class NodeLaneRow extends StatelessWidget {
                               ),
                       )
                     else
-                      Icon(icon, size: NodeLaneTokens.iconSize, color: color),
+                      Icon(
+                        icon,
+                        size: NodeLaneTokens.iconSize,
+                        color: color,
+                        semanticLabel: leadingLabel,
+                      ),
                     const SizedBox(width: NodeLaneTokens.space12),
                   ],
                   Expanded(

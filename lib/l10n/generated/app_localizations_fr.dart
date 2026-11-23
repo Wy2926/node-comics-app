@@ -4399,9 +4399,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get browser_title => 'Navigateur';
 
   @override
-  String get translation_image_display => 'Affichage d\'images';
-
-  @override
   String get translation_sign_in_required =>
       'Connectez-vous pour activer la traduction';
 
@@ -4414,9 +4411,6 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get translation_no_images =>
       'Aucune image traduisible trouvée sur cette page pour le moment';
-
-  @override
-  String get translation_waiting_image => 'En attente de l\'image actuelle';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4440,9 +4434,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get translation_model => 'Modèle de traduction';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Consommation du quota : ×$multiplier';
-  }
+  String get translation_model_free => 'Modèle gratuit';
+
+  @override
+  String get translation_model_paid => 'Modèle payant';
 
   @override
   String get translation_model_unavailable =>

@@ -4,16 +4,24 @@ import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show RenderParagraph;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/modules/more/widgets/mobile_nodelane_account.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
+import 'package:mangayomi/services/translation/channels/nodelane/protocol.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
+import 'package:mangayomi/theme/nodelane_icons.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 import '../../helpers/bubble_finders.dart';
+
+const _freeName = 'Free (Preview)（1.0倍消耗）';
+const _paidName = 'Paid Translation Model (Preview) (0.8 倍消耗)';
 
 class _Runtime extends Fake implements ChannelRuntime {
   _Runtime([this.state = const PageTranslationState()]);
@@ -38,23 +46,57 @@ class _Runtime extends Fake implements ChannelRuntime {
 
 class _Source extends Fake implements SourceImageReader {}
 
+class _PricingLauncher extends UrlLauncherPlatform {
+  final urls = <String>[];
+  @override
+  LinkDelegate? get linkDelegate => null;
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    expect(options.mode, PreferredLaunchMode.externalApplication);
+    urls.add(url);
+    return true;
+  }
+}
+
 class _AccountService extends TranslationService {
   Completer<void>? pending;
   int loginCalls = 0;
   int catalogReads = 0;
+  bool paidAllowed = false;
+
   @override
   Future<List<TranslationModelOption>> readModels(
     TranslationCancellation cancel,
   ) async {
     if (++catalogReads == 1) throw const TranslationFailure('NETWORK');
-    return const [
-      (
-        model: (id: 'free', name: 'Free'),
-        available: true,
-        quotaMultiplier: 0.8,
-      ),
-      (model: (id: 'paid', name: 'Paid'), available: false, quotaMultiplier: 2),
-    ];
+    return nodeLaneModels({
+      'translation_models': [
+        {
+          'id': 'free',
+          'name': _freeName,
+          'requires_paid': false,
+          'available': false,
+          'unavailable_reason': 'quota_exhausted',
+          'quota_multiplier': 1.0,
+        },
+        {
+          'id': 'paid',
+          'name': _paidName,
+          'requires_paid': true,
+          'available': paidAllowed,
+          'unavailable_reason': paidAllowed ? null : 'not_allowed',
+          'quota_multiplier': 0.8,
+        },
+        {
+          'id': 'offline',
+          'name': 'Offline',
+          'requires_paid': false,
+          'available': false,
+          'unavailable_reason': 'unavailable',
+        },
+        {'id': 'legacy', 'name': 'Legacy', 'available': true},
+      ],
+    });
   }
 
   @override
@@ -99,7 +141,11 @@ void main() {
   late ScrollController readingPosition;
   late GlobalKey readerKey;
 
-  Future<void> mount(WidgetTester tester, {bool browser = false}) async {
+  Future<void> mount(
+    WidgetTester tester, {
+    bool browser = false,
+    Locale locale = const Locale('zh'),
+  }) async {
     tester.view.physicalSize = const Size(390, 844);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -120,7 +166,7 @@ void main() {
       ProviderScope(
         overrides: [translationServiceProvider.overrideWithValue(service)],
         child: MaterialApp(
-          locale: const Locale('zh'),
+          locale: locale,
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           theme: ThemeData(platform: TargetPlatform.iOS),
@@ -190,33 +236,41 @@ void main() {
     expect(find.text('前往登录'), findsOneWidget);
   }
 
-  testWidgets(
-    'the panel shows each current failure reason once with automatic translation off',
-    (tester) async {
-      await mount(tester);
-      const reason = '原图暂不可用';
-      service.runtime = _Runtime(
-        const PageTranslationState(
-          phase: TranslationPhase.failed,
-          message: reason,
-        ),
-      );
-      controller
-        ..attach(service.runtime)
-        ..configure(enabled: false)
-        ..window([
-          for (final key in ['first', 'second'])
-            TranslationTarget(TranslationPage(key, '1'), _Source()),
-        ]);
-      await tester.tap(find.byTooltip('Translation'));
-      await tester.pumpAndSettle();
-      expect(find.text('原图'), findsOneWidget);
-      expect(find.text(reason).hitTestable(), findsOneWidget);
-      controller.window([]);
-      await tester.pumpAndSettle();
-      expect(find.text(reason), findsNothing);
-    },
-  );
+  for (final browser in [false, true]) {
+    testWidgets(
+      '${browser ? 'web' : 'reader'} settings omit image controls and failures',
+      (tester) async {
+        await mount(tester, browser: browser);
+        const failure = TranslationFailure('QUOTA_EXHAUSTED');
+        service.runtime = _Runtime(
+          const PageTranslationState(
+            phase: TranslationPhase.failed,
+            failure: failure,
+          ),
+        );
+        controller
+          ..attach(service.runtime)
+          ..window([
+            TranslationTarget(const TranslationPage('page', '1'), _Source()),
+          ])
+          ..error = 'panel error';
+        await tester.tap(find.byTooltip('Translation'));
+        await tester.pumpAndSettle();
+        expect(find.text('自动翻译'), findsOneWidget);
+        expect(find.text('翻译模型'), findsOneWidget);
+        expect(find.text('图片显示'), findsNothing);
+        expect(find.text('原图'), findsNothing);
+        expect(find.text('译图'), findsNothing);
+        expect(find.textContaining(failure.message), findsNothing);
+        expect(find.text('panel error'), findsNothing);
+        expect(find.text('升级'), findsNothing);
+        expect(
+          find.textContaining('已完成'),
+          browser ? findsOneWidget : findsNothing,
+        );
+      },
+    );
+  }
 
   testWidgets(
     'login destination has account actions and returns to the reader',
@@ -293,9 +347,51 @@ void main() {
   });
 
   testWidgets(
-    'model catalog retries in place and only an available choice changes the preference',
+    'long catalog names ellipsize after two lines beside the rate and upgrade link',
+    (tester) async {
+      const locale = Locale('fr');
+      await mount(tester, locale: locale);
+      tester.view.physicalSize = const Size(320, 844);
+      tester.platformDispatcher.textScaleFactorTestValue = 2;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      service.catalogReads = 1;
+      final l = lookupAppLocalizations(locale);
+      await tester.tap(find.byTooltip('Translation'));
+      await tester.pumpAndSettle();
+      final row = await revealBubble(tester, find.text(l.translation_model));
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+      final paid = await revealBubble(
+        tester,
+        find.widgetWithText(NodeLaneRow, _paidName),
+      );
+      final name = tester.renderObject<RenderParagraph>(
+        find.descendant(of: paid, matching: find.text(_paidName)),
+      );
+      expect(name.maxLines, 2);
+      expect(name.overflow, TextOverflow.ellipsis);
+      expect(name.didExceedMaxLines, isTrue);
+      final link = find.descendant(
+        of: paid,
+        matching: find.text(l.translation_upgrade_quota),
+      );
+      expect(
+        find.descendant(of: paid, matching: find.text('0,8×')),
+        findsOneWidget,
+      );
+      expect(link.hitTestable(), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'model rows show compact rates and upgrade in place of locked choices',
     (tester) async {
       await mount(tester);
+      final previous = UrlLauncherPlatform.instance,
+          launcher = _PricingLauncher();
+      UrlLauncherPlatform.instance = launcher;
+      addTearDown(() => UrlLauncherPlatform.instance = previous);
       await tester.tap(find.byTooltip('Translation'));
       await tester.pumpAndSettle();
       final row = find.widgetWithText(NodeLaneRow, '翻译模型');
@@ -305,15 +401,72 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(inBubble(find.text('重试')));
       await tester.pumpAndSettle();
-      expect(inBubble(find.text('额度消耗：0.8 倍')), findsOneWidget);
-      await tester.tap(inBubble(find.text('Paid')));
+      final icons = NodeLaneIcons.of(tester.element(row));
+      Finder optionRow(String title) =>
+          inBubble(find.widgetWithText(NodeLaneRow, title));
+      for (final (title, glyph, tier, labels) in [
+        (_freeName, icons.modelFree, '免费模型', [_freeName, '1×']),
+        (_paidName, icons.modelPaid, '付费模型', [_paidName, '0.8×', '升级']),
+        ('Offline', icons.modelFree, '免费模型', ['Offline', '升级']),
+        ('Legacy', icons.translate, null, ['Legacy']),
+      ]) {
+        final modelRow = optionRow(title);
+        expect(
+          tester
+              .widgetList<Text>(
+                find.descendant(of: modelRow, matching: find.byType(Text)),
+              )
+              .map((w) => w.data),
+          labels,
+        );
+        final icon = tester.widget<Icon>(
+          find.descendant(of: modelRow, matching: find.byIcon(glyph)),
+        );
+        expect(icon.semanticLabel, tier);
+      }
+      await tester.tap(inBubble(find.text(_paidName)));
+      await tester.tap(inBubble(find.text('Offline')));
       expect(service.model, isNull);
-      await tester.tap(inBubble(find.text('Free')));
+      expect(launcher.urls, isEmpty);
+      final paidRow = optionRow(_paidName);
+      expect(
+        find.descendant(
+          of: paidRow,
+          matching: find.byIcon(Icons.radio_button_unchecked),
+        ),
+        findsNothing,
+      );
+      final upgrade = find.descendant(of: paidRow, matching: find.text('升级'));
+      await tester.tap(upgrade);
+      await tester.tap(upgrade);
+      expect(launcher.urls, ['https://comics.nodelane.net/pricing/']);
+      expect(service.model, isNull);
+      service.paidAllowed = true;
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpAndSettle();
-      expect(service.model, (id: 'free', name: 'Free'));
-      expect(find.text('Free').hitTestable(), findsOneWidget);
+      expect(service.catalogReads, 3);
+      expect(upgrade, findsNothing);
+      expect(
+        find.descendant(
+          of: paidRow,
+          matching: find.byIcon(Icons.radio_button_unchecked),
+        ),
+        findsOneWidget,
+      );
+      expect(service.model, isNull);
+      await tester.tap(inBubble(find.text(_freeName)));
+      await tester.pumpAndSettle();
+      expect(service.model, (id: 'free', name: _freeName));
+      expect(find.text(_freeName).hitTestable(), findsOneWidget);
+      await service.setModel((id: 'free', name: 'Previous catalog name'));
+      await tester.pumpAndSettle();
       await tester.tap(row);
       await tester.pumpAndSettle();
+      final selected = tester.widget<NodeLaneRow>(
+        inBubble(find.widgetWithText(NodeLaneRow, _freeName)),
+      );
+      expect(selected.selected, isTrue);
       await tester.tap(inBubble(find.text('默认')));
       await tester.pumpAndSettle();
       expect(service.model, isNull);

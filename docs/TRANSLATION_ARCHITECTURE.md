@@ -99,7 +99,11 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 
 默认服务为 https://comics.nodelane.net，构建可通过 NODELANE_API_BASE 指定兼容服务。账号入口在“更多”，语言与缓存管理复用现有设置。目标语言支持 17 项，首次按应用／系统语言选择，之后保留已保存值。
 
-打开模型选择器时读取当前服务 `/v1/capabilities` 的 `translation_models`，登录后使用当前账号获取可用性和额度倍率。没有模型列表的旧服务可继续用默认模型。选择按服务及账号保存；尚无个人设置时沿用登录前的选择。已有本地任务和译图不查询模型权益。已保存的模型仍在服务目录但当前权益不可用时，由服务判断同账号是否有可复用结果或应拒绝新任务。
+打开模型选择器时读取 `/v1/capabilities` 的 `translation_models`，登录后按当前账号读取。列表使用服务端 `name` 原文，保留括号及其中的说明；模型名最多两行，超出部分用省略号显示。`requires_paid` 为假用礼物图标，为真用银行卡图标，未声明时用普通翻译图标。读屏可识别已知档位。倍率徽标独立取自 `quota_multiplier`（如 `0.8×`、`1×`），未提供时不显示。
+
+`available: true` 可选；`available: false` 且 `unavailable_reason: quota_exhausted` 时仍可保存为偏好。不可选模型右侧以「升级」替代单选钮，点按钮用系统浏览器打开[官网公开定价页](https://comics.nodelane.net/pricing/)，不传账号信息、不改模型选择；返回后重读目录。没有模型列表的旧服务可继续用默认模型。
+
+选择按服务及账号保存；尚无个人设置时沿用登录前的选择。已有本地任务和译图不查询模型权益。由服务判断是否能复用同账号结果或受理新任务，选择模型本身不消耗额度。
 
 账号、计费、翻译（含上传、结果重定向与 SSE）、原生 OAuth 换令牌、反馈及更新检查共用 [NodeLaneRequests](../lib/services/nodelane_requests.dart) 构造请求。统一 `User-Agent: nodelane-comics/<version>+<build> (<os>; <arch>)`，例如 `nodelane-comics/0.1.2+2003 (android; arm64)`；版本取已安装包信息，平台取运行系统，架构取当前进程 ABI。无构建号时省略 `+<build>`，包信息不可用时版本为 `unknown`。
 
@@ -107,7 +111,7 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 
 移动 OAuth 使用 Native public client，回调为 nodelane-comics://nodelane-auth，使用 PKCE、state、账号隔离和系统安全存储。供应商密钥不进入 App。平台配置见 [应用链接](MOBILE_UI_DESIGN.md#应用链接)。
 
-升级时，App 用当前账号向 `POST /v1/billing/app-handoff` 领取一次性码，核对账号后在系统浏览器打开同源套餐页。官网兑换页签专用的短期计费会话，用户选择套餐或页数包后才创建结账；不借用浏览器的登录身份，原生 access/refresh token 不进入网址。兼容服务需同时支持此接口和官网兑换流程；打不开或过期可从 App 再点升级。
+从账号页或单图额度提示升级时，App 用当前账号向 `POST /v1/billing/app-handoff` 领取一次性码，核对账号后在系统浏览器打开同源套餐页。官网兑换页签专用的短期计费会话，用户选择套餐或页数包后才创建结账；不借用浏览器的登录身份，原生 access/refresh token 不进入网址。兼容服务需同时支持此接口和官网兑换流程；打不开或过期可从 App 再点升级。
 
 ## 验证与待办
 
@@ -126,6 +130,7 @@ flutter build apk --debug --target-platform android-arm64 --no-pub
 | 额度升级 | MuMu Android 12 本地夹具：点重试不翻页，系统浏览器打开绑定测试账号的套餐页，返回保留页码，点按钮旁可翻页。后端用 PostgreSQL 和模拟 Stripe／Creem 验证订单归属与续用；尚未在 iOS 或正式支付服务验收 |
 | 浏览器夹具 | Chrome 截图按像素比较不同分辨率和宽高比的译图：响应式 `srcset`、`object-fit`／定位、SVG 留白及旋转裁剪的 Canvas，容器改宽与切回原图。另验解码中切换、缓存隔离和释放；Firefox 隔离内容脚本已验 Canvas、data 图片和已撤销 Blob URL 的分块读取 |
 | Android 模拟器 | MuMu Debug 的 Gecko 本地章节：常驻栏和专注浮条在同一位置连续切换，横竖屏录屏逐帧核对原／译文字及背景，未见空白或多余切换。另通过机内 HTTP 接收端核对 WebP、长图 JPEG 和缩图的上传大小、尺寸与摘要；模型选择可在重启后回显或恢复默认 |
+| 翻译设置与模型目录 | MuMu Android 12 已登录账号读取正式目录：免费模型额度不足时仍可选；点击付费模型 `0.8×` 旁的「升级」，Chromium 打开官网定价页，返回后仍选中原来的 `1×` 模型。阅读器打开／关闭设置后仍在第 14–15 / 42 页，网页设置保留完成计数。未在 iOS 复验 |
 | 真实服务 | MuMu Debug 选模后，850×650 合成页从 1,658,768 字节 PNG 转为 8,296 字节 WebP，回执的请求与实际模型一致。切模型、刷新及重开复用同一 UUID；Gecko 当前窗口四张网页图片均收到成功回执，完整译图可读、可切回原图。x86_64 Release 另覆盖 800×20000 tiles、同 UUID 结果重建及 comix.to 已加载图片复用 |
 | iOS | 归档接口与系统 property-list 提取已接入，此归档链路尚未通过 Apple 工具链构建或设备运行验收 |
 

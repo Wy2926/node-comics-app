@@ -4381,9 +4381,6 @@ class AppLocalizationsRu extends AppLocalizations {
   String get browser_title => 'Браузер';
 
   @override
-  String get translation_image_display => 'Отображение изображения';
-
-  @override
   String get translation_sign_in_required => 'Войдите, чтобы включить перевод.';
 
   @override
@@ -4395,9 +4392,6 @@ class AppLocalizationsRu extends AppLocalizations {
   @override
   String get translation_no_images =>
       'На этой странице пока не найдено переводимых изображений.';
-
-  @override
-  String get translation_waiting_image => 'Ожидание текущего изображения';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4423,9 +4417,10 @@ class AppLocalizationsRu extends AppLocalizations {
   String get translation_model => 'Модель перевода';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Расход квоты: ×$multiplier';
-  }
+  String get translation_model_free => 'Бесплатная модель';
+
+  @override
+  String get translation_model_paid => 'Платная модель';
 
   @override
   String get translation_model_unavailable =>

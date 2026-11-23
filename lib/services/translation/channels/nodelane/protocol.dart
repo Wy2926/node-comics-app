@@ -27,7 +27,15 @@ List<TranslationModelOption> nodeLaneModels(Map<String, dynamic> capabilities) {
       if (nodeLaneModel(entry) case final model? when seen.add(model.id))
         (
           model: model,
-          available: entry['available'] == true,
+          access: switch ((entry['available'], entry['unavailable_reason'])) {
+            (true, _) => TranslationModelAccess.available,
+            (false, 'quota_exhausted') => TranslationModelAccess.quotaExhausted,
+            (false, 'not_allowed') => TranslationModelAccess.notAllowed,
+            _ => TranslationModelAccess.unavailable,
+          },
+          requiresPaid: entry['requires_paid'] is bool
+              ? entry['requires_paid'] as bool
+              : null,
           quotaMultiplier: switch (entry['quota_multiplier']) {
             final num n when n.isFinite && n > 0 => n,
             _ => null,

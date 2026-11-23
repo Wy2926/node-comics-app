@@ -1800,12 +1800,10 @@
   "comic_save_failed": "Не вдалося зберегти. Спробуйте ще раз.",
   "comic_reading": "Читання",
   "browser_title": "Браузер",
-  "translation_image_display": "Дисплей зображення",
   "translation_sign_in_required": "Увійдіть, щоб увімкнути переклад",
   "translation_automatic": "Автоматичний переклад",
   "translation_channel": "Канал перекладу",
   "translation_no_images": "На цій сторінці ще не знайдено зображень, які можна перекладати",
-  "translation_waiting_image": "Очікування поточного зображення",
   "translation_progress": "Оброблено зображень: {complete} / {total}{issues, plural, =0{} one{ · {issues} зображення потребує уваги} few{ · {issues} зображення потребують уваги} many{ · {issues} зображень потребують уваги} other{ · {issues} зображення потребують уваги}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Переклад манги",
   "translation_target_language": "Цільова мова",
   "translation_model": "Модель перекладу",
-  "translation_model_quota": "Витрата квоти: ×{multiplier}",
+  "translation_model_free": "Безплатна модель",
+  "translation_model_paid": "Платна модель",
   "translation_model_unavailable": "Ця модель перекладу недоступна. Виберіть іншу модель або спробуйте пізніше.",
   "translation_clear_cache": "Очистити кеш перекладених зображень",
   "translation_saved_read_failed": "Не вдалося завантажити збережений переклад",

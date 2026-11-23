@@ -4178,9 +4178,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get browser_title => '浏览器';
 
   @override
-  String get translation_image_display => '图片显示';
-
-  @override
   String get translation_sign_in_required => '登录后开启翻译';
 
   @override
@@ -4191,9 +4188,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get translation_no_images => '当前页面暂未发现可翻译图片';
-
-  @override
-  String get translation_waiting_image => '等待当前图片';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4216,9 +4210,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_model => '翻译模型';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return '额度消耗：$multiplier 倍';
-  }
+  String get translation_model_free => '免费模型';
+
+  @override
+  String get translation_model_paid => '付费模型';
 
   @override
   String get translation_model_unavailable => '当前无法使用所选翻译模型，请更换模型或稍后重试。';
@@ -9431,9 +9426,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get browser_title => '瀏覽器';
 
   @override
-  String get translation_image_display => '圖片顯示';
-
-  @override
   String get translation_sign_in_required => '登入後開啟翻譯';
 
   @override
@@ -9444,9 +9436,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get translation_no_images => '當前頁面暫未發現可翻譯圖片';
-
-  @override
-  String get translation_waiting_image => '等待當前圖片';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -9469,9 +9458,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_model => '翻譯模型';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return '額度消耗：$multiplier 倍';
-  }
+  String get translation_model_free => '免費模型';
+
+  @override
+  String get translation_model_paid => '付費模型';
 
   @override
   String get translation_model_unavailable => '目前無法使用所選翻譯模型，請更換模型或稍後再試。';

@@ -42,6 +42,8 @@ class NodeLaneIcons {
   IconData get folder => CupertinoIcons.folder_fill;
   IconData get settings => CupertinoIcons.gear;
   IconData get translate => CupertinoIcons.textformat;
+  IconData get modelFree => CupertinoIcons.gift;
+  IconData get modelPaid => CupertinoIcons.creditcard;
   IconData get account => CupertinoIcons.person_fill;
   IconData get accountOutline => CupertinoIcons.person;
   IconData get copy => CupertinoIcons.doc_on_doc;

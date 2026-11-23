@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/services/nodelane_requests.dart';
+import 'package:mangayomi/services/translation/channels/nodelane/protocol.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/session.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
@@ -52,11 +53,27 @@ void main() {
           body = {
             'translation_models': [
               {
+                'id': 'free',
+                'name': 'Free',
+                'requires_paid': false,
+                'available': request.headers.value('authorization') == null,
+                'unavailable_reason':
+                    request.headers.value('authorization') == null
+                    ? null
+                    : 'quota_exhausted',
+                'quota_multiplier': 1,
+              },
+              {
                 'id': 'premium',
                 'name': 'Premium',
+                'requires_paid': true,
                 'available':
                     request.headers.value('authorization') ==
                     'Bearer renewed-access',
+                'unavailable_reason':
+                    request.headers.value('authorization') == null
+                    ? 'not_allowed'
+                    : null,
                 'quota_multiplier': 1.75,
               },
             ],
@@ -227,19 +244,48 @@ void main() {
     'model availability follows the current account, including logout',
     () async {
       final session = NodeLaneSession(base);
-      Future<bool> available() async {
-        final model = (await session.readModels(TranslationCancellation()))
-            .single;
-        expect(model.model, (id: 'premium', name: 'Premium'));
-        expect(model.quotaMultiplier, 1.75);
-        return model.available;
+      Future<void> checkCatalog({required bool signedIn}) async {
+        final models = await session.readModels(TranslationCancellation());
+        expect(models.map((m) => m.model.id), ['free', 'premium']);
+        expect(models.first.requiresPaid, isFalse);
+        expect(
+          models.first.access,
+          signedIn
+              ? TranslationModelAccess.quotaExhausted
+              : TranslationModelAccess.available,
+        );
+        expect(models.first.access.selectable, isTrue);
+        expect(models.last.requiresPaid, isTrue);
+        expect(models.last.quotaMultiplier, 1.75);
+        expect(
+          models.last.access,
+          signedIn
+              ? TranslationModelAccess.available
+              : TranslationModelAccess.notAllowed,
+        );
       }
 
-      expect(await available(), isFalse);
+      await checkCatalog(signedIn: false);
       await session.login();
-      expect(await available(), isTrue);
+      await checkCatalog(signedIn: true);
       await session.logout();
-      expect(await available(), isFalse);
+      await checkCatalog(signedIn: false);
+    },
+  );
+
+  test(
+    'older catalogs keep explicit availability without assuming a free tier',
+    () {
+      expect(nodeLaneModels({}), isEmpty);
+      final models = nodeLaneModels({
+        'translation_models': [
+          {'id': 'old', 'available': true},
+          {'id': 'missing', 'requires_paid': false},
+          {'id': 'unknown', 'available': false, 'unavailable_reason': 'other'},
+        ],
+      });
+      expect(models.first.requiresPaid, isNull);
+      expect(models.map((m) => m.access.selectable), [true, false, false]);
     },
   );
 

@@ -4370,9 +4370,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get browser_title => 'Браузер';
 
   @override
-  String get translation_image_display => 'Дисплей зображення';
-
-  @override
   String get translation_sign_in_required => 'Увійдіть, щоб увімкнути переклад';
 
   @override
@@ -4384,9 +4381,6 @@ class AppLocalizationsUk extends AppLocalizations {
   @override
   String get translation_no_images =>
       'На цій сторінці ще не знайдено зображень, які можна перекладати';
-
-  @override
-  String get translation_waiting_image => 'Очікування поточного зображення';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4412,9 +4406,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get translation_model => 'Модель перекладу';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Витрата квоти: ×$multiplier';
-  }
+  String get translation_model_free => 'Безплатна модель';
+
+  @override
+  String get translation_model_paid => 'Платна модель';
 
   @override
   String get translation_model_unavailable =>

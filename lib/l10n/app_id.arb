@@ -1800,12 +1800,10 @@
   "comic_save_failed": "Tidak dapat menyimpan. Silakan coba lagi.",
   "comic_reading": "Membaca",
   "browser_title": "Peramban",
-  "translation_image_display": "Tampilan gambar",
   "translation_sign_in_required": "Masuk untuk mengaktifkan terjemahan",
   "translation_automatic": "Terjemahan otomatis",
   "translation_channel": "Saluran terjemahan",
   "translation_no_images": "Belum ada gambar yang dapat diterjemahkan di halaman ini",
-  "translation_waiting_image": "Menunggu gambar saat ini",
   "translation_progress": "Selesai {complete} / {total} gambar{issues, plural, =0{} =1{ · 1 gambar perlu perhatian} other{ · Gambar {issues} perlu perhatian}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Terjemahan manga",
   "translation_target_language": "Bahasa sasaran",
   "translation_model": "Model terjemahan",
-  "translation_model_quota": "Penggunaan kuota: {multiplier}×",
+  "translation_model_free": "Model gratis",
+  "translation_model_paid": "Model berbayar",
   "translation_model_unavailable": "Model terjemahan ini tidak tersedia. Pilih model lain atau coba lagi nanti.",
   "translation_clear_cache": "Hapus cache gambar yang diterjemahkan",
   "translation_saved_read_failed": "Tidak dapat memuat terjemahan yang disimpan",

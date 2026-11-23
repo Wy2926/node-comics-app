@@ -4347,9 +4347,6 @@ class AppLocalizationsId extends AppLocalizations {
   String get browser_title => 'Peramban';
 
   @override
-  String get translation_image_display => 'Tampilan gambar';
-
-  @override
   String get translation_sign_in_required =>
       'Masuk untuk mengaktifkan terjemahan';
 
@@ -4362,9 +4359,6 @@ class AppLocalizationsId extends AppLocalizations {
   @override
   String get translation_no_images =>
       'Belum ada gambar yang dapat diterjemahkan di halaman ini';
-
-  @override
-  String get translation_waiting_image => 'Menunggu gambar saat ini';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4388,9 +4382,10 @@ class AppLocalizationsId extends AppLocalizations {
   String get translation_model => 'Model terjemahan';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Penggunaan kuota: $multiplier×';
-  }
+  String get translation_model_free => 'Model gratis';
+
+  @override
+  String get translation_model_paid => 'Model berbayar';
 
   @override
   String get translation_model_unavailable =>

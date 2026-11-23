@@ -1800,12 +1800,10 @@
   "comic_save_failed": "لا يمكن الحفظ. يرجى المحاولة مرة أخرى.",
   "comic_reading": "القراءة",
   "browser_title": "المتصفح",
-  "translation_image_display": "عرض الصورة",
   "translation_sign_in_required": "قم بتسجيل الدخول لتمكين الترجمة",
   "translation_automatic": "الترجمة الآلية",
   "translation_channel": "قناة الترجمة",
   "translation_no_images": "لم يتم العثور على صور قابلة للترجمة في هذه الصفحة حتى الآن",
-  "translation_waiting_image": "في انتظار الصورة الحالية",
   "translation_progress": "الصور المكتملة: {complete} / {total}{issues, plural, =0{} one{ · صورة واحدة تحتاج إلى مراجعة} two{ · صورتان تحتاجان إلى مراجعة} few{ · {issues} صور تحتاج إلى مراجعة} many{ · {issues} صورة تحتاج إلى مراجعة} other{ · {issues} صورة تحتاج إلى مراجعة}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "ترجمة المانجا",
   "translation_target_language": "اللغة الهدف",
   "translation_model": "نموذج الترجمة",
-  "translation_model_quota": "مضاعف استهلاك الحصة: {multiplier}×",
+  "translation_model_free": "نموذج مجاني",
+  "translation_model_paid": "نموذج مدفوع",
   "translation_model_unavailable": "نموذج الترجمة هذا غير متاح. اختر نموذجًا آخر أو حاول مجددًا لاحقًا.",
   "translation_clear_cache": "مسح ذاكرة التخزين المؤقت للصورة المترجمة",
   "translation_saved_read_failed": "تعذر تحميل الترجمة المحفوظة",

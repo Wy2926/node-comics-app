@@ -4331,9 +4331,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get browser_title => 'المتصفح';
 
   @override
-  String get translation_image_display => 'عرض الصورة';
-
-  @override
   String get translation_sign_in_required => 'قم بتسجيل الدخول لتمكين الترجمة';
 
   @override
@@ -4345,9 +4342,6 @@ class AppLocalizationsAr extends AppLocalizations {
   @override
   String get translation_no_images =>
       'لم يتم العثور على صور قابلة للترجمة في هذه الصفحة حتى الآن';
-
-  @override
-  String get translation_waiting_image => 'في انتظار الصورة الحالية';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4374,9 +4368,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get translation_model => 'نموذج الترجمة';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'مضاعف استهلاك الحصة: $multiplier×';
-  }
+  String get translation_model_free => 'نموذج مجاني';
+
+  @override
+  String get translation_model_paid => 'نموذج مدفوع';
 
   @override
   String get translation_model_unavailable =>

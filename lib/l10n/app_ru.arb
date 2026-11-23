@@ -1800,12 +1800,10 @@
   "comic_save_failed": "Не удалось сохранить. Пожалуйста, попробуйте еще раз.",
   "comic_reading": "Чтение",
   "browser_title": "Браузер",
-  "translation_image_display": "Отображение изображения",
   "translation_sign_in_required": "Войдите, чтобы включить перевод.",
   "translation_automatic": "Автоматический перевод",
   "translation_channel": "Канал трансляции",
   "translation_no_images": "На этой странице пока не найдено переводимых изображений.",
-  "translation_waiting_image": "Ожидание текущего изображения",
   "translation_progress": "Обработано изображений: {complete} / {total}{issues, plural, =0{} one{ · {issues} изображение требует внимания} few{ · {issues} изображения требуют внимания} many{ · {issues} изображений требуют внимания} other{ · {issues} изображения требуют внимания}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Перевод манги",
   "translation_target_language": "Целевой язык",
   "translation_model": "Модель перевода",
-  "translation_model_quota": "Расход квоты: ×{multiplier}",
+  "translation_model_free": "Бесплатная модель",
+  "translation_model_paid": "Платная модель",
   "translation_model_unavailable": "Эта модель перевода недоступна. Выберите другую модель или попробуйте позже.",
   "translation_clear_cache": "Очистить кэш переведенных изображений.",
   "translation_saved_read_failed": "Не удалось загрузить сохраненный перевод.",

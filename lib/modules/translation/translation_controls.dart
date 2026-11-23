@@ -10,11 +10,9 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 
-import 'translation_display_switch.dart';
 import 'translation_language_picker.dart';
 import 'translation_model_picker.dart';
 import 'translation_settings.dart';
-import 'translation_upgrade.dart';
 import 'translation_view_controller.dart';
 
 Future<void> showTranslationControls(
@@ -61,69 +59,12 @@ class TranslationControlsContent extends ConsumerWidget {
     final body = ListenableBuilder(
       listenable: controller,
       builder: (context, _) {
-        final states = controller.targets.map(controller.state).toList();
-        final complete = states
-            .where((s) => s.phase == TranslationPhase.succeeded)
-            .length;
-        final issues = states.where((s) => s.hasIssue).toList();
-        final quotaTarget = controller.targets
-            .where((t) => controller.state(t).failure?.quotaExhausted == true)
-            .firstOrNull;
-        final reasons = {
-          for (final issue in issues)
-            if (issue.message.isNotEmpty) issue.message,
-          ?controller.error,
-        };
+        late final states = controller.targets.map(controller.state).toList();
         return SingleChildScrollView(
           padding: NodeLaneTokens.bubbleContentPadding,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (reasons.isNotEmpty) ...[
-                Text(
-                  reasons.join('\n'),
-                  style: t.readerSecondary.copyWith(
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                ),
-                if (quotaTarget != null)
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: TextButton(
-                      onPressed: () => openTranslationUpgrade(
-                        context,
-                        controller,
-                        quotaTarget,
-                      ),
-                      child: Text(context.l10n.translation_upgrade_quota),
-                    ),
-                  ),
-                const SizedBox(height: NodeLaneTokens.space12),
-              ],
-              if (!browser) ...[
-                NodeLaneGroupSurface(
-                  outlined: true,
-                  child: Padding(
-                    padding: NodeLaneTokens.groupPadding,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Text(
-                          context.l10n.translation_image_display,
-                          style: t.readerLabel,
-                        ),
-                        const SizedBox(height: NodeLaneTokens.space12),
-                        TranslationDisplaySwitch(
-                          translated: controller.showTranslation,
-                          onChanged: (value) =>
-                              controller.configure(showTranslation: value),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: NodeLaneTokens.space12),
-              ],
               NodeLaneGroupSurface(
                 outlined: true,
                 child: controller.runtime == null
@@ -153,17 +94,21 @@ class TranslationControlsContent extends ConsumerWidget {
                   ),
                 ],
               ),
-              if (controller.runtime != null && controller.enabled) ...[
+              if (browser &&
+                  controller.runtime != null &&
+                  controller.enabled) ...[
                 const SizedBox(height: NodeLaneTokens.space12),
                 Text(
                   states.isEmpty
-                      ? (browser
-                            ? context.l10n.translation_no_images
-                            : context.l10n.translation_waiting_image)
+                      ? context.l10n.translation_no_images
                       : context.l10n.translation_progress(
-                          complete,
+                          states
+                              .where(
+                                (s) => s.phase == TranslationPhase.succeeded,
+                              )
+                              .length,
                           states.length,
-                          issues.length,
+                          states.where((s) => s.hasIssue).length,
                         ),
                   style: t.readerSecondary,
                 ),

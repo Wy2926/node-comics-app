@@ -95,9 +95,21 @@ class TranslationOptions {
 }
 
 typedef TranslationModel = ({String id, String name});
+
+enum TranslationModelAccess {
+  available,
+  quotaExhausted,
+  notAllowed,
+  unavailable;
+
+  // Insufficient quota blocks new work, not saving a model preference.
+  bool get selectable => this == available || this == quotaExhausted;
+}
+
 typedef TranslationModelOption = ({
   TranslationModel model,
-  bool available,
+  TranslationModelAccess access,
+  bool? requiresPaid,
   num? quotaMultiplier,
 });
 

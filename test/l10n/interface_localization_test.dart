@@ -58,7 +58,7 @@ void main() {
               body: StatefulBuilder(
                 builder: (context, setState) => Column(
                   children: [
-                    TranslationDisplaySwitch(
+                    TranslationDisplayButton(
                       translated: translated,
                       onChanged: (value) => setState(() => translated = value),
                     ),
@@ -88,7 +88,9 @@ void main() {
         const TranslationFailure('AUTH_REQUIRED').message,
         AppLocalizationsEn().translation_auth_required,
       );
-      await tester.tap(find.text('Translated'));
+      await tester.tap(
+        find.byTooltip(AppLocalizationsEn().translation_show_translated),
+      );
       await tester.pumpAndSettle();
       expect(translated, isTrue);
       locale.value = const Locale('zh');

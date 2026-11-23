@@ -4247,9 +4247,6 @@ class AppLocalizationsKo extends AppLocalizations {
   String get browser_title => '브라우저';
 
   @override
-  String get translation_image_display => '이미지 디스플레이';
-
-  @override
   String get translation_sign_in_required => '번역을 활성화하려면 로그인하세요.';
 
   @override
@@ -4260,9 +4257,6 @@ class AppLocalizationsKo extends AppLocalizations {
 
   @override
   String get translation_no_images => '이 페이지에는 아직 번역 가능한 이미지가 없습니다.';
-
-  @override
-  String get translation_waiting_image => '현재 이미지를 기다리는 중';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4286,9 +4280,10 @@ class AppLocalizationsKo extends AppLocalizations {
   String get translation_model => '번역 모델';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return '할당량 소모: $multiplier배';
-  }
+  String get translation_model_free => '무료 모델';
+
+  @override
+  String get translation_model_paid => '유료 모델';
 
   @override
   String get translation_model_unavailable =>

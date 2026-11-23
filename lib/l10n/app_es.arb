@@ -1800,12 +1800,10 @@
   "comic_save_failed": "No se pudo guardar. Por favor inténtalo de nuevo.",
   "comic_reading": "Lectura",
   "browser_title": "Navegador",
-  "translation_image_display": "Visualización de imágenes",
   "translation_sign_in_required": "Inicie sesión para habilitar la traducción",
   "translation_automatic": "Traducción automática",
   "translation_channel": "Canal de traducción",
   "translation_no_images": "Aún no se han encontrado imágenes traducibles en esta página",
-  "translation_waiting_image": "Esperando la imagen actual",
   "translation_progress": "Imágenes {complete} / {total} completadas{issues, plural, =0{} =1{ · 1 imagen necesita atención} other{ · {issues} imágenes necesitan atención}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Traducción manga",
   "translation_target_language": "Idioma de destino",
   "translation_model": "Modelo de traducción",
-  "translation_model_quota": "Consumo de cuota: {multiplier}×",
+  "translation_model_free": "Modelo gratuito",
+  "translation_model_paid": "Modelo de pago",
   "translation_model_unavailable": "Este modelo de traducción no está disponible. Elige otro modelo o vuelve a intentarlo más tarde.",
   "translation_clear_cache": "Borrar caché de imágenes traducidas",
   "translation_saved_read_failed": "No se pudo cargar la traducción guardada",

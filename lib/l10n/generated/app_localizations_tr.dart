@@ -4351,9 +4351,6 @@ class AppLocalizationsTr extends AppLocalizations {
   String get browser_title => 'Tarayıcı';
 
   @override
-  String get translation_image_display => 'Görüntü ekranı';
-
-  @override
   String get translation_sign_in_required =>
       'Çeviriyi etkinleştirmek için oturum açın';
 
@@ -4366,9 +4363,6 @@ class AppLocalizationsTr extends AppLocalizations {
   @override
   String get translation_no_images =>
       'Bu sayfada henüz çevrilebilir resim bulunamadı';
-
-  @override
-  String get translation_waiting_image => 'Mevcut görüntü bekleniyor';
 
   @override
   String translation_progress(int complete, int total, int issues) {
@@ -4392,9 +4386,10 @@ class AppLocalizationsTr extends AppLocalizations {
   String get translation_model => 'Çeviri modeli';
 
   @override
-  String translation_model_quota(num multiplier) {
-    return 'Kota tüketimi: $multiplier×';
-  }
+  String get translation_model_free => 'Ücretsiz model';
+
+  @override
+  String get translation_model_paid => 'Ücretli model';
 
   @override
   String get translation_model_unavailable =>

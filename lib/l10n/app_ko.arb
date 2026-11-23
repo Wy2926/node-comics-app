@@ -1800,12 +1800,10 @@
   "comic_save_failed": "저장할 수 없습니다. 다시 시도해 주세요.",
   "comic_reading": "읽기",
   "browser_title": "브라우저",
-  "translation_image_display": "이미지 디스플레이",
   "translation_sign_in_required": "번역을 활성화하려면 로그인하세요.",
   "translation_automatic": "자동 번역",
   "translation_channel": "번역 채널",
   "translation_no_images": "이 페이지에는 아직 번역 가능한 이미지가 없습니다.",
-  "translation_waiting_image": "현재 이미지를 기다리는 중",
   "translation_progress": "완료됨 {complete} / {total} 이미지{issues, plural, =0{} =1{ · 이미지 1개에 주의가 필요함} other{ · {issues} 이미지에 주의가 필요합니다}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "만화 번역",
   "translation_target_language": "대상 언어",
   "translation_model": "번역 모델",
-  "translation_model_quota": "할당량 소모: {multiplier}배",
+  "translation_model_free": "무료 모델",
+  "translation_model_paid": "유료 모델",
   "translation_model_unavailable": "이 번역 모델을 사용할 수 없습니다. 다른 모델을 선택하거나 나중에 다시 시도하세요.",
   "translation_clear_cache": "번역된 이미지 캐시 지우기",
   "translation_saved_read_failed": "저장된 번역을 로드할 수 없습니다.",

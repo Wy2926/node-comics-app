@@ -7757,12 +7757,6 @@ abstract class AppLocalizations {
   /// **'Browser'**
   String get browser_title;
 
-  /// No description provided for @translation_image_display.
-  ///
-  /// In en, this message translates to:
-  /// **'Image display'**
-  String get translation_image_display;
-
   /// No description provided for @translation_sign_in_required.
   ///
   /// In en, this message translates to:
@@ -7786,12 +7780,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No translatable images found on this page yet'**
   String get translation_no_images;
-
-  /// No description provided for @translation_waiting_image.
-  ///
-  /// In en, this message translates to:
-  /// **'Waiting for the current image'**
-  String get translation_waiting_image;
 
   /// No description provided for @translation_progress.
   ///
@@ -7817,11 +7805,17 @@ abstract class AppLocalizations {
   /// **'Translation model'**
   String get translation_model;
 
-  /// No description provided for @translation_model_quota.
+  /// No description provided for @translation_model_free.
   ///
   /// In en, this message translates to:
-  /// **'Quota cost: {multiplier}×'**
-  String translation_model_quota(num multiplier);
+  /// **'Free tier'**
+  String get translation_model_free;
+
+  /// No description provided for @translation_model_paid.
+  ///
+  /// In en, this message translates to:
+  /// **'Paid tier'**
+  String get translation_model_paid;
 
   /// No description provided for @translation_model_unavailable.
   ///

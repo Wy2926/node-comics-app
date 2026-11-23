@@ -1800,12 +1800,10 @@
   "comic_save_failed": "Kaydedilemedi. Lütfen tekrar deneyin.",
   "comic_reading": "Okuma",
   "browser_title": "Tarayıcı",
-  "translation_image_display": "Görüntü ekranı",
   "translation_sign_in_required": "Çeviriyi etkinleştirmek için oturum açın",
   "translation_automatic": "Otomatik çeviri",
   "translation_channel": "Çeviri kanalı",
   "translation_no_images": "Bu sayfada henüz çevrilebilir resim bulunamadı",
-  "translation_waiting_image": "Mevcut görüntü bekleniyor",
   "translation_progress": "Tamamlanan {complete} / {total} resimler{issues, plural, =0{} =1{ · 1 görselin ilgilenilmesi gerekiyor} other{ · {issues} resimlere dikkat edilmesi gerekiyor}}",
   "@translation_progress": {
     "placeholders": {
@@ -1823,7 +1821,8 @@
   "translation_title": "Manga çevirisi",
   "translation_target_language": "Hedef dil",
   "translation_model": "Çeviri modeli",
-  "translation_model_quota": "Kota tüketimi: {multiplier}×",
+  "translation_model_free": "Ücretsiz model",
+  "translation_model_paid": "Ücretli model",
   "translation_model_unavailable": "Bu çeviri modeli kullanılamıyor. Başka bir model seçin veya daha sonra tekrar deneyin.",
   "translation_clear_cache": "Çevrilen resim önbelleğini temizle",
   "translation_saved_read_failed": "Kaydedilen çeviri yüklenemedi",

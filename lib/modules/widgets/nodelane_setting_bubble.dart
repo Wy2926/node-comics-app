@@ -12,14 +12,19 @@ class SettingOption<T> {
     this.label, {
     this.subtitle,
     this.icon,
+    this.iconLabel,
     this.leading,
+    this.badge,
+    this.trailing,
     this.enabled = true,
   });
   final T value;
   final String label;
   final String? subtitle;
   final IconData? icon;
-  final Widget? leading;
+  final String? iconLabel;
+  final String? badge;
+  final Widget? leading, trailing;
   final bool enabled;
 }
 
@@ -50,6 +55,7 @@ class SettingChoices<T> extends StatefulWidget {
     super.key,
     required this.current,
     required this.options,
+    this.titleMaxLines,
     this.searchable = false,
     this.description,
     this.emptyMessage,
@@ -57,6 +63,7 @@ class SettingChoices<T> extends StatefulWidget {
   });
   final T current;
   final List<SettingOption<T>> options;
+  final int? titleMaxLines;
   final bool searchable;
   final String? description, emptyMessage;
   final ValueChanged<SettingOption<T>> choose;
@@ -130,34 +137,60 @@ class _ChoicesState<T> extends State<SettingChoices<T>> {
           ),
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(8, 0, 8, 8),
-          sliver: SliverList.builder(
-            itemCount: options.length,
-            itemBuilder: (_, index) {
-              final option = options[index];
-              return Semantics(
-                inMutuallyExclusiveGroup: true,
-                child: NodeLaneRow.card(
-                  first: index == 0,
-                  last: index == options.length - 1,
-                  compact: true,
-                  title: option.label,
-                  subtitle: option.subtitle,
-                  icon: option.icon,
-                  leading: option.leading,
-                  enabled: option.enabled,
-                  selected: option.value == widget.current,
-                  trailing: Icon(
-                    option.value == widget.current
-                        ? Icons.radio_button_checked
-                        : Icons.radio_button_unchecked,
-                    color: option.value == widget.current
-                        ? NodeLaneTokens.of(context).accent
-                        : NodeLaneTokens.of(context).muted,
+          sliver: SliverLayoutBuilder(
+            builder: (context, constraints) => SliverList.builder(
+              itemCount: options.length,
+              itemBuilder: (_, index) {
+                final option = options[index];
+                final control =
+                    option.trailing ??
+                    Icon(
+                      option.value == widget.current
+                          ? Icons.radio_button_checked
+                          : Icons.radio_button_unchecked,
+                      color: option.value == widget.current
+                          ? NodeLaneTokens.of(context).accent
+                          : NodeLaneTokens.of(context).muted,
+                    );
+                return Semantics(
+                  inMutuallyExclusiveGroup: option.trailing == null,
+                  child: NodeLaneRow.card(
+                    first: index == 0,
+                    last: index == options.length - 1,
+                    compact: true,
+                    title: option.label,
+                    titleMaxLines: widget.titleMaxLines,
+                    subtitle: option.subtitle,
+                    icon: option.icon,
+                    leadingLabel: option.iconLabel,
+                    leading: option.leading,
+                    enabled: option.enabled,
+                    selected: option.value == widget.current,
+                    trailing: option.badge == null && option.trailing == null
+                        ? control
+                        : ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth: constraints.crossAxisExtent / 2,
+                            ),
+                            child: Wrap(
+                              alignment: WrapAlignment.end,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: NodeLaneTokens.space8,
+                              children: [
+                                if (option.badge case final badge?)
+                                  NodeLaneCoverBadge(
+                                    badge,
+                                    tone: NodeLaneBadgeTone.soft,
+                                  ),
+                                control,
+                              ],
+                            ),
+                          ),
+                    onTap: () => widget.choose(option),
                   ),
-                  onTap: () => widget.choose(option),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
