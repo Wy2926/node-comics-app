@@ -654,7 +654,7 @@ class _MangaHomeScreenState extends ConsumerState<MangaHomeScreen> {
     }
     final l10n = context.l10n;
     final displayType = ref.watch(mangaHomeDisplayTypeStateProvider);
-    if (widget.onOpenDetail != null || (isMobile && !isTv)) {
+    if (context.isTouchPlatform) {
       return _buildMobile(displayType);
     }
     final displayTypeIcon = switch (displayType) {

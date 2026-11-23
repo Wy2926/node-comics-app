@@ -472,7 +472,7 @@ Future<void> pushToMangaReaderDetail({
     );
   }
   if (!addToFavourite) {
-    if (context.mounted) {
+    if (context.mounted && ModalRoute.isCurrentOf(context) != false) {
       if (onOpenDetail != null) {
         onOpenDetail(mangaId);
       } else if (useMaterialRoute) {

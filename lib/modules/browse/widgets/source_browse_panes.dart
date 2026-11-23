@@ -181,7 +181,8 @@ class _SourceBrowsePanesState extends State<SourceBrowsePanes> {
     builder: (context, box) {
       final width = box.maxWidth, height = box.maxHeight;
       final site = widget.website, book = widget.book;
-      final paired = site != null && context.hasPaneWidth(width);
+      final paired =
+          site != null && context.isTouchTablet && context.hasPaneWidth(width);
       final parents =
           (site != null && !paired ? 1 : 0) + (book != null ? 1 : 0);
       final scale = context.paneTextScale;

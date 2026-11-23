@@ -152,7 +152,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
 
   void _openSite(Source source) {
     FocusScope.of(context).unfocus();
-    if (!context.isTouchPlatform) {
+    if (!context.isTouchTablet) {
       Navigator.push(
         context,
         createRoute(
@@ -204,8 +204,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
             builder: (context, box) => ValueListenableBuilder(
               valueListenable: _activity,
               builder: (context, activity, _) {
+                final tablet = context.isTouchTablet;
                 final paired =
-                    context.isTouchPlatform &&
+                    tablet &&
                     context.hasPaneWidth(box.maxWidth) &&
                     activity.values
                             .where((a) => a.phase == SearchPhase.results)
@@ -231,7 +232,7 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                             fetchGate: _fetchGate,
                             width: paired ? box.maxWidth / 2 : box.maxWidth,
                             onOpen: () => _openSite(source),
-                            onOpenDetail: context.isTouchPlatform
+                            onOpenDetail: tablet
                                 ? (id) => _openBook(source, id)
                                 : null,
                             onActivity: (activity) =>

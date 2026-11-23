@@ -55,6 +55,13 @@ void main() {
     sourceCode: 'existing',
     repo: repo,
   );
+  final websiteRoute = GoRoute(
+    path: '/mangaHome',
+    builder: (_, state) {
+      final (site, latest) = state.extra! as (Source, bool);
+      return MangaHomeScreen(source: site, isLatest: latest);
+    },
+  );
 
   setUpAll(() async {
     await Isar.initializeIsarCore(download: true);
@@ -320,6 +327,7 @@ void main() {
             path: '/browse',
             builder: (_, _) => const MobileSourcesScreen(),
           ),
+          websiteRoute,
         ],
       );
       addTearDown(container.dispose);
@@ -398,9 +406,10 @@ void main() {
         await tester.tap(find.text(name));
         await tester.pumpAndSettle();
         expect(find.text('Opened existing website'), findsOneWidget);
+        expect(catalog, findsNothing);
         expect(
-          tester.getRect(find.byType(MangaHomeScreen)).top,
-          greaterThanOrEqualTo(tester.getRect(catalog).bottom - 1),
+          tester.getRect(find.byType(MangaHomeScreen)),
+          Offset.zero & const Size(390, 844),
         );
         expect(await router.routerDelegate.popRoute(), isTrue);
         await tester.pumpAndSettle();
@@ -765,6 +774,7 @@ void main() {
               path: '/browse',
               builder: (_, _) => const MobileSourcesScreen(),
             ),
+            websiteRoute,
           ],
         );
         try {
@@ -973,12 +983,11 @@ void main() {
             find.descendant(of: site, matching: find.text('Match 1')),
             findsOneWidget,
           );
-          expect(find.byType(TextField), findsOneWidget);
+          expect(tester.getRect(site), Offset.zero & const Size(390, 844));
+          expect(find.text('Search titles'), findsNothing);
           expect(
-            tester.getRect(site).top,
-            greaterThanOrEqualTo(
-              tester.getRect(find.byKey(const ValueKey('海岸来信'))).bottom - 1,
-            ),
+            tester.widget<TextField>(find.byType(TextField)).controller!.text,
+            '海岸来信',
           );
           expect(calls, ['海岸来信:1']);
           await tester.tap(find.widgetWithText(FilledButton, 'Load More'));
@@ -997,13 +1006,13 @@ void main() {
             await tester.pumpAndSettle();
             await tester.tap(find.text('Evening'));
             await tester.pumpAndSettle();
-            expect(find.text('Search results · dusk'), findsOneWidget);
+            expect(find.text('Search results'), findsOneWidget);
             expect(
               tester.widget<TextField>(find.byType(TextField)).controller!.text,
-              '尚未提交',
+              'dusk',
             );
           }
-          Navigator.of(tester.element(find.byType(MangaHomeScreen))).pop();
+          await tester.tap(find.byTooltip('Back'));
           await tester.pumpAndSettle();
           expect(find.byType(GlobalSearchScreen), findsOneWidget);
           expect(

@@ -189,6 +189,65 @@ void main() {
   );
 
   testWidgets(
+    'phone result covers open full-page in either orientation and Back restores the search',
+    (tester) async {
+      await tester.runAsync(() async {
+        final calls = <int>[];
+        final container = ProviderContainer(
+          overrides: [
+            searchProvider.overrideWith((_, args) async {
+              calls.add(args.source.id!);
+              return matches('Site ${args.source.id}');
+            }),
+            getMangaDetailStreamProvider.overrideWith(
+              (_, _) => Stream.value(null),
+            ),
+            updateMangaDetailProvider.overrideWith((_, _) async {}),
+          ],
+        );
+        addTearDown(container.dispose);
+        await mount(tester, container);
+        await tester.pumpAndSettle();
+        final field = find.byType(TextField);
+        await tester.enterText(field, '未提交的词');
+        final book = find.byType(MangaReaderDetail);
+        for (final size in [const Size(390, 844), const Size(844, 390)]) {
+          tester.view.physicalSize = size;
+          await tester.pumpAndSettle();
+          final sections = find.byType(SourceResultSection);
+          expect(tester.getSize(sections.first).width, size.width);
+          final cover = find.text('Site 1 0');
+          await tester.ensureVisible(cover);
+          await tester.pumpAndSettle();
+          final before = tester.getRect(cover);
+          await tester.tap(cover);
+          final deadline = DateTime.now().add(const Duration(seconds: 5));
+          while (book.evaluate().isEmpty && DateTime.now().isBefore(deadline)) {
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+            await pumpActivity(tester);
+          }
+          await pumpActivity(tester);
+          expect(tester.getRect(book), Offset.zero & size);
+          expect(find.text('搜作品'), findsNothing);
+          expect(field, findsNothing);
+          await tester.binding.handlePopRoute();
+          await tester.pumpAndSettle();
+          expect(tester.getRect(cover), before);
+          expect(tester.widget<TextField>(field).controller!.text, '未提交的词');
+        }
+        expect(calls, [1, 2, 3, 4]);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+        await database.mangas.count();
+      });
+    },
+    variant: TargetPlatformVariant({
+      TargetPlatform.android,
+      TargetPlatform.iOS,
+    }),
+  );
+
+  testWidgets(
     'one toolbar serves both result columns and a direct title opens below without querying another level',
     (tester) async {
       await tester.runAsync(() async {

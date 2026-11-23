@@ -158,6 +158,12 @@ void main() {
       final before = card('Site 00');
       expect(before.top, card('Site 01').top);
       expect(card('Site 02').top, greaterThan(before.bottom));
+      tester.view.physicalSize = const Size(844, 390);
+      await tester.pumpAndSettle();
+      expect(card('Site 01').top, greaterThan(card('Site 00').bottom));
+      tester.view.physicalSize = const Size(1180, 720);
+      await tester.pumpAndSettle();
+      expect(card('Site 00'), before);
       final panel = find.byType(SourceDirectoryFilterPanel);
       expect(panel, findsNothing);
       final chips = find.widgetWithText(FilterChip, '日本語');

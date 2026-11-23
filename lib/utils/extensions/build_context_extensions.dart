@@ -21,6 +21,9 @@ extension BuildContextExtensions on BuildContext {
         _ => false,
       };
 
+  bool get isTouchTablet =>
+      isTouchPlatform && sizeWantsNavRail(MediaQuery.sizeOf(this));
+
   bool get isAndroidTablet =>
       Theme.of(this).platform == TargetPlatform.android &&
       !isTv &&

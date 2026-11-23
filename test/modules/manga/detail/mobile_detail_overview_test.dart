@@ -71,6 +71,15 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Book').hitTestable(), findsOneWidget);
       expect(find.text('Chapter 30').hitTestable(), findsOneWidget);
+      final anchor = tester
+          .widget<Text>(
+            find.textContaining(RegExp(r'^Chapter \d+$')).hitTestable().first,
+          )
+          .data!;
+      tester.view.physicalSize = const Size(844, 390);
+      await tester.pumpAndSettle();
+      expect(find.text(anchor).hitTestable(), findsOneWidget);
+      expect(find.text('Book').hitTestable(), findsNothing);
       expect(tester.takeException(), isNull);
     },
     variant: TargetPlatformVariant({

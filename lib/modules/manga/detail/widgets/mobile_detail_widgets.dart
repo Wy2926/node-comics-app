@@ -84,8 +84,9 @@ class _MobileDetailLayoutState extends State<MobileDetailLayout> {
     return LayoutBuilder(
       builder: (context, box) {
         final width = box.maxWidth, scale = context.paneTextScale;
-        final split = context.hasPaneWidth(width);
+        final split = context.isTouchTablet && context.hasPaneWidth(width);
         final triple =
+            split &&
             context.findAncestorWidgetOfExactType<SourceBrowsePanes>() ==
                 null &&
             context.hasPaneWidth(

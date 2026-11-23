@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:mangayomi/utils/version.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show RenderSliverGrid;
@@ -290,6 +288,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
     _openIntent++;
     FocusScope.of(context).unfocus();
     sourceRepository.markLastUsed(source.itemType, source.id);
+    if (!context.isTouchTablet) {
+      context.push('/mangaHome', extra: (source, latest));
+      return;
+    }
     if (_site == null) {
       _returnOffset = _scroll.hasClients ? _scroll.offset : null;
       _rememberReturnTiles();
@@ -815,10 +817,10 @@ class _MobileSourcesScreenState extends ConsumerState<MobileSourcesScreen>
 
   SliverGridDelegate _cardGrid(BuildContext context, double available) {
     const gap = NodeLaneTokens.space12;
-    final minWidth =
-        NodeLaneTokens.sourceCardMinWidth *
-        math.max(1, MediaQuery.textScalerOf(context).scale(16) / 16);
-    final columns = ((available + gap) / (minWidth + gap)).floor().clamp(1, 2);
+    final minWidth = NodeLaneTokens.sourceCardMinWidth * context.paneTextScale;
+    final columns = context.isTouchTablet && available >= 2 * minWidth + gap
+        ? 2
+        : 1;
     final width = (available - gap * (columns - 1)) / columns;
     return SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: columns,

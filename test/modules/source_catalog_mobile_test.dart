@@ -44,12 +44,14 @@ void main() {
     double scale = 1,
     double inset = 0,
     Locale locale = const Locale('en'),
+    TargetPlatform? platform,
   }) async {
     tester.view.physicalSize = const Size(360, 740);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
       MaterialApp(
+        theme: ThemeData(platform: platform),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         locale: locale,
@@ -521,6 +523,7 @@ void main() {
                 ],
                 child: MangaHomeScreen(source: source),
               ),
+              platform: TargetPlatform.windows,
             ),
           );
           await tester.pumpAndSettle();
@@ -597,7 +600,7 @@ void main() {
                 retry: (_, _) => null,
                 child: MangaHomeScreen(source: source, query: 'Seed'),
               ),
-              scale: 1,
+              platform: TargetPlatform.windows,
             ),
           );
           await tester.pumpAndSettle();
@@ -665,7 +668,7 @@ void main() {
                 ],
                 child: MangaHomeScreen(source: source, query: 'Missing'),
               ),
-              scale: 1,
+              platform: TargetPlatform.windows,
             );
             await tester.pumpAndSettle();
             expect(calls, ['Missing:1']);
@@ -709,7 +712,7 @@ void main() {
                   ),
                 ),
               ),
-              scale: 1,
+              platform: TargetPlatform.windows,
             ),
           );
           await tester.pumpAndSettle();
