@@ -180,6 +180,7 @@ class TranslationFailure implements Exception {
       'AUTH_REQUIRED' => l10n.translation_auth_required,
       'SOURCE_CHANGED' => l10n.translation_source_changed,
       'SOURCE_MISSING' => l10n.translation_source_missing,
+      'SOURCE_STORAGE' => l10n.comic_save_failed,
       'RESOURCE_LIMIT' => l10n.translation_resource_limit,
       'STORAGE_FULL' => l10n.translation_storage_full,
       'INVALID_IMAGE' ||

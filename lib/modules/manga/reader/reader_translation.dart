@@ -1,25 +1,21 @@
-import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/modules/translation/translation_display_switch.dart';
-
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/identity.dart';
-import 'package:mangayomi/services/translation/source_file.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
+import 'package:mangayomi/modules/translation/translation_display_switch.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
-import 'package:mangayomi/utils/extensions/others.dart';
-import 'package:mangayomi/utils/headers.dart';
 
+import 'reader_page_image.dart';
 import 'u_chap_data_preload.dart';
 
 TranslationPage readerTranslationPage(UChapDataPreload data) {
@@ -39,61 +35,42 @@ TranslationPage readerTranslationPage(UChapDataPreload data) {
       data.chapter?.archivePath,
       data.localImagePath,
       data.pageUrl?.url,
+      if (data.pageUrl?.imageProcessing case final processing?)
+        processing.toJson(),
       data.index,
     ]),
   );
 }
 
 class ReaderSourceImageReader implements SourceImageReader {
-  ReaderSourceImageReader(this.data, this.headers);
+  ReaderSourceImageReader(this.data, this.providers);
   final UChapDataPreload data;
-  final Map<String, String> headers;
+  final ProviderContainer providers;
   @override
   Future<OriginalImageLease> acquire(
     TranslationPage page,
     TranslationCancellation cancellation,
   ) async {
     cancellation.check();
-    // Local/archive bytes are owned by the existing reader, not the channel.
-    if (data.isLocale == true ||
-        data.localImagePath != null ||
-        data.archiveImage != null) {
-      final path = await data.getLocalFilePath;
-      if (path == null) throw const TranslationFailure('SOURCE_MISSING');
+    try {
+      final file = await data.readerFile(providers);
       cancellation.check();
-      return OriginalImageLease(File(path));
+      if (file != null) return OriginalImageLease(file);
+    } on TranslationCancelled {
+      rethrow;
+    } on FormatException {
+      cancellation.check();
+      throw const TranslationFailure('INVALID_IMAGE');
+    } on FileSystemException catch (error) {
+      cancellation.check();
+      if (error is PathNotFoundException) {
+        throw const TranslationFailure('SOURCE_MISSING');
+      }
+      throw const TranslationFailure('SOURCE_STORAGE');
+    } catch (_) {
+      cancellation.check();
     }
-    // This path is the original currently decoded by the reader. It is never
-    // replaced with a translation path, and avoids a second source download.
-    if (data.resolvedFilePath != null &&
-        await File(data.resolvedFilePath!).exists()) {
-      return OriginalImageLease(File(data.resolvedFilePath!));
-    }
-    final uri = Uri.tryParse(data.pageUrl?.url ?? '');
-    if (uri == null) throw const TranslationFailure('SOURCE_MISSING');
-    return HttpSourceImageReader(
-      uri,
-      headers: (target) async {
-        final cookies = await CookieManager.instance().getCookies(
-          url: WebUri(target.toString()),
-        );
-        return {
-          if (target.origin == uri.origin && cookies.isNotEmpty)
-            'Cookie': cookies
-                .map((cookie) => '${cookie.name}=${cookie.value}')
-                .join('; '),
-          for (final entry in headers.entries)
-            if (target.origin == uri.origin ||
-                {
-                  'accept',
-                  'accept-language',
-                  'user-agent',
-                  'referer',
-                }.contains(entry.key.toLowerCase()))
-              entry.key: entry.value,
-        };
-      },
-    ).acquire(page, cancellation);
+    throw const TranslationFailure('SOURCE_MISSING');
   }
 }
 
@@ -307,28 +284,15 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
   void _window() {
     final targets = <TranslationTarget>[];
     final seen = <String>{};
+    final providers = ProviderScope.containerOf(context, listen: false);
     for (final data in widget.pages.skip(
       widget.actualIndex().clamp(0, widget.pages.length),
     )) {
       if (data.isTransitionPage) continue;
       final page = readerTranslationPage(data);
       if (!seen.add(page.identity)) continue;
-      final manga = data.chapter?.manga.value;
-      final headers = <String, String>{
-        ...data.pageUrl?.headers ?? {},
-        if (data.isLocale != true &&
-            manga?.source != null &&
-            manga?.lang != null)
-          ...ref.read(
-            headersProvider(
-              source: manga!.source!,
-              lang: manga.lang!,
-              sourceId: manga.sourceId,
-            ),
-          ),
-      };
       targets.add(
-        TranslationTarget(page, ReaderSourceImageReader(data, headers)),
+        TranslationTarget(page, ReaderSourceImageReader(data, providers)),
       );
       if (targets.length >= widget.visibleCount + 2 || targets.length >= 4) {
         break;

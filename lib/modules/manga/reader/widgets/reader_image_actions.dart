@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/library/providers/local_archive.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
@@ -15,7 +16,9 @@ import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/repositories/manga_repository.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
-import 'package:mangayomi/utils/extensions/others.dart';
+
+import '../reader_page_image.dart';
+
 import 'package:mangayomi/utils/manga_cover_actions.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/utils/share.dart';
@@ -44,6 +47,10 @@ Future<void> showReaderImageActions({
     '_',
   );
   final Widget panel;
+  final providers = ProviderScope.containerOf(context, listen: false);
+  Future<Uint8List?> readOriginal() async =>
+      data.archiveImage ??
+      await (await data.readerFile(providers))?.readAsBytes();
   if (isMobile && !isTv) {
     final pageIndex = data.index ?? data.pageIndex;
     panel = MobileReaderImageActions(
@@ -51,13 +58,13 @@ Future<void> showReaderImageActions({
       bookTitle: manga.name ?? '',
       chapterTitle: actualChapter,
       pageNumber: pageIndex == null ? null : pageIndex + 1,
-      loadImage: () => data.getImageBytes,
+      loadImage: readOriginal,
       onSave: (bytes) => saveReaderPageImage(bytes, name),
       onShare: (context, bytes) => _shareReaderPageImage(context, bytes, name),
       onSetCover: (bytes) => setReaderPageCover(manga, bytes),
     );
   } else {
-    final bytes = await data.getImageBytes;
+    final bytes = await readOriginal();
     if (bytes == null ||
         !context.mounted ||
         ModalRoute.isCurrentOf(context) != true) {

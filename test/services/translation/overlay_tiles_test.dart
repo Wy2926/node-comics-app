@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:mangayomi/services/translation/channels/nodelane/overlay_tiles.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/image_work.dart';
 
 import 'overlay_tiles_fixture.dart';

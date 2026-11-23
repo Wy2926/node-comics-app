@@ -15,6 +15,8 @@ import android.graphics.BitmapFactory
 import android.graphics.ColorSpace
 import android.os.Build
 import java.io.File
+import java.util.concurrent.CompletableFuture
+import org.mozilla.gecko.util.ImageDecoder
 
 class MainActivity: FlutterFragmentActivity() {
     private var appUpdates: AppUpdateDownloads? = null
@@ -71,7 +73,17 @@ class MainActivity: FlutterFragmentActivity() {
                     inPreferredConfig = Bitmap.Config.ARGB_8888
                     inPreferredColorSpace = ColorSpace.get(ColorSpace.Named.SRGB)
                 }
-                val bitmap = checkNotNull(BitmapFactory.decodeFile(call.argument<String>("source"), options))
+                val input = File(checkNotNull(call.argument<String>("source")))
+                val gecko = browser
+                val bitmap = if (call.argument<Boolean>("avif") == true && gecko != null) {
+                    // Some system AVIF codecs drop auxiliary alpha or return a solid green frame.
+                    val ready = CompletableFuture<Unit>()
+                    runOnUiThread {
+                        runCatching { gecko.runtime }.fold({ ready.complete(Unit) }, ready::completeExceptionally)
+                    }
+                    ready.get()
+                    checkNotNull(ImageDecoder.instance().decode(android.net.Uri.fromFile(input).toString()).poll())
+                } else checkNotNull(BitmapFactory.decodeFile(input.path, options))
                 try {
                     File(checkNotNull(call.argument<String>("output"))).outputStream().use {
                         check(bitmap.compress(Bitmap.CompressFormat.PNG, 100, it))

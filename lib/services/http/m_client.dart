@@ -316,6 +316,7 @@ const _redactedHeaders = {
   'proxy-authorization',
   'cookie',
   'set-cookie',
+  'referer', // Image pages can carry signed addresses.
   'x-api-key',
   'simkl-api-key',
   'trakt-api-key',

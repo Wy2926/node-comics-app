@@ -59,6 +59,28 @@ void main() {
   });
 
   test(
+    'clearing a visible cache reacquires and hashes the replacement once',
+    () async {
+      final original = await images.acquire(target, TranslationCancellation());
+      await original.file.delete();
+      final restored = _Source(
+        await File('${directory.path}/new').writeAsBytes([4, 5]),
+      );
+      final next = TranslationTarget(target.page, restored);
+      final leases = await Future.wait([
+        images.acquire(next, TranslationCancellation()),
+        images.acquire(next, TranslationCancellation()),
+      ]);
+      expect(restored.reads, 1);
+      expect(leases.first.sha, isNot(original.sha));
+      expect(leases.last.sha, images.hashFor(target.page));
+      original.release();
+      for (final lease in leases) {
+        lease.release();
+      }
+    },
+  );
+  test(
     'navigation releases a late original and does not poison the replacement',
     () async {
       source.pending = Completer<void>();

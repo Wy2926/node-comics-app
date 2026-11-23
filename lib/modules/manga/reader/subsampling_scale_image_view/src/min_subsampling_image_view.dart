@@ -8,7 +8,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/reader_content_status.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/others.dart';
+
+import '../../reader_page_image.dart';
+
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 
 class MinSubsamplingImage extends ConsumerStatefulWidget {
@@ -171,54 +173,52 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
       });
     }
 
-    final String? path = data.resolvedFilePath ?? await data.getLocalFilePath;
-    if (!_isCurrent(generation, data)) return;
-    if (path != null) {
-      data.resolvedFilePath = path;
-    }
-    if (path != null && widget.cropBorders) {
-      await _loadFromPath(path, generation, data);
+    if (widget.cropBorders) {
+      if (!mounted) return;
+      try {
+        final file = await data.readerFile(
+          ProviderScope.containerOf(context, listen: false),
+          interactive: true,
+        );
+        if (!_isCurrent(generation, data)) return;
+        if (file == null) throw StateError('Page image unavailable');
+        data.resolvedFilePath = file.path;
+        await _loadFromPath(file.path, generation, data);
+      } catch (_) {
+        if (!_isCurrent(generation, data)) return;
+        setState(() {
+          _hasError = true;
+          _isLoading = false;
+        });
+        widget.failedToLoadImage(true);
+      }
     } else {
       final provider = data.getImageProvider(ref, true);
       _imageStream = provider.resolve(ImageConfiguration.empty);
       _streamListener = ImageStreamListener(
-        (info, syncCall) async {
-          _cleanStream();
-          final cachedPath =
-              data.resolvedFilePath ?? await data.getLocalFilePath;
+        (info, syncCall) {
           if (!_isCurrent(generation, data)) {
             info.dispose();
             return;
           }
-          if (cachedPath != null) {
-            data.resolvedFilePath = cachedPath;
-          }
-          if (widget.cropBorders) {
-            if (cachedPath != null) {
-              info.dispose();
-              await _loadFromPath(cachedPath, generation, data);
-              return;
-            }
-          }
-          if (_isCurrent(generation, data)) {
-            data.loadedWidth = info.image.width.toDouble();
-            data.loadedHeight = info.image.height.toDouble();
-            data.decodedImage?.dispose();
-            data.decodedImage = info.image.clone();
-            data.decodedImageCropped = false;
-            final old = _uiImage;
-            setState(() {
-              _uiImage = info.image.clone();
-              _isLoading = false;
-              _loadingProgress = null;
-            });
-            old?.dispose();
-            widget.failedToLoadImage(false);
-            widget.onImageLoaded?.call(
-              info.image.width.toDouble(),
-              info.image.height.toDouble(),
-            );
-          }
+          _cleanStream();
+          data.loadedWidth = info.image.width.toDouble();
+          data.loadedHeight = info.image.height.toDouble();
+          data.decodedImage?.dispose();
+          data.decodedImage = info.image.clone();
+          data.decodedImageCropped = false;
+          final old = _uiImage;
+          setState(() {
+            _uiImage = info.image.clone();
+            _isLoading = false;
+            _loadingProgress = null;
+          });
+          old?.dispose();
+          widget.failedToLoadImage(false);
+          widget.onImageLoaded?.call(
+            info.image.width.toDouble(),
+            info.image.height.toDouble(),
+          );
           info.dispose();
         },
         onChunk: (ImageChunkEvent event) {
@@ -229,8 +229,8 @@ class _MinSubsamplingImageState extends ConsumerState<MinSubsamplingImage> {
           }
         },
         onError: (err, stack) {
-          _cleanStream();
           if (_isCurrent(generation, data)) {
+            _cleanStream();
             setState(() {
               _hasError = true;
               _isLoading = false;

@@ -290,7 +290,7 @@ void main() {
       retries: 1,
       imageProcessing: spec,
     );
-    await expectLater(provider.getNetworkImageData(), throwsStateError);
+    await expectLater(provider.getNetworkImageData(), throwsFormatException);
     valid = true;
     final restored = img.decodePng((await provider.getNetworkImageData())!)!;
     expect(restored.width, 7);

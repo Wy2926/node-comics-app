@@ -210,9 +210,17 @@ class OfficialRuntime implements ChannelRuntime {
     TranslationTarget target,
     TranslationCancellation cancel,
   ) async {
+    final known = _sources.hashFor(target.page);
+    if (known != null) return _loadForHash(known, cancel);
     final original = await _sources.acquire(target, cancel);
-    final sha = original.sha;
     original.release();
+    return _loadForHash(original.sha, cancel);
+  }
+
+  Future<OfficialReceipt?> _loadForHash(
+    String sha,
+    TranslationCancellation cancel,
+  ) async {
     await (_bindingsReady ??= _indexImages().catchError((Object error) {
       _bindingsReady = null;
       throw error;
@@ -513,67 +521,67 @@ class OfficialRuntime implements ChannelRuntime {
     TranslationCancellation cancel, {
     OfficialReceipt? replacing,
   }) async {
-    final capabilities = await _capabilities(cancel);
     final original = await _sources.acquire(target, cancel);
-    PreparedTranslationImage? input;
     try {
-      cancel.check();
-      if (replacing != null && original.sha != replacing.sourceSha) {
-        throw const TranslationFailure('SOURCE_CHANGED');
-      }
-      input = await images.prepare(
-        original.file,
-        cancel,
-        sourceSha: original.sha,
-      );
-      final format = nodeLaneResultFormat(
-        capabilities,
-        input.width,
-        input.height,
-      );
       return await _control.run(() async {
         cancel.check();
-        final existing = await _load(target, cancel);
-        if (existing != null && existing.id != replacing?.id) return existing;
-        final frozen = input!;
-        if (replacing != null &&
-            replacing.errorCode == 'INPUT_NOT_NORMALIZED' &&
-            frozen.sha256 == replacing.inputSha) {
-          throw const TranslationFailure('INVALID_IMAGE');
+        if (replacing != null && original.sha != replacing.sourceSha) {
+          throw const TranslationFailure('SOURCE_CHANGED');
         }
-        final inputKey = translationKey([
-          scope,
-          frozen.sha256,
-          legacyTranslationInputProfile, // Stable cache namespace; the digest identifies the bytes.
-        ]);
-        await repository.publish('input', inputKey, frozen.file);
-        cancel.check();
-        final created = OfficialReceipt(
-          id: translationUuid(),
-          key: _binding(original.sha, options.language, options.modelId),
-          scope: scope,
-          language: options.language,
-          inputKey: inputKey,
-          inputSha: frozen.sha256,
-          sourceSha: frozen.sourceSha256,
-          width: frozen.width,
-          height: frozen.height,
-          mime: frozen.mime,
-          request: {
-            'image': frozen.descriptor,
-            'mode': 'classic',
-            'target_language': options.language,
-            'model_id': ?options.modelId,
-            'result_format': ?format,
-          },
+        final existing = await _loadForHash(original.sha, cancel);
+        if (existing != null && existing.id != replacing?.id) return existing;
+        final capabilities = await _capabilities(cancel);
+        final frozen = await images.prepare(
+          original.file,
+          cancel,
+          sourceSha: original.sha,
         );
-        await _bind(created);
-        return created;
+        try {
+          final format = nodeLaneResultFormat(
+            capabilities,
+            frozen.width,
+            frozen.height,
+          );
+          if (replacing != null &&
+              replacing.errorCode == 'INPUT_NOT_NORMALIZED' &&
+              frozen.sha256 == replacing.inputSha) {
+            throw const TranslationFailure('INVALID_IMAGE');
+          }
+          final inputKey = translationKey([
+            scope,
+            frozen.sha256,
+            legacyTranslationInputProfile, // Stable cache namespace; the digest identifies the bytes.
+          ]);
+          await repository.publish('input', inputKey, frozen.file);
+          cancel.check();
+          final created = OfficialReceipt(
+            id: translationUuid(),
+            key: _binding(original.sha, options.language, options.modelId),
+            scope: scope,
+            language: options.language,
+            inputKey: inputKey,
+            inputSha: frozen.sha256,
+            sourceSha: original.sha,
+            width: frozen.width,
+            height: frozen.height,
+            mime: frozen.mime,
+            request: {
+              'image': frozen.descriptor,
+              'mode': 'classic',
+              'target_language': options.language,
+              'model_id': ?options.modelId,
+              'result_format': ?format,
+            },
+          );
+          await _bind(created);
+          return created;
+        } finally {
+          if (frozen.file.path != original.file.path) {
+            await frozen.file.delete().catchError((_) => frozen.file);
+          }
+        }
       });
     } finally {
-      if (input != null && input.file.path != original.file.path) {
-        await input.file.delete().catchError((_) => input!.file);
-      }
       original.release();
     }
   }
@@ -593,9 +601,8 @@ class OfficialRuntime implements ChannelRuntime {
         ),
       );
     }
-    final receipt = await _load(target, cancel);
-    cancel.check();
-    final current = receipt ?? await _prepareReceipt(target, cancel);
+    final current =
+        _receiptFor(target.page) ?? await _prepareReceipt(target, cancel);
     cancel.check();
     // Content lookup keeps the same UUID across new locators and refreshes.
     if (current.sent && current.unresolved && !_verified.contains(current.id)) {
@@ -1204,6 +1211,9 @@ class OfficialRuntime implements ChannelRuntime {
         final original = await _sources.acquire(target, cancel);
         PreparedTranslationImage? prepared;
         try {
+          if (original.sha != receipt.sourceSha) {
+            throw const TranslationFailure('SOURCE_CHANGED');
+          }
           if (original.sha != receipt.inputSha) {
             final profile = receipt.inputProfile;
             if (profile == null) {

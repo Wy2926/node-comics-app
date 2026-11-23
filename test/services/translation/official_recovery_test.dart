@@ -17,6 +17,7 @@ import 'package:mangayomi/services/translation/channels/nodelane/receipt.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 
 import 'overlay_tiles_fixture.dart';
+import 'encoded_image_fixture.dart';
 
 class _Source implements SourceImageReader {
   _Source(this.file);

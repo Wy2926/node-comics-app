@@ -121,9 +121,18 @@ Future<File> cacheImageBytesToTempFile({
   required FutureOr<Uint8List> Function() bytesProvider,
 }) async {
   final file = File(p.join(tempDir.path, '$baseName$extension'));
-  if (!await file.exists()) {
-    final bytes = await bytesProvider();
-    await file.writeAsBytes(bytes, flush: true);
+  if ((await file.stat()).size <= 0) {
+    // Readers, prefetch and translation can request the same path concurrently.
+    final staging = await tempDir.createTemp('.page-');
+    try {
+      final bytes = await bytesProvider();
+      if (bytes.isEmpty) throw const FormatException('Empty page image');
+      final complete = await File(p.join(staging.path, 'image'))
+          .writeAsBytes(bytes, flush: true);
+      await complete.rename(file.path);
+    } finally {
+      await staging.delete(recursive: true);
+    }
   }
   return file;
 }

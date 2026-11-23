@@ -1,7 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:crypto/crypto.dart';
+
+Future<String> imageDigest(File file) async =>
+    (await sha256.bind(file.openRead()).first).toString();
 
 String translationKey(Object value) =>
     sha256.convert(utf8.encode(jsonEncode(value))).toString();

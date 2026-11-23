@@ -42,7 +42,9 @@ import 'package:mangayomi/modules/manga/reader/widgets/reader_page_content.dart'
 import 'package:mangayomi/modules/manga/reader/widgets/auto_scroll_button.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/page_indicator.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
-import 'package:mangayomi/utils/extensions/others.dart';
+
+import 'reader_page_image.dart';
+
 import 'package:mangayomi/modules/manga/reader/providers/push_router.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/services/chapter_cache.dart';
@@ -50,7 +52,6 @@ import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/double_page_zoom_pan.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
-import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart'
@@ -690,18 +691,11 @@ class _MangaChapterPageGalleryState
   bool _readerInForeground = true;
   late final _imagePrefetcher = ReaderImagePrefetcher(
     load: (page, isCurrent) async {
-      final path = page.resolvedFilePath ?? await page.getLocalFilePath;
-      if (!mounted || !isCurrent()) return;
-      if (path != null) {
-        page.resolvedFilePath = path;
-        return;
-      }
-      final provider = page.getImageProvider(ref, false);
-      if (provider is CustomExtendedNetworkImageProvider) {
-        await provider.getNetworkImageData();
-        if (!mounted || !isCurrent()) return;
-        final cachedPath = await page.getLocalFilePath;
-        if (mounted && isCurrent()) page.resolvedFilePath = cachedPath;
+      final file = await page.readerFile(
+        ProviderScope.containerOf(context, listen: false),
+      );
+      if (mounted && isCurrent() && file != null) {
+        page.resolvedFilePath = file.path;
       }
     },
   );

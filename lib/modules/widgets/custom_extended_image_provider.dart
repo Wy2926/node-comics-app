@@ -1,6 +1,5 @@
 // ignore_for_file: non_nullable_equals_parameter, implementation_imports
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui show Codec, ImmutableBuffer;
@@ -16,6 +15,7 @@ import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/utils/avif.dart';
+import 'package:mangayomi/utils/downloaded_page_file.dart';
 import 'package:path/path.dart';
 import 'package:extended_image_library/src/network/extended_network_image_provider.dart'
     as image_provider;
@@ -49,7 +49,7 @@ class _CacheManager {
 
     int totalSize = 0;
     try {
-      await for (final entity in cacheDir.list(recursive: true)) {
+      await for (final entity in cacheDir.list()) {
         if (entity is File) {
           totalSize += await entity.length();
         }
@@ -79,7 +79,7 @@ class _CacheManager {
 
       // Collect all cache files with metadata
       final List<_CacheMetadata> files = [];
-      await for (final entity in cacheDir.list(recursive: true)) {
+      await for (final entity in cacheDir.list()) {
         if (entity is File) {
           try {
             final stat = await entity.stat();
@@ -122,29 +122,28 @@ class _CacheManager {
   }
 }
 
+typedef _FetchedImage = ({Uint8List bytes, File? file});
+
 class CustomExtendedNetworkImageProvider
     extends ImageProvider<image_provider.ExtendedNetworkImageProvider>
     with ExtendedImageProvider<image_provider.ExtendedNetworkImageProvider>
     implements image_provider.ExtendedNetworkImageProvider {
   /// Deduplication map for in-flight image downloads to prevent multiple concurrent HTTP GET requests for the same URL
-  static final Map<String, Future<Uint8List?>> _inFlightRequests = {};
+  static final _downloads = <(String?, String, bool), Future<_FetchedImage?>>{};
 
   /// Decode Base64 or URL-encoded data URI (e.g. data:image/gif;base64,...)
   static Uint8List? tryDecodeDataUri(String url) {
-    if (!url.startsWith('data:')) return null;
     try {
-      final commaIndex = url.indexOf(',');
-      if (commaIndex != -1) {
-        final headerPart = url.substring(0, commaIndex);
-        final dataPart = url.substring(commaIndex + 1);
-        if (headerPart.contains(';base64')) {
-          return base64Decode(dataPart.replaceAll(RegExp(r'\s+'), ''));
-        } else {
-          return Uint8List.fromList(utf8.encode(Uri.decodeComponent(dataPart)));
-        }
+      return UriData.parse(url).contentAsBytes();
+    } on FormatException {
+      // Some sources wrap their base64 across lines.
+      if (url.startsWith('data:') &&
+          url.contains(';base64,') &&
+          url.contains(RegExp(r'\s'))) {
+        return tryDecodeDataUri(url.replaceAll(RegExp(r'\s+'), ''));
       }
-    } catch (_) {}
-    return null;
+      return null;
+    }
   }
 
   /// Creates an object that fetches the image at the given URL.
@@ -246,10 +245,10 @@ class CustomExtendedNetworkImageProvider
         key as CustomExtendedNetworkImageProvider,
         chunkEvents,
         decode,
-      ),
+      ).whenComplete(chunkEvents.close),
       scale: key.scale,
       chunkEvents: chunkEvents.stream,
-      debugLabel: key.url,
+      debugLabel: 'Source image',
       informationCollector: () {
         return <DiagnosticsNode>[
           DiagnosticsProperty<ImageProvider>('Image provider', this),
@@ -275,11 +274,8 @@ class CustomExtendedNetworkImageProvider
     ImageConfiguration configuration = ImageConfiguration.empty,
     bool includeLive = true,
   }) async {
-    final String md5Key = cacheKey ?? keyToMd5(url);
     try {
-      final Directory cacheImagesDirectory = await StorageProvider()
-          .createCacheDirectory(imageCacheFolderName);
-      final File cacheFile = File(join(cacheImagesDirectory.path, md5Key));
+      final cacheFile = await _cacheFile;
       if (await cacheFile.exists()) {
         await cacheFile.delete();
       }
@@ -311,178 +307,110 @@ class CustomExtendedNetworkImageProvider
     ImageDecoderCallback decode,
   ) async {
     assert(key == this);
-    if (key.url.startsWith('data:')) {
-      final dataUriBytes = tryDecodeDataUri(key.url);
-      if (dataUriBytes != null) {
-        try {
-          return await instantiateImageCodec(dataUriBytes, decode);
-        } catch (e) {
-          return Future<ui.Codec>.error(
-            StateError('Failed to load data URI $url: $e'),
-          );
-        }
-      }
-    }
-
-    final String md5Key = cacheKey ?? keyToMd5(key.url);
-    ui.Codec? result;
-    // Kept so the final error, if any, says why instead of just "failed" —
-    // both attempts below were previously swallowing the real exception.
-    Object? lastError;
-    if (cache) {
+    final file = await cachedFile;
+    if (file != null) {
       try {
-        final Uint8List? data = await _loadCache(key, chunkEvents, md5Key);
-        if (data != null) {
-          result = await instantiateImageCodec(data, decode);
-        }
-      } catch (e) {
-        lastError = e;
-        if (kDebugMode) {
-          print(e);
-        }
+        return await instantiateImageCodec(await file.readAsBytes(), decode);
+      } catch (_) {
+        await file.delete().catchError((_) => file);
       }
     }
-
-    if (result == null) {
-      try {
-        final Uint8List? data = await _loadNetworkWithDeduplication(
-          key,
-          chunkEvents,
-          md5Key,
-        );
-        if (data != null) {
-          result = await instantiateImageCodec(data, decode);
-        }
-      } catch (e) {
-        lastError = e;
-        if (kDebugMode) {
-          print(e);
-        }
-      }
-    }
-
-    //Failed to load
-    if (result == null) {
-      //result = await ui.instantiateImageCodec(kTransparentImage);
-      return Future<ui.Codec>.error(
-        StateError(
-          'Failed to load $url.${lastError != null ? ' Cause: $lastError' : ''}',
-        ),
-      );
-    }
-
-    return result;
+    final image = await _fetch(chunkEvents);
+    if (image == null) throw StateError('Could not load source image');
+    return instantiateImageCodec(image.bytes, decode);
   }
 
-  /// Helper to deduplicate in-flight network downloads for non-cached or fallback requests
-  Future<Uint8List?> _loadNetworkWithDeduplication(
-    CustomExtendedNetworkImageProvider key,
+  String get _diskKey => cacheKey ?? keyToMd5(url);
+  Future<File> get _cacheFile async => File(
+    join(
+      (await StorageProvider().getCacheDirectory(imageCacheFolderName)).path,
+      _diskKey,
+    ),
+  );
+
+  Future<File?> get cachedFile async {
+    if (!cache) return null;
+    try {
+      final file = await _cacheFile;
+      final stat = await file.stat();
+      if (stat.type != FileSystemEntityType.file) return null;
+      final now = DateTime.now();
+      if (stat.size > 0 &&
+          (cacheMaxAge == null ||
+              now.difference(stat.modified) <= cacheMaxAge!)) {
+        unawaited(file.setLastModified(now).catchError((_) {}));
+        return file;
+      }
+      await file.delete();
+    } catch (_) {
+      // The source remains usable if the optional cache is unavailable.
+    }
+    return null;
+  }
+
+  Future<_FetchedImage?> _fetch(
     StreamController<ImageChunkEvent>? chunkEvents,
-    String md5Key,
   ) async {
-    final existingRequest = _inFlightRequests[md5Key];
+    final requestKey = (imageCacheFolderName, _diskKey, cache);
+    final existingRequest = _downloads[requestKey];
     if (existingRequest != null) {
       return await existingRequest;
     }
 
-    final future = _loadNetwork(key, chunkEvents);
-    _inFlightRequests[md5Key] = future;
+    final future = _loadNetwork(chunkEvents)
+        .then<_FetchedImage?>((bytes) async {
+          if (bytes == null || bytes.isEmpty) return null;
+          File? file;
+          if (cache) {
+            try {
+              final directory = await StorageProvider().createCacheDirectory(
+                imageCacheFolderName,
+              );
+              file = await cacheImageBytesToTempFile(
+                tempDir: directory,
+                baseName: _diskKey,
+                extension: '',
+                bytesProvider: () => bytes,
+              );
+              _CacheManager.evictOldestIfNeededThrottled(directory);
+            } catch (_) {
+              // Still display the downloaded bytes when the optional disk cache is unavailable.
+            }
+          }
+          return (bytes: bytes, file: file);
+        });
+    _downloads[requestKey] = future;
     try {
       return await future;
     } finally {
-      _inFlightRequests.remove(md5Key);
+      _downloads.remove(requestKey);
     }
-  }
-
-  /// Get the image from cache folder with in-flight deduplication.
-  Future<Uint8List?> _loadCache(
-    CustomExtendedNetworkImageProvider key,
-    StreamController<ImageChunkEvent>? chunkEvents,
-    String md5Key,
-  ) async {
-    final Directory cacheImagesDirectory = await StorageProvider()
-        .createCacheDirectory(imageCacheFolderName);
-    Uint8List? data;
-    final File cacheFile = File(join(cacheImagesDirectory.path, md5Key));
-
-    // exist, try to find cache image file
-    if (await cacheFile.exists()) {
-      if (key.cacheMaxAge != null) {
-        final DateTime now = DateTime.now();
-        final DateTime lastModified = await cacheFile.lastModified();
-        if (now.difference(lastModified) > key.cacheMaxAge!) {
-          try {
-            await cacheFile.delete();
-          } catch (_) {}
-        } else {
-          data = await cacheFile.readAsBytes();
-          // Update last modified timestamp asynchronously for LRU tracking
-          unawaited(cacheFile.setLastModified(now).catchError((_) {}));
-        }
-      } else {
-        data = await cacheFile.readAsBytes();
-        unawaited(cacheFile.setLastModified(DateTime.now()).catchError((_) {}));
-      }
-      if (data != null && data.isEmpty) {
-        data = null;
-        try {
-          await cacheFile.delete();
-        } catch (_) {}
-      }
-    }
-
-    // load from network with in-flight request coalescing
-    if (data == null) {
-      final existingRequest = _inFlightRequests[md5Key];
-      if (existingRequest != null) {
-        return await existingRequest;
-      }
-
-      final future = _loadNetwork(key, chunkEvents);
-      _inFlightRequests[md5Key] = future;
-
-      try {
-        data = await future;
-        if (data != null) {
-          try {
-            // cache image file
-            await File(join(cacheImagesDirectory.path, md5Key))
-                .writeAsBytes(data);
-            // Evict old cache in background if needed (throttled)
-            _CacheManager.evictOldestIfNeededThrottled(cacheImagesDirectory);
-          } catch (_) {}
-        }
-      } finally {
-        _inFlightRequests.remove(md5Key);
-      }
-    }
-
-    return data;
   }
 
   /// Get the image from network.
   Future<Uint8List?> _loadNetwork(
-    CustomExtendedNetworkImageProvider key,
     StreamController<ImageChunkEvent>? chunkEvents,
   ) async {
-    if (key.url.startsWith('data:')) {
-      return tryDecodeDataUri(key.url);
-    }
     try {
-      final Uri resolved = Uri.base.resolve(key.url);
+      if (url.startsWith('data:')) {
+        final bytes = tryDecodeDataUri(url);
+        if (bytes == null) throw const FormatException('Invalid inline image');
+        return imageProcessing == null
+            ? bytes
+            : await _restore(bytes, const {});
+      }
+      final Uri resolved = Uri.base.resolve(url);
       final StreamedResponse? response = await _tryGetResponse(resolved);
 
       if (response == null || response.statusCode != HttpStatus.ok) {
+        await response?.stream.listen((_) {}).cancel();
         return null;
       }
 
       if (imageProcessing != null) {
-        final bytes = await readBoundedSourceImage(response);
-        return await restoreSourceImageInBackground(
-          bytes,
+        return await _restore(
+          await readBoundedSourceImage(response),
           response.headers,
-          imageProcessing!,
-          checkCancelled: () => cancelToken?.throwIfCancellationRequested(),
         );
       }
       final int total = response.contentLength ?? 0;
@@ -502,35 +430,45 @@ class CustomExtendedNetworkImageProvider
 
       final Uint8List bytes = bytesBuilder.takeBytes();
       if (bytes.isEmpty) {
-        return await Future<Uint8List>.error(
-          StateError('NetworkImage is an empty file: $resolved'),
-        );
+        throw StateError('Empty source image');
       }
 
       return bytes;
-    } on OperationCanceledError catch (_) {
-      if (kDebugMode) {
-        print('User cancel request $url.');
-      }
-      return Future<Uint8List>.error(StateError('User cancel request $url.'));
-    } catch (e) {
+    } on OperationCanceledError {
+      rethrow;
+    } on FormatException {
+      rethrow;
+    } catch (_) {
       if (imageProcessing != null) rethrow;
-      if (kDebugMode) {
-        print(e);
-      }
-    } finally {
-      await chunkEvents?.close();
     }
     return null;
+  }
+
+  Future<Uint8List> _restore(
+    Uint8List bytes,
+    Map<String, String> headers,
+  ) async {
+    try {
+      return await restoreSourceImageInBackground(
+        bytes,
+        headers,
+        imageProcessing!,
+        checkCancelled: () => cancelToken?.throwIfCancellationRequested(),
+      );
+    } on StateError {
+      throw const FormatException(
+        'Invalid source image or restoration metadata',
+      );
+    }
   }
 
   Future<StreamedResponse> _getResponse(Uri resolved) async {
     // Optimize headers for better caching and compression
     final optimizedHeaders = {
-      ...?headers,
       'Accept-Encoding': 'gzip, deflate, br',
       'Accept': 'image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
       'Connection': 'keep-alive',
+      ...?headers,
     };
 
     var request = Request('GET', resolved);
@@ -543,8 +481,9 @@ class CustomExtendedNetworkImageProvider
     ).send(request);
 
     if (response.statusCode != HttpStatus.ok) {
+      await response.stream.listen((_) {}).cancel();
       final retryRequest = Request('GET', resolved);
-      retryRequest.headers.addAll(optimizedHeaders);
+      retryRequest.headers.addAll(request.headers);
       final res = await MClient.init(
         reqcopyWith: {'useDartHttpClient': true},
         showCloudFlareError: showCloudFlareError,
@@ -628,24 +567,31 @@ class CustomExtendedNetworkImageProvider
   );
 
   @override
-  String toString() => '$runtimeType("$url", scale: $scale)';
+  String toString() => '$runtimeType(scale: $scale)';
 
   @override
   /// Get network image data from cached
   Future<Uint8List?> getNetworkImageData({
     StreamController<ImageChunkEvent>? chunkEvents,
   }) async {
-    if (url.startsWith('data:')) {
-      return tryDecodeDataUri(url);
+    final file = await cachedFile;
+    if (file != null) {
+      try {
+        return await file.readAsBytes();
+      } on FileSystemException {
+        // Eviction between lookup and open is a cache miss.
+      }
     }
+    return (await _fetch(chunkEvents))?.bytes;
+  }
 
-    final String uId = cacheKey ?? keyToMd5(url);
-
-    if (cache) {
-      return await _loadCache(this, chunkEvents, uId);
-    }
-
-    return await _loadNetworkWithDeduplication(this, chunkEvents, uId);
+  Future<File?> loadFile({StreamController<ImageChunkEvent>? progress}) async {
+    final file = await cachedFile;
+    if (file != null) return file;
+    final image = await _fetch(progress);
+    if (image == null) return null;
+    return image.file ??
+        (throw const FileSystemException('Cannot store the page image'));
   }
 
   @override

@@ -10,6 +10,7 @@ void main() {
       'simkl-api-key': 'key',
       'Token': 'signature',
       'Tokenparam': 'timestamp,version',
+      'Referer': 'https://a.b/page?signed=value',
     });
 
     expect(redacted.values, everyElement('<redacted>'));
@@ -17,10 +18,7 @@ void main() {
   });
 
   test('other headers are logged as they are', () {
-    final headers = {
-      'User-Agent': 'nodelane-comics',
-      'Referer': 'https://a.b/',
-    };
+    final headers = {'User-Agent': 'nodelane-comics', 'Accept': 'image/*'};
 
     expect(redactHeaders(headers), headers);
   });

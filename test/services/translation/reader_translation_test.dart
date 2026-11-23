@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
 
@@ -6,6 +7,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
+import 'package:image/image.dart' as img;
+import 'package:mangayomi/models/chapter.dart';
+import 'package:mangayomi/models/manga.dart';
+import 'package:mangayomi/models/page.dart';
+import 'package:mangayomi/models/source_image_processing.dart';
+import 'package:mangayomi/modules/manga/reader/reader_page_image.dart';
+import 'package:mangayomi/services/translation/image_work.dart';
+import 'package:mangayomi/utils/headers.dart';
+import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
@@ -69,7 +79,119 @@ class _LocalService extends TranslationService {
   Future<void> initialize() async {}
 }
 
+class _CachePath extends PathProviderPlatform {
+  _CachePath(this.root);
+  final Directory root;
+  @override
+  Future<String?> getApplicationCachePath() async => root.path;
+}
+
 void main() {
+  test(
+    'translation and prefetch share the restored page, page Referer and retry',
+    () async {
+      TestWidgetsFlutterBinding.ensureInitialized();
+      final oldHttp = HttpOverrides.current,
+          oldPaths = PathProviderPlatform.instance;
+      HttpOverrides.global = null;
+      final dir = await Directory.systemTemp.createTemp('reader-original-');
+      PathProviderPlatform.instance = _CachePath(dir);
+      final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+      final providers = ProviderContainer(
+        overrides: [
+          headersProvider.overrideWith(
+            (_, _) => {'Referer': 'https://fixture.test/catalog'},
+          ),
+        ],
+      );
+      addTearDown(() async {
+        providers.dispose();
+        await server.close(force: true);
+        PathProviderPlatform.instance = oldPaths;
+        HttpOverrides.global = oldHttp;
+        await dir.delete(recursive: true);
+      });
+      final pixels = img.Image(width: 2, height: 4)
+        ..setPixelRgb(0, 2, 160, 30, 10);
+      final raw = img.encodePng(pixels);
+      const pageReferer = 'https://fixture.test/chapter';
+      var requests = 0, available = false;
+      server.listen((req) async {
+        requests++;
+        if (available && req.headers.value('referer') == pageReferer) {
+          req.response.add(raw);
+        } else {
+          req.response.statusCode = 403;
+        }
+        await req.response.close();
+      });
+      final book = Manga.fromJson({
+        'id': 42,
+        'source': 'fixture',
+        'lang': 'en',
+        'sourceId': 7,
+        'status': 0,
+        'favorite': false,
+      });
+      final chapter = Chapter(id: 21, mangaId: 42, name: 'Fixture')
+        ..manga.value = book;
+      final data = UChapDataPreload(
+        chapter,
+        null,
+        PageUrl(
+          'http://127.0.0.1:${server.port}/page',
+          headers: {'Referer': pageReferer},
+          imageProcessing: SourceImageProcessing.fromJson({
+            'type': 'strip-reverse-v1',
+            'rows': 2,
+            'skipGif': true,
+          }),
+        ),
+        false,
+        null,
+        0,
+        null,
+        0,
+      )..resolvedFilePath = '${dir.path}/evicted';
+      final reader = ReaderSourceImageReader(data, providers);
+      Future<OriginalImageLease> acquire() => reader.acquire(
+        readerTranslationPage(data),
+        TranslationCancellation(),
+      );
+      await expectLater(
+        acquire(),
+        throwsA(
+          isA<TranslationFailure>().having(
+            (e) => e.code,
+            'code',
+            'SOURCE_MISSING',
+          ),
+        ),
+      );
+      available = true;
+      requests = 0;
+      final pending = acquire();
+      final displayed = (await data.readerFile(providers))!;
+      final lease = await pending;
+      expect(lease.file.path, displayed.path);
+      expect(requests, 1);
+      final input = await TranslationImageWork(dir)
+          .prepare(lease.file, TranslationCancellation());
+      expect(
+        img.decodePng(await input.file.readAsBytes())!.getPixel(0, 0).r,
+        160,
+      );
+      lease.release();
+      available = false;
+      (await acquire()).release();
+      expect(requests, 1);
+      data.pageUrl = PageUrl('data:image/png;base64,${base64Encode(raw)}');
+      final inline = await acquire();
+      expect(await inline.file.readAsBytes(), raw);
+      inline.release();
+    },
+  );
+
   testWidgets(
     'split pages share one result, preserve source data and release decoded projections in background',
     (tester) async {

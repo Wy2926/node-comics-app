@@ -1,5 +1,5 @@
 import 'contracts.dart';
-import 'image_work.dart';
+import 'identity.dart';
 
 /// Keeps one compressed original per visible locator. Content, not its DOM or
 /// chapter position, identifies translation work. No channel or WebView types.
@@ -14,6 +14,16 @@ class SourceImages {
   ) async {
     cancellation.check();
     final key = target.page.identity;
+    final previous = _reads[key];
+    if (previous?._original case final original?) {
+      // A reader cache can be cleared while the decoded page is still visible.
+      final exists = await original.file.exists();
+      cancellation.check();
+      if (!_reads.containsKey(key)) throw const TranslationCancelled();
+      if (!exists && identical(_reads[key], previous)) {
+        _reads.remove(key)!.close();
+      }
+    }
     final read = _reads.putIfAbsent(key, () => _SourceRead(target));
     try {
       await read.ready;

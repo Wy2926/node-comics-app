@@ -2,7 +2,7 @@ import 'settings/comic_reader_scope.dart';
 import 'reader_image_format.dart';
 import 'widgets/reader_animated_image.dart';
 
-import 'package:mangayomi/utils/extensions/others.dart';
+import 'reader_page_image.dart';
 
 import 'settings/comic_reader_preferences.dart';
 

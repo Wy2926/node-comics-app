@@ -12,7 +12,8 @@
 | [channels/nodelane](../lib/services/translation/channels/nodelane/) | 官方认证、逐图 UUID、上传、状态订阅、重试与结果读取 |
 | [image_work.dart](../lib/services/translation/image_work.dart)、[translation_repository.dart](../lib/repositories/translation_repository.dart) | 串行图片准备／合成，私有回执、输入与完整译图缓存 |
 | [translation_view_controller.dart](../lib/modules/translation/translation_view_controller.dart) | 原译图选择、窗口、图内状态、单图动作和显示租约 |
-| [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) | 阅读器原始页定位与取图，不覆盖来源页数据 |
+| [reader_page_image.dart](../lib/modules/manga/reader/reader_page_image.dart) | 阅读器原图入口。显示、预取、长按操作和送译使用同一份来源还原后的图片；页面请求头优先于来源默认值，并发读取共用下载与原子落盘 |
+| [reader_translation.dart](../lib/modules/manga/reader/reader_translation.dart) | 将原页定位映射到翻译窗口，把译图投影回原页；不另行请求图片 |
 | [translation_bridge.dart](../lib/modules/webview/translation_bridge.dart)、[image_archive.dart](../lib/modules/webview/image_archive.dart)、[nodelane_reader.js](../assets/nodelane_reader.js) | 网页图片发现、浏览器已加载资源取流、显示定位与传输，没有站点特判 |
 
 当前仅接入 NodeLane 官方 classic 渠道。阅读器与网页依赖统一渠道契约；完整图片 FakeChannel 验证替换边界，不要求其他渠道实现官方 UUID、SSE、覆盖图或计费协议。同级 PC 插件仅作设计参考，不是运行时依赖。
@@ -39,7 +40,7 @@ TranslationPage.key/revision 只标识当前来源定位。网页使用文档代
 
 阅读器从当前页向后取，拆页共用同一源图，窗口上限为 min(visibleCount + 2, 4)。网页遍历主文档全部 img/canvas，按视口和阅读焦点优先选择附近已加载图片，当前处理窗口最多四张；没有最小尺寸或 DOM 前若干元素截断。小图、图标和广告也可能成为候选，不在客户端判断是否有可译文字。最多两个本地调度任务在途，像素工作、提交／上传分别串行；服务端控制执行并发和限流，不根据累计旧任务数量阻止新图片。
 
-离窗取消本地工作，原图文件在最后一个使用者释放后清理；结果显示租约独立释放。后台已受理任务可以继续完成。迟到结果不能贴到已经替换的元素上。原译图切换不重建来源页、不改变阅读位置。
+离窗取消本地工作并释放读取租约；阅读器的原文件和图片缓存仍由阅读器管理，网页提取的临时文件随最后一个租约释放。后台已受理任务可以继续完成。迟到结果不能贴到已经替换的元素上。原译图切换不重建来源页、不改变阅读位置。
 
 阅读器与网页共用处理中／异常状态、长按单图菜单和翻译面板。成功、无文字及未送译图片不显示角标。界面约定见 [MOBILE_UI_DESIGN](MOBILE_UI_DESIGN.md#翻译与账号设置)。
 
@@ -86,11 +87,13 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 
 ## 送译副本
 
-阅读器与网页共用同一套输入处理，原图文件和内容摘要不变。先校正 EXIF 方向、将带 ICC 的图转为 sRGB；原生动图取首帧，网页像素导出取当前显示帧。Dart 无法解码的输入转交平台编解码器，AVIF 也可用已有解码实现。
+阅读器与网页共用同一套送译加工。基准是 [NodeLane Comics 浏览器插件](../THIRD_PARTY.md) 的 `prepareComicPage` → `prepareTranslationInput` 产物：先得到静态 sRGB 阅读像素，再决定上传原字节还是重编码副本。拆页、裁边、缩放、滤镜与现有译图不参与取图；App 的原文件和本地任务绑定不变。
 
-- 短边超过 1800 像素时按比例缩到 1800，不放大。短边已合适且文件不超过 1 MiB 时，合规的 JPEG、PNG、WebP 复用原字节。
+- JPEG 的 APP1/APP2、PNG 的 iCCP/gAMA/cHRM/eXIf/动画块、WebP 的 ICC/EXIF/动画块按规范化路径处理。JPEG/PNG 采用显示方向，WebP 沿用插件画布方向；动图取首帧的完整画布，网页已导出的像素沿用采样帧。
+- 短边超过 1800 像素时按比例缩到 1800，不放大。短边已合适且不超过 1 MiB 的合规静态 JPEG、PNG、WebP 只解析元数据，直接使用原文件与摘要。
 - 超过 1 MiB 而无需缩图时也尝试有损编码，只在副本更小时采用。缩图或 AVIF 转码时直接采用目标格式。常规副本使用有损 WebP（质量 90，保留透明度）；目标长边为 16384～65500 像素时使用白底 JPEG（质量 30）。
-- 超出 JPEG 编码范围的原尺寸长图跳过可选压缩；必须缩图或转格式时可用 PNG。编码器边界、服务 capabilities 中的尺寸和文件缓存预算（输入 128 MiB／结果 256 MiB）均不作为本地拒收条件。实际内存、磁盘或服务端限制仍可能导致失败。
+- 目标长边超过 JPEG 编码范围时，已规范化且无需缩放的原图保留原字节；必须缩图或 AVIF 转码时，如插件一样报告无法编码。文件缓存预算（输入 128 MiB／结果 256 MiB）不是准入条件。
+- 编码器或平台不同时，重编码文件不保证字节相同。恢复只认该任务冻结的 SHA-256；早期移动端编码方案仅用于恢复已有 UUID。
 
 ## 认证与设置
 
@@ -107,14 +110,16 @@ Blob、data 图片与 Canvas 共用 `pixels` 取图路径，没有站点专用 B
 ## 验证与待办
 
 ```sh
-flutter test --no-pub test/services/translation test/modules/translation test/modules/webview
+flutter test --no-pub test/services/translation test/modules/translation test/modules/manga/reader test/modules/webview test/services/source_image_processing_test.dart
 python -B test/services/translation/browser_bridge_test.py
 flutter build apk --debug --target-platform android-arm64 --no-pub
 ```
 
 | 层级 | 覆盖范围 |
 | --- | --- |
-| Flutter／文件回归 | 内容换页与合并、冷缓存及旧记录恢复、丢失响应、账号隔离、取消与租约释放；短边缩放、1 MiB 临界点、透明度、超长图、16-bit PNG 和动图首帧 |
+| Flutter／文件回归 | 页面 Referer 与来源默认值冲突、冷缓存并发读取、插件条带还原和失败重试；内容换页、旧记录恢复、丢失响应、账号隔离、取消与租约释放；短边缩放、1 MiB 临界点、透明度、超长图、16-bit PNG 和动图首帧 |
+| 浏览器插件送译对照 | Chrome 157 运行插件原版准备函数，与 MuMu Android 12 的 App 对照 24 张合成输入。逐张核对直传字节、上传格式、尺寸、首帧、方向、解码后的颜色与透明度；含透明 AVIF、带配置文件的 WebP、半透明缩图和长边 16383/16384/65500/65501 的边界。Windows Flutter 测试宿主的 AVIF 解码丢失透明通道，不能代替移动端验证 |
+| 阅读器真实来源／官方服务 | MuMu 第 10–11／205 页：清掉单页图片缓存后，用页面请求头重新取到同摘要的原图；送译复用同一文件。两页的真实任务分别有译图和无文字结果，切回原图再切译图，页码、显示尺寸和屏幕坐标一致 |
 | 本地协议服务 | 切模型恢复原 UUID、已拥有结果复用、额度／限流后的恢复、换模型手动重译；小图字节直传、有损 WebP／JPEG 和旧版 PNG 冷恢复后的上传摘要；父任务格式继承、tiles 协商、损坏结果、独立输出尺寸、过期缓存、跨源下载 |
 | 浏览器夹具 | Chrome 截图按像素比较不同分辨率和宽高比的译图：响应式 `srcset`、`object-fit`／定位、SVG 留白及旋转裁剪的 Canvas，容器改宽与切回原图。另验解码中切换、缓存隔离和释放；Firefox 隔离内容脚本已验 Canvas、data 图片和已撤销 Blob URL 的分块读取 |
 | Android 模拟器 | MuMu Debug 的 Gecko 本地章节：常驻栏和专注浮条在同一位置连续切换，横竖屏录屏逐帧核对原／译文字及背景，未见空白或多余切换。另通过机内 HTTP 接收端核对 WebP、长图 JPEG 和缩图的上传大小、尺寸与摘要；模型选择可在重启后回显或恢复默认 |

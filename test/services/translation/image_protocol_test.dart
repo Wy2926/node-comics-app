@@ -5,11 +5,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:image/image.dart' as img;
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/image_work.dart';
+import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/http.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/protocol.dart';
 import 'package:mangayomi/services/translation/source_file.dart';
 // Use path_provider's existing platform seam, as in the other storage fixtures.
 import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
+
+import 'encoded_image_fixture.dart';
 
 class _TemporaryPath extends PathProviderPlatform {
   _TemporaryPath(this.path);
@@ -48,7 +51,7 @@ void main() {
         sourceSha: sourceSha,
       );
       final output = img.decodePng(await prepared.file.readAsBytes())!;
-      final rotated = name.startsWith('rotated');
+      final rotated = name.startsWith('rotated') && !name.endsWith('.webp');
       final linear = name.contains('linear');
       expect(
         (output.width, output.height),
@@ -56,7 +59,6 @@ void main() {
         reason: name,
       );
       expect((prepared.width, prepared.height), (output.width, output.height));
-      expect(prepared.sourceSha256, sourceSha);
       expect(await imageDigest(source), sourceSha);
       expect(prepared.sha256, isNot(sourceSha));
       expect(prepared.descriptor, {
@@ -76,6 +78,14 @@ void main() {
         255,
         reason: name,
       );
+      if (name == 'rotated-linear.webp') {
+        final previous = await work.prepare(
+          source,
+          TranslationCancellation(),
+          inputProfile: 'mobile-short-edge-1800-webp90-jpeg30-v2',
+        );
+        expect((previous.width, previous.height), (8, 16));
+      }
     }
   });
   test('ICC conversion preserves long page coordinates', () async {
@@ -97,6 +107,25 @@ void main() {
     expect((output.width, output.height), (8, 20000));
     expect(output.getPixel(3, 19999).r, closeTo(137, 2));
     expect(output.getPixel(3, 19999).a, 128);
+  });
+  test('gamma-tagged PNG and APP1 JPEG use normalized pixels even below the compression threshold', () async {
+    final dir = await Directory.systemTemp.createTemp('input-metadata-');
+    addTearDown(() => dir.delete(recursive: true));
+    final work = TranslationImageWork(dir);
+    final pixels = img.Image(width: 13, height: 9)
+      ..clear(img.ColorRgb8(64, 128, 192));
+    final png = img.encodePng(pixels), jpeg = img.encodeJpg(pixels);
+    final source = File('${dir.path}/page');
+    for (final tagged in [
+      [...png.take(33), ...gammaChunk, ...png.skip(33)],
+      [...jpeg.take(2), 0xff, 0xe1, 0, 5, 88, 77, 80, ...jpeg.skip(2)],
+    ]) {
+      await source.writeAsBytes(tagged);
+      final input = await work.prepare(source, TranslationCancellation());
+      expect(input.file.path, isNot(source.path));
+      expect((input.width, input.height, input.mime), (13, 9, 'image/png'));
+      expect(await imageDigest(input.file), input.sha256);
+    }
   });
   test(
     'EXIF orientation is baked into frozen PNG bytes and descriptor',
@@ -195,25 +224,34 @@ void main() {
       await directory.delete(recursive: true);
     }
   });
-  test(
-    'large pages freeze a proportional WebP at a short edge of 1800',
-    () async {
-      final directory = await Directory.systemTemp.createTemp(
-        'nodelane-image-size-',
-      );
-      addTearDown(() => directory.delete(recursive: true));
-      final source = await File('${directory.path}/source.png')
-          .writeAsBytes(img.encodePng(img.Image(width: 1801, height: 2400)));
-      final prepared = await TranslationImageWork(directory)
-          .prepare(source, TranslationCancellation());
-      final header = await readImageHeader(prepared.file);
-      expect(
-        (header.mime, header.width, header.height),
-        ('image/webp', 1800, 2399),
-      );
-      expect((prepared.width, prepared.height), (header.width, header.height));
-    },
-  );
+  test('browser-sized WebP preserves the half-covered alpha edge when shrinking 1801 to 1800', () async {
+    final directory = await Directory.systemTemp.createTemp(
+      'nodelane-image-size-',
+    );
+    addTearDown(() => directory.delete(recursive: true));
+    final pixels = img.Image(width: 1801, height: 2400, numChannels: 4)
+      ..clear(img.ColorRgba8(48, 128, 194, 128));
+    img.fillRect(
+      pixels,
+      x1: 901,
+      y1: 0,
+      x2: 1800,
+      y2: 2399,
+      color: img.ColorRgba8(252, 240, 232, 255),
+    );
+    final source = await File('${directory.path}/source.png')
+        .writeAsBytes(img.encodePng(pixels));
+    final prepared = await TranslationImageWork(directory)
+        .prepare(source, TranslationCancellation());
+    final header = await readImageHeader(prepared.file);
+    expect(
+      (header.mime, header.width, header.height),
+      ('image/webp', 1800, 2399),
+    );
+    expect((prepared.width, prepared.height), (header.width, header.height));
+    final encoded = img.decodeWebP(await prepared.file.readAsBytes())!;
+    expect(encoded.getPixel(900, 1000).a, closeTo(192, 1));
+  });
 
   test(
     '1 MiB is a compression threshold, not an admission or upscaling threshold',
@@ -270,7 +308,7 @@ void main() {
       final input = await TranslationImageWork(dir)
           .prepare(source, TranslationCancellation());
       expect(input.file.path, source.path);
-      expect(input.sha256, input.sourceSha256);
+      expect(input.sha256, await imageDigest(source));
     },
   );
 
@@ -303,7 +341,6 @@ void main() {
         final frame = await TranslationImageWork(directory)
             .prepare(gif, TranslationCancellation());
         expect(frame.mime, 'image/png');
-        expect(frame.sourceSha256, await imageDigest(gif));
         final decoded = img.decodePng(await frame.file.readAsBytes())!;
         expect(decoded.numFrames, 1);
         expect(decoded.getPixel(0, 0).r, 255);

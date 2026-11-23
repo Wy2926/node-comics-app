@@ -13,7 +13,8 @@ import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart'
     as ssiv;
-import 'package:mangayomi/utils/extensions/others.dart';
+
+import 'reader_page_image.dart';
 
 class ImageViewPaged extends ConsumerStatefulWidget {
   final UChapDataPreload data;
@@ -47,7 +48,6 @@ class ImageViewPaged extends ConsumerStatefulWidget {
 }
 
 class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
-  String? _resolvedFilePath;
   bool _isAnimated = false;
   String? _displayPath;
   (double, Offset)? _restoreView;
@@ -55,19 +55,13 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   @override
   void initState() {
     super.initState();
-    _resolvedFilePath = widget.data.resolvedFilePath;
-    _resolveFilePath();
     _checkIfAnimated();
   }
 
   @override
   void didUpdateWidget(covariant ImageViewPaged oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final bool dataChanged = widget.data != oldWidget.data;
-    final bool pathResolved = _resolvedFilePath != widget.data.resolvedFilePath;
-    if (dataChanged || pathResolved) {
-      _resolvedFilePath = widget.data.resolvedFilePath;
-      _resolveFilePath();
+    if (widget.data != oldWidget.data) {
       _checkIfAnimated();
     }
   }
@@ -82,35 +76,12 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
     }
   }
 
-  Future<void> _resolveFilePath() async {
-    if (widget.data.resolvedFilePath != null) {
-      if (mounted) {
-        setState(() {
-          _resolvedFilePath = widget.data.resolvedFilePath;
-        });
-      }
-      return;
-    }
-    final data = widget.data;
-    final path = await data.getLocalFilePath;
-    if (path != null && mounted && identical(data, widget.data)) {
-      data.resolvedFilePath = path;
-      if (mounted) {
-        setState(() {
-          _resolvedFilePath = path;
-        });
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final profile = ComicReaderScope.of(context).profile;
     final display = ReaderTranslationHost.display(context, widget.data);
     final translated = !identical(display, widget.data);
-    final displayPath = translated
-        ? display.resolvedFilePath
-        : _resolvedFilePath;
+    final displayPath = display.resolvedFilePath ?? display.localImagePath;
     if (_displayPath != displayPath && widget.controller?.isReady == true) {
       final control = widget.controller!;
       final center = control.center;
@@ -122,7 +93,6 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       }
     }
     _displayPath = displayPath;
-    final image = display.getImageProvider(ref, true);
     final cropBorders = profile.crop;
     final rotation =
         profile.widePage == ComicWidePage.rotate &&
@@ -132,11 +102,6 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
         ? 90
         : 0;
     final effectiveFit = profile.boxFit;
-
-    if (_resolvedFilePath != widget.data.resolvedFilePath &&
-        widget.data.resolvedFilePath != null) {
-      _resolvedFilePath = widget.data.resolvedFilePath;
-    }
 
     final bool isAnimated = !translated && _isAnimated;
 
@@ -149,7 +114,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
     Widget content;
     if (isAnimated) {
       content = ReaderAnimatedImage(
-        image: image,
+        image: display.getImageProvider(ref, true),
         fit: effectiveFit,
         cropBorders: cropBorders,
         onFailure: widget.onFailure,
@@ -162,9 +127,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
       );
     } else {
       content = ssiv.SubsamplingScaleImageView(
-        image: image,
-        resolvedFilePath: displayPath,
-        preloadData: display,
+        page: display,
         minimumScaleType: ssivScaleType,
         filterQuality: FilterQuality.medium,
         zoomEnabled: widget.zoomEnabled,

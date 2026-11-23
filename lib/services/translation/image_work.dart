@@ -14,7 +14,8 @@ import 'contracts.dart';
 import 'identity.dart';
 
 const legacyTranslationInputProfile = 'mobile-short-edge-1800-png-v1';
-const translationInputProfile = 'mobile-short-edge-1800-webp90-jpeg30-v2';
+const _previousInputProfile = 'mobile-short-edge-1800-webp90-jpeg30-v2';
+const translationInputProfile = 'short-edge-1800-webp90-jpeg30-v2';
 const translationEncoderVersion = 'image-4.10.1';
 const _shortEdge = 1800, _reencodeBytes = 1024 * 1024, _jpegMaxEdge = 65500;
 const webpMaxEdge = 16383;
@@ -23,7 +24,6 @@ class PreparedTranslationImage {
   const PreparedTranslationImage({
     required this.file,
     required this.sha256,
-    required this.sourceSha256,
     required this.width,
     required this.height,
     required this.byteSize,
@@ -31,7 +31,6 @@ class PreparedTranslationImage {
   });
   final File file;
   final String sha256;
-  final String sourceSha256;
   final int width, height, byteSize;
   final String mime;
   Map<String, dynamic> get descriptor => {
@@ -40,12 +39,6 @@ class PreparedTranslationImage {
     'content_type': mime,
     'normalization_version': 1,
   };
-}
-
-class ImageHeader {
-  const ImageHeader(this.width, this.height, this.mime);
-  final int width, height;
-  final String mime;
 }
 
 /// One encoded image region in a downloaded artifact. Decode regions in order
@@ -60,22 +53,8 @@ typedef TranslationImagePatch = ({
   String sha256,
 });
 
-Future<String> imageDigest(File file) async =>
-    (await sha256.bind(file.openRead()).first).toString();
-
 String _mime(img.Decoder decoder) =>
     'image/${decoder.format == img.ImageFormat.jpg ? 'jpeg' : decoder.format.name}';
-
-/// Use the installed decoder's capabilities, not a separate format whitelist.
-Future<ImageHeader> readImageHeader(File file) async {
-  final bytes = await file.readAsBytes();
-  final decoder = img.findDecoderForData(bytes);
-  final info = decoder?.startDecode(bytes);
-  if (info == null || info.width <= 0 || info.height <= 0) {
-    throw const TranslationFailure('INVALID_IMAGE');
-  }
-  return ImageHeader(info.width, info.height, _mime(decoder!));
-}
 
 /// Drawing applies the embedded profile; encoding the decoded frame directly
 /// can preserve both the original channel values and its ICC profile.
@@ -110,10 +89,24 @@ Future<int> _normalizeNative(
 ) async {
   if (input.orientation != null && (Platform.isAndroid || Platform.isIOS)) {
     // Software bitmaps do not silently resize long manga pages to a GPU texture.
-    final converted = await const MethodChannel(
-      'nodelane/translation_image',
-    ).invokeMethod<bool>('srgbPng', {'source': original.path, 'output': path});
+    final converted = await const MethodChannel('nodelane/translation_image')
+        .invokeMethod<bool>('srgbPng', {
+          'source': original.path,
+          'output': path,
+          if (input.avif && Platform.isAndroid) 'avif': true,
+        })
+        .catchError((Object error) {
+          if (!input.avif || !Platform.isIOS) throw error;
+          return false; // Older Image I/O versions need the existing AVIF fallback.
+        });
     if (converted == true) return input.orientation!;
+    if (input.avif && Platform.isIOS) {
+      await File(path).writeAsBytes(
+        await decodeAvifToPng(await original.readAsBytes()),
+        flush: true,
+      );
+      return 1;
+    }
   }
   var bytes = await original.readAsBytes();
   // Platform codecs disagree on PNG/WebP EXIF. Remove that chunk
@@ -186,18 +179,25 @@ class TranslationImageWork {
     String inputProfile = translationInputProfile,
   }) => _queue.run(() async {
     cancel.check();
-    final compress = switch (inputProfile) {
-      translationInputProfile => true,
-      legacyTranslationInputProfile => false,
-      _ => throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED'),
-    };
+    if (!const {
+      translationInputProfile,
+      _previousInputProfile,
+      legacyTranslationInputProfile,
+    }.contains(inputProfile)) {
+      throw const TranslationFailure('CLIENT_UPGRADE_REQUIRED');
+    }
     await temporary.create(recursive: true);
     final path = '${temporary.path}/${translationUuid()}.input';
     final sourcePath = original.path;
-    late Map<String, Object> result;
+    late PreparedTranslationImage result;
     try {
       try {
-        result = await _prepareInWorker(sourcePath, path, sourceSha, compress);
+        result = await _prepareInWorker(
+          sourcePath,
+          path,
+          sourceSha,
+          inputProfile,
+        );
       } on _NeedsNativePixels catch (input) {
         cancel.check();
         final orientation = await _normalizeNative(original, path, input);
@@ -206,12 +206,13 @@ class TranslationImageWork {
           path,
           path,
           null,
-          compress,
+          inputProfile,
           orientation: orientation,
           avif: input.avif,
         );
-        result['sourceSha256'] = sourceSha ?? await imageDigest(original);
       }
+      cancel.check();
+      return result;
     } catch (error) {
       await File(path).delete().catchError((_) => File(path));
       if (error is TranslationFailure ||
@@ -221,19 +222,6 @@ class TranslationImageWork {
       }
       throw const TranslationFailure('INVALID_IMAGE');
     }
-    if (cancel.isCancelled) {
-      await File(path).delete().catchError((_) => File(path));
-      cancel.check();
-    }
-    return PreparedTranslationImage(
-      file: File(result['path'] as String),
-      sha256: result['sha256'] as String,
-      sourceSha256: result['sourceSha256'] as String,
-      width: result['width'] as int,
-      height: result['height'] as int,
-      byteSize: result['byteSize'] as int,
-      mime: result['mime'] as String,
-    );
   });
 
   Future<File> composite({
@@ -248,17 +236,16 @@ class TranslationImageWork {
     cancellation.check();
     await temporary.create(recursive: true);
     final output = '${temporary.path}/${translationUuid()}.png';
-    final args = <String, Object>{
-      'input': input.path,
-      'patch': patch.path,
-      'output': output,
-      'width': width,
-      'height': height,
-      'patchMime': patchMime,
-      'patches': patches,
-    };
     try {
-      await _compositeInWorker(args);
+      await _compositeInWorker(
+        input.path,
+        patch.path,
+        output,
+        width,
+        height,
+        patchMime,
+        patches,
+      );
       cancellation.check();
       return File(output);
     } catch (error) {
@@ -308,19 +295,16 @@ class TranslationImageWork {
 
 // These top-level wrappers ensure the isolate closure cannot capture the
 // scheduler's Future tail or the caller's cancellation listeners.
-Future<Map<String, Object>> _prepareInWorker(
+Future<PreparedTranslationImage> _prepareInWorker(
   String input,
   String output,
   String? sourceSha,
-  bool compress, {
+  String profile, {
   int? orientation,
   bool avif = false,
 }) => Isolate.run(
-  () => _prepare(input, output, sourceSha, compress, orientation, avif),
+  () => _prepare(input, output, sourceSha, profile, orientation, avif),
 );
-Future<void> _compositeInWorker(Map<String, Object> args) =>
-    Isolate.run(() => _composite(args));
-
 Future<void> _decodeResultInWorker(
   String path,
   String output,
@@ -357,29 +341,70 @@ class _NeedsNativePixels implements Exception {
 
 typedef _ExifChunk = ({int start, int end, int orientation});
 
-// package:image ignores PNG eXIf and some WebP encoders prefix their TIFF with "Exif\0\0".
-_ExifChunk? _exifChunk(Uint8List bytes, {required bool webp}) {
+// PNG chromaticity/gamma and EXIF chunks are not all exposed by the image decoder.
+({bool color, bool animated, _ExifChunk? exif}) _chunks(
+  Uint8List bytes, {
+  required bool webp,
+  required bool current,
+}) {
   final data = ByteData.sublistView(bytes);
+  _ExifChunk? exif;
+  var color = false, animated = false;
   for (var at = webp ? 12 : 8; at + 8 <= bytes.length;) {
     final size = webp
         ? data.getUint32(at + 4, Endian.little)
         : data.getUint32(at);
     final end = at + 8 + size + (webp ? size & 1 : 4);
     if (end > bytes.length) throw const TranslationFailure('INVALID_IMAGE');
-    if (webp
-        ? data.getUint32(at) == 0x45584946
-        : data.getUint32(at + 4) == 0x65584966) {
-      return (
+    final tag = data.getUint32(webp ? at : at + 4);
+    if (!webp && tag == 0x49454e44) break; // IEND
+    // iCCP/ICCP, gAMA, cHRM and animation chunks in PNG / WebP.
+    color |= const {
+      0x69434350,
+      0x49434350,
+      0x67414d41,
+      0x6348524d,
+    }.contains(tag);
+    animated |= const {0x6163544c, 0x414e494d, 0x414e4d46}.contains(tag);
+    if (tag == (webp ? 0x45584946 : 0x65584966)) {
+      exif = (
         start: at,
         end: end,
-        orientation: _exifOrientation(
-          ByteData.sublistView(bytes, at + 8, at + 8 + size),
-        ),
+        // The extension's createImageBitmap keeps WebP canvas coordinates.
+        orientation: webp && current
+            ? 1
+            : _exifOrientation(
+                ByteData.sublistView(bytes, at + 8, at + 8 + size),
+              ),
       ); // EXIF / eXIf
     }
     at = end;
   }
-  return null;
+  return (color: color, animated: animated, exif: exif);
+}
+
+// APP1/APP2 precede the scan and can contain orientation, XMP or a color profile.
+bool _taggedJpeg(Uint8List bytes) {
+  final data = ByteData.sublistView(bytes);
+  for (var at = 2; at + 4 <= bytes.length && bytes[at] == 0xff;) {
+    final marker = bytes[at + 1];
+    if (marker == 0xda || marker == 0xd9) break;
+    if (marker == 0xe1 || marker == 0xe2) return true;
+    if (marker == 0xff) {
+      at++;
+      continue;
+    }
+    if (marker == 1 || marker >= 0xd0 && marker <= 0xd7) {
+      at += 2;
+      continue;
+    }
+    final length = data.getUint16(at + 2);
+    if (length < 2 || at + 2 + length > bytes.length) {
+      throw const TranslationFailure('INVALID_IMAGE');
+    }
+    at += 2 + length;
+  }
+  return false;
 }
 
 int _exifOrientation(ByteData data) {
@@ -444,40 +469,98 @@ int _exifOrientation(ByteData data) {
   );
 }
 
-Future<Map<String, Object>> _prepare(
+Future<PreparedTranslationImage> _prepare(
   String sourcePath,
   String output,
   String? knownSha,
-  bool compress,
+  String profile,
   int? nativeOrientation,
   bool avif,
 ) async {
   final file = File(sourcePath);
   final bytes = await file.readAsBytes();
+  final current = profile == translationInputProfile;
+  if (current && isAvifImage(bytes)) {
+    throw const _NeedsNativePixels(orientation: 1, avif: true);
+  }
   final decoder = img.findDecoderForData(bytes);
   if (decoder == null) throw _NeedsNativePixels(avif: isAvifImage(bytes));
   final info = decoder.startDecode(bytes);
-  if (info == null) throw const TranslationFailure('INVALID_IMAGE');
-  final chunk =
-      nativeOrientation == null &&
-          (info is img.PngInfo || info is img.WebPInfo && info.exif.isNotEmpty)
-      ? _exifChunk(bytes, webp: info is img.WebPInfo)
+  if (info == null || info.width <= 0 || info.height <= 0) {
+    throw const TranslationFailure('INVALID_IMAGE');
+  }
+  final compress = profile != legacyTranslationInputProfile;
+  final metadata =
+      (current || nativeOrientation == null) &&
+          (info is img.PngInfo ||
+              info is img.WebPInfo && (current || info.exif.isNotEmpty))
+      ? _chunks(bytes, webp: info is img.WebPInfo, current: current)
       : null;
+  final chunk = metadata?.exif;
   final orientation = nativeOrientation ?? chunk?.orientation ?? 1;
+  final color =
+      info is img.PngInfo && info.iccpData != null ||
+      info is img.WebPInfo && info.iccp != null ||
+      current && metadata?.color == true;
+  final animated = info.numFrames > 1 || current && metadata?.animated == true;
+  final jpegMetadata = decoder is img.JpegDecoder && _taggedJpeg(bytes);
+  final jpegExif = jpegMetadata ? img.decodeJpgExif(bytes) : null;
   if (nativeOrientation == null &&
-      (info is img.PngInfo && info.iccpData != null ||
-          info is img.WebPInfo && info.iccp != null)) {
+      (color ||
+          current &&
+              (jpegMetadata ||
+                  info is img.WebPInfo && chunk != null ||
+                  animated ||
+                  decoder is img.GifDecoder))) {
+    // A first animation frame can cover only part of the logical canvas.
     throw _NeedsNativePixels(
-      orientation: orientation,
-      exifChunk: orientation == 1 ? null : chunk,
+      orientation: jpegExif?.imageIfd.orientation ?? orientation,
+      exifChunk: orientation != 1 || current && info is img.WebPInfo
+          ? chunk
+          : null,
     );
+  }
+  final mime = _mime(decoder);
+  final normalize =
+      animated ||
+      !const {'image/png', 'image/jpeg', 'image/webp'}.contains(mime) ||
+      current && (color || jpegMetadata || chunk != null);
+  Future<PreparedTranslationImage> freeze(
+    Uint8List result,
+    String type,
+    int w,
+    int h,
+  ) async {
+    final unchanged = identical(result, bytes);
+    return PreparedTranslationImage(
+      file: unchanged
+          ? file
+          : await File(output).writeAsBytes(result, flush: true),
+      sha256: unchanged && knownSha != null
+          ? knownSha
+          : sha256.convert(result).toString(),
+      width: w,
+      height: h,
+      byteSize: result.length,
+      mime: type,
+    );
+  }
+
+  // As in the extension, an unchanged static input needs its header, not a bitmap.
+  if (current &&
+      !normalize &&
+      orientation == 1 &&
+      !avif &&
+      math.min(info.width, info.height) <= _shortEdge &&
+      (bytes.length <= _reencodeBytes ||
+          math.max(info.width, info.height) > _jpegMaxEdge)) {
+    return freeze(bytes, mime, info.width, info.height);
   }
   final decoded = decoder.decodeFrame(0);
   if (decoded == null || decoded.width <= 0 || decoded.height <= 0) {
     throw const TranslationFailure('INVALID_IMAGE');
   }
   if (orientation != 1) decoded.exif.imageIfd.orientation = orientation;
-  final jpegExif = decoder is img.JpegDecoder ? img.decodeJpgExif(bytes) : null;
   if (nativeOrientation == null && decoded.iccProfile != null) {
     throw _NeedsNativePixels(
       orientation:
@@ -486,18 +569,16 @@ Future<Map<String, Object>> _prepare(
           1,
     );
   }
-  final sourceSha = knownSha ?? sha256.convert(bytes).toString();
-  var upload = (bytes: bytes, mime: _mime(decoder));
+  var upload = (bytes: bytes, mime: mime);
   var pixels = decoded;
   // JPEG decoding already bakes orientation and clears its EXIF orientation.
   // Freeze those normalized pixels, rather than uploading the old byte layout.
-  final hasExif = jpegExif != null || !decoded.exif.isEmpty;
-  final normalize =
-      hasExif ||
-      decoded.iccProfile != null ||
-      info.numFrames > 1 ||
-      !const {'image/png', 'image/jpeg', 'image/webp'}.contains(upload.mime);
-  if (normalize) {
+  final bake =
+      normalize ||
+      jpegExif != null ||
+      !decoded.exif.isEmpty ||
+      decoded.iccProfile != null;
+  if (bake) {
     pixels = img.bakeOrientation(decoded).convert(format: img.Format.uint8)
       ..iccProfile = null;
   }
@@ -509,14 +590,20 @@ Future<Map<String, Object>> _prepare(
       pixels,
       width: (pixels.width * _shortEdge / short).round(),
       height: (pixels.height * _shortEdge / short).round(),
-      interpolation: img.Interpolation.average,
+      // A sub-pixel reduction needs interpolation; averaging integer blocks here drops alpha edges.
+      interpolation: current && short < 2 * _shortEdge
+          ? img.Interpolation.linear
+          : img.Interpolation.average,
     );
   }
   final encodable = math.max(pixels.width, pixels.height) <= _jpegMaxEdge;
+  if (current && (resize || avif) && !encodable) {
+    throw const TranslationFailure('UNSUPPORTED_IMAGE');
+  }
   if (compress && encodable && (resize || avif)) {
     upload = _lossyInput(pixels);
   } else {
-    if (normalize || resize) {
+    if (bake || resize) {
       upload = (bytes: img.encodePng(pixels), mime: 'image/png');
     }
     if (compress && encodable && upload.bytes.length > _reencodeBytes) {
@@ -528,29 +615,29 @@ Future<Map<String, Object>> _prepare(
       }
     }
   }
-  final changed = !identical(upload.bytes, bytes);
-  if (changed) await File(output).writeAsBytes(upload.bytes, flush: true);
-  return {
-    'path': changed ? output : sourcePath,
-    'sha256': changed ? sha256.convert(upload.bytes).toString() : sourceSha,
-    'sourceSha256': sourceSha,
-    'width': pixels.width,
-    'height': pixels.height,
-    'byteSize': upload.bytes.length,
-    'mime': upload.mime,
-  };
+  return freeze(upload.bytes, upload.mime, pixels.width, pixels.height);
 }
 
-Future<void> _composite(Map<String, Object> args) async {
-  final input = File(args['input'] as String),
-      patch = File(args['patch'] as String);
-  final width = args['width'] as int, height = args['height'] as int;
-  final inputHeader = await readImageHeader(input);
-  if (inputHeader.width != width || inputHeader.height != height) {
+Future<void> _compositeInWorker(
+  String input,
+  String patch,
+  String output,
+  int width,
+  int height,
+  String patchMime,
+  List<TranslationImagePatch> patches,
+) => Isolate.run(() async {
+  final bytes = await File(input).readAsBytes();
+  final decoder = img.findDecoderForData(bytes),
+      info = decoder?.startDecode(bytes);
+  if (info == null ||
+      info.numFrames > 1 ||
+      info.width != width ||
+      info.height != height) {
     throw const TranslationFailure('INVALID_RESULT');
   }
-  final base = img
-      .decodeImage(await input.readAsBytes())
+  final base = decoder!
+      .decodeFrame(0)
       ?.convert(numChannels: 4, format: img.Format.uint8);
   if (base == null ||
       base.width != width ||
@@ -558,10 +645,10 @@ Future<void> _composite(Map<String, Object> args) async {
       base.numFrames != 1) {
     throw const TranslationFailure('INVALID_RESULT');
   }
-  final handle = await patch.open();
+  final handle = await File(patch).open();
   try {
     final length = await handle.length();
-    for (final region in args['patches'] as List<TranslationImagePatch>) {
+    for (final region in patches) {
       if (region.x < 0 ||
           region.y < 0 ||
           region.width < 1 ||
@@ -582,7 +669,7 @@ Future<void> _composite(Map<String, Object> args) async {
       final decoder = img.findDecoderForData(bytes);
       final info = decoder?.startDecode(bytes);
       if (info == null ||
-          _mime(decoder!) != args['patchMime'] ||
+          _mime(decoder!) != patchMime ||
           // The image decoder reports zero animation frames for static WebP.
           info.numFrames > 1 ||
           info.width != region.width ||
@@ -601,9 +688,8 @@ Future<void> _composite(Map<String, Object> args) async {
   } finally {
     await handle.close();
   }
-  await File(args['output'] as String)
-      .writeAsBytes(img.encodePng(base), flush: true);
-}
+  await File(output).writeAsBytes(img.encodePng(base), flush: true);
+});
 
 void _applyPatch(img.Image base, img.Image overlay, int x, int y) {
   // source-atop in straight-alpha storage: output alpha is the original's.

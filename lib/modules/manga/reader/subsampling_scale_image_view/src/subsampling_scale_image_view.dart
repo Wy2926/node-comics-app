@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
@@ -8,8 +7,9 @@ import 'dart:ui' as ui;
 import 'package:ffi/ffi.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:crypto/crypto.dart';
+import 'package:mangayomi/utils/extensions/others.dart' show keyToMd5;
 import 'package:mangayomi/utils/avif.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 
@@ -19,6 +19,7 @@ import 'ffi_image_decoder.dart';
 import 'subsampling_image_painter.dart';
 import 'tiling_engine.dart';
 import '../../u_chap_data_preload.dart';
+import '../../reader_page_image.dart';
 
 // ─── Load State ───────────────────────────────────────────────────────────────
 
@@ -292,17 +293,7 @@ class SubsamplingScaleImageViewController extends ChangeNotifier {
 // ─── Widget ───────────────────────────────────────────────────────────────────
 
 class SubsamplingScaleImageView extends StatefulWidget {
-  /// The image to display. Accepts any [ImageProvider]: [FileImage], [NetworkImage],
-  /// [AssetImage], [MemoryImage], etc.
-  final ImageProvider<Object> image;
-
-  /// Optional pre-resolved local file path of the image.
-  /// If provided, the widget will bypass the ImageProvider resolving pipeline
-  /// and load directly from this path.
-  final String? resolvedFilePath;
-
-  /// Optional preload data for caching resolved file path.
-  final UChapDataPreload? preloadData;
+  final UChapDataPreload page;
 
   /// Reader-owned loading and failure presentation. Returning null leaves
   /// the image area empty until its view state is initialized.
@@ -388,9 +379,7 @@ class SubsamplingScaleImageView extends StatefulWidget {
 
   const SubsamplingScaleImageView({
     super.key,
-    required this.image,
-    this.resolvedFilePath,
-    this.preloadData,
+    required this.page,
     required this.loadStateChanged,
     this.rotation = 0,
     this.panEnabled = true,
@@ -454,8 +443,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   LoadState _loadState = LoadState.loading;
   ImageChunkEvent? _loadingProgress;
   String? _resolvedFilePath;
-  ImageStream? _activeImageStream;
-  ImageStreamListener? _activeImageStreamListener;
+  int _loadGeneration = 0;
 
   // Gestures
   double _scaleStart = 1.0;
@@ -514,7 +502,6 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   @override
   void dispose() {
     _resizeTimer?.cancel();
-    _cancelImageStream();
     widget.controller?._detach(this);
     _animationController.dispose();
     _tilingEngine.dispose();
@@ -531,9 +518,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     }
 
     // Reloads if the provider or critical options change
-    final imageChanged =
-        widget.resolvedFilePath != oldWidget.resolvedFilePath ||
-        (widget.resolvedFilePath == null && widget.image != oldWidget.image);
+    final imageChanged = widget.page != oldWidget.page;
     final cropChanged =
         widget.cropBorders != oldWidget.cropBorders ||
         widget.srcRect != oldWidget.srcRect ||
@@ -544,6 +529,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
         widget.rotation != oldWidget.rotation;
 
     if (imageChanged || cropChanged) {
+      _loadGeneration++;
+      _resolvedFilePath = null;
       _isInitialized = false;
       _tilingEngine.dispose();
       _tilingEngine = TilingEngine();
@@ -586,203 +573,38 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
 
   // ── ImageProvider Resolution ──────────────────────────────────────────
 
-  void _cancelImageStream() {
-    if (_activeImageStream != null && _activeImageStreamListener != null) {
-      _activeImageStream!.removeListener(_activeImageStreamListener!);
-      _activeImageStream = null;
-      _activeImageStreamListener = null;
-    }
-  }
-
-  String _md5Hash(String input) {
-    return md5.convert(utf8.encode(input)).toString();
-  }
-
-  Future<File?> _findCachedFile(String url, String? cacheFolderName) async {
-    try {
-      final hash = _md5Hash(url);
-      final foldersToCheck = [
-        ?cacheFolderName,
-        'cacheimagemanga',
-        'cacheimage',
-      ];
-
-      final dirs = <Directory>[];
-      try {
-        dirs.add(await getApplicationCacheDirectory());
-      } catch (_) {}
-      try {
-        dirs.add(await getTemporaryDirectory());
-      } catch (_) {}
-
-      for (final baseDir in dirs) {
-        for (final folder in foldersToCheck) {
-          final file = File('${baseDir.path}/$folder/$hash');
-          if (file.existsSync()) {
-            return file;
-          }
-        }
-      }
-    } catch (_) {}
-    return null;
-  }
-
   Future<void> _loadFromProvider({bool evictCache = false}) async {
-    _cancelImageStream();
-
-    if (mounted) {
-      setState(() {
-        _loadState = LoadState.loading;
-        _loadingProgress = null;
-        _isInitialized = false;
-      });
-    }
-
-    if (evictCache) {
-      final provider = widget.image;
-      try {
-        await provider.evict();
-      } catch (_) {}
-    }
-
-    if (widget.resolvedFilePath != null) {
-      _resolvedFilePath = widget.resolvedFilePath;
-      await _initImage();
-      return;
-    }
-
-    final provider = widget.image;
-
-    // 1. Fast path: FileImage
-    if (provider is FileImage) {
-      _resolvedFilePath = provider.file.path;
-      await _initImage();
-      return;
-    }
-
-    // Duck-typing for ExtendedFileImageProvider (or any provider exposing a File)
+    if (!mounted) return;
+    final generation = ++_loadGeneration;
+    bool current() => mounted && generation == _loadGeneration;
+    setState(() {
+      _loadState = LoadState.loading;
+      _loadingProgress = null;
+      _isInitialized = false;
+    });
+    final progress = StreamController<ImageChunkEvent>();
+    final subscription = progress.stream.listen((event) {
+      if (current()) setState(() => _loadingProgress = event);
+    });
     try {
-      final dynamic dynProvider = provider;
-      if (dynProvider.file is File) {
-        _resolvedFilePath = dynProvider.file.path;
-        await _initImage();
-        return;
-      }
-    } catch (_) {}
-
-    // 2. Fast path: Memory-based providers (MemoryImage, ExtendedMemoryImageProvider, etc.)
-    try {
-      final dynamic dynProvider = provider;
-      if (dynProvider.bytes is Uint8List) {
-        final Uint8List bytes = dynProvider.bytes;
-        final cacheKey = provider.hashCode.abs();
-        final tempFile = await cacheImageBytesToTempFile(
-          tempDir: await getTemporaryDirectory(),
-          baseName: 'ssiv_cache_$cacheKey',
-          extension: detectImageExtension(bytes),
-          bytesProvider: () => bytes,
-        );
-        _resolvedFilePath = tempFile.path;
-        await _initImage();
-        return;
-      }
-    } catch (_) {}
-
-    // 3. Fast path: Network/Cached-based providers (CustomExtendedNetworkImageProvider)
-    String? networkUrl;
-    String? cacheFolderName;
-    try {
-      final dynamic dynProvider = provider;
-      networkUrl = dynProvider.url;
-      cacheFolderName = dynProvider.imageCacheFolderName;
-    } catch (_) {}
-
-    if (networkUrl != null) {
-      final cachedFile = await _findCachedFile(networkUrl, cacheFolderName);
-      if (cachedFile != null) {
-        _resolvedFilePath = cachedFile.path;
-        await _initImage();
-        return;
-      }
-    }
-
-    // 4. General path: resolution via ImageStream
-    final completer = Completer<ui.Image>();
-
-    final stream = provider.resolve(ImageConfiguration.empty);
-    _activeImageStream = stream;
-
-    final listener = ImageStreamListener(
-      (ImageInfo info, bool _) {
-        if (!completer.isCompleted) {
-          completer.complete(info.image);
-        }
-      },
-      onError: (Object e, StackTrace? st) {
-        if (!completer.isCompleted) {
-          completer.completeError(e, st ?? StackTrace.empty);
-        }
-      },
-      onChunk: (ImageChunkEvent chunk) {
-        if (mounted) {
-          setState(() => _loadingProgress = chunk);
-        }
-      },
-    );
-
-    _activeImageStreamListener = listener;
-    stream.addListener(listener);
-
-    try {
-      final ui.Image loadedImage = await completer.future;
-      _cancelImageStream();
-
-      if (!mounted) return;
-
-      // If it was a network provider, it probably wrote the image to disk during loading.
-      // We re-check the cache before doing the heavy re-encoding fallback.
-      if (networkUrl != null) {
-        final cachedFile = await _findCachedFile(networkUrl, cacheFolderName);
-        if (cachedFile != null) {
-          _resolvedFilePath = cachedFile.path;
-          await _initImage();
-          return;
-        }
-      }
-
-      // Fallback: Encode the image to PNG to save it to disk
-      final cacheKey = provider.hashCode.abs();
-      final tempFile = await cacheImageBytesToTempFile(
-        tempDir: await getTemporaryDirectory(),
-        baseName: 'ssiv_cache_$cacheKey',
-        extension: '.png', // we control the encode below, so this is exact
-        bytesProvider: () async {
-          final byteData = await loadedImage.toByteData(
-            format: ui.ImageByteFormat.png,
-          );
-          if (byteData == null) {
-            throw Exception('Failed to convert image to PNG bytes');
-          }
-          return byteData.buffer.asUint8List();
-        },
+      final file = await widget.page.readerFile(
+        ProviderScope.containerOf(context, listen: false),
+        reload: evictCache,
+        interactive: true,
+        progress: progress,
       );
-
-      _resolvedFilePath = tempFile.path;
-
-      if (mounted) {
-        await _initImage();
-      }
-    } catch (e, st) {
-      if (kDebugMode) {
-        debugPrint('SubsamplingScaleImageView: Failed to load image: $e\n$st');
-      }
-      _cancelImageStream();
-      if (mounted) {
+      if (!current()) return;
+      if (file == null) throw StateError('Page image unavailable');
+      widget.page.resolvedFilePath = _resolvedFilePath = file.path;
+      await _initImage();
+    } catch (_) {
+      if (current()) {
         setState(() => _loadState = LoadState.failed);
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) widget.onError?.call(e.toString());
-        });
+        widget.onError?.call('Page image unavailable');
       }
+    } finally {
+      await subscription.cancel();
+      await progress.close();
     }
   }
 
@@ -947,7 +769,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
     if (!isAvifImage(header)) return null;
 
     final stat = await source.stat();
-    final key = _md5Hash(
+    final key = keyToMd5(
       '$path:${stat.size}:${stat.modified.millisecondsSinceEpoch}',
     );
     // Decoding is deferred into bytesProvider so it only runs on a cache miss
@@ -961,6 +783,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
   }
 
   Future<void> _initImage() async {
+    final generation = _loadGeneration;
+    bool current() => mounted && generation == _loadGeneration;
     var path = _resolvedFilePath;
     if (path == null) return;
 
@@ -969,12 +793,12 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       cropBorders: widget.cropBorders,
     );
 
-    if (!mounted || _resolvedFilePath != path) return;
+    if (!current() || _resolvedFilePath != path) return;
 
     if (outSize == null || outSize[0] == 0 || outSize[1] == 0) {
       try {
         final convertedPath = await _legacyIosAvifPng(path);
-        if (!mounted || _resolvedFilePath != path) return;
+        if (!current() || _resolvedFilePath != path) return;
         if (convertedPath != null) {
           path = convertedPath;
           _resolvedFilePath = path;
@@ -992,7 +816,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       }
     }
 
-    if (!mounted || _resolvedFilePath != path) return;
+    if (!current() || _resolvedFilePath != path) return;
 
     if (outSize == null || outSize[0] == 0 || outSize[1] == 0) {
       final msg = 'Failed to analyze image: $path';
@@ -1002,7 +826,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       if (mounted) {
         setState(() => _loadState = LoadState.failed);
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) widget.onError?.call(msg);
+          if (current()) widget.onError?.call(msg);
         });
       }
       return;
@@ -1019,10 +843,6 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
           );
     _sWidth = _sourceRect?.width.toInt() ?? outSize[0];
     _sHeight = _sourceRect?.height.toInt() ?? outSize[1];
-
-    if (widget.preloadData != null) {
-      widget.preloadData!.resolvedFilePath = path;
-    }
 
     if (mounted && _viewSize.width > 0 && _viewSize.height > 0) {
       _setupInitialViewState();
@@ -1214,6 +1034,8 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
 
   void _loadTile(Tile tile) {
     if (_resolvedFilePath == null) return;
+    final generation = _loadGeneration;
+    bool current() => mounted && generation == _loadGeneration;
     tile.loading = true;
 
     final transformer = CoordinateTransformer(
@@ -1251,7 +1073,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
         final pointer = Pointer<Uint8>.fromAddress(result.pointerAddress!);
         final bytes = pointer.asTypedList(destWidth * destHeight * 4);
 
-        if (!mounted) {
+        if (!current()) {
           calloc.free(pointer);
           return;
         }
@@ -1264,7 +1086,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
             ui.PixelFormat.rgba8888,
             (ui.Image img) {
               calloc.free(pointer);
-              if (!mounted) {
+              if (!current()) {
                 img.dispose();
                 return;
               }
@@ -1289,7 +1111,7 @@ class _SubsamplingScaleImageViewState extends State<SubsamplingScaleImageView>
       } else {
         tile.loading = false;
         final msg = result.error ?? 'Unknown error';
-        if (msg != 'Cancelled') {
+        if (current() && msg != 'Cancelled') {
           if (kDebugMode) {
             debugPrint('SubsamplingScaleImageView: Tile decoding failed: $msg');
           }

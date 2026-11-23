@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 
-import 'package:mangayomi/utils/extensions/others.dart';
+import 'reader_page_image.dart';
 
 import 'u_chap_data_preload.dart';
 
@@ -14,13 +14,10 @@ Future<bool> isReaderGif(UChapDataPreload data) async {
   }
   final archive = data.archiveImage;
   if (archive != null) return isGifImage(archive);
-  final path =
-      data.resolvedFilePath ??
-      data.localImagePath ??
-      await data.getLocalFilePath;
-  if (path == null) return false;
   try {
-    final file = await File(path).open();
+    final source = await data.cachedReaderFile;
+    if (source == null) return false;
+    final file = await source.open();
     try {
       return isGifImage(await file.read(6));
     } finally {

@@ -30,7 +30,7 @@ class UChapDataPreload {
   /// The real on-disk path of this page, for local image-folder chapters
   /// whose pages already exist as standalone files. When set, this page
   /// never needs to be read into memory and copied back out to a temp file -
-  /// [getLocalFilePath] returns it directly. Null for everything else
+  /// the reader uses it directly. Null for everything else
   /// (archive-file entries, downloaded/remote pages), which have no single
   /// real file they can point to up front.
   String? localImagePath;
