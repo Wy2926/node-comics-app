@@ -16,6 +16,8 @@ import 'package:mangayomi/modules/manga/reader/image_view_vertical.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:super_sliver_list/super_sliver_list.dart';
 
+import '../../../helpers/cached_reader_png.dart';
+
 class _Frames extends ImageStreamCompleter {
   void emit(ui.Image image) => setImage(ImageInfo(image: image.clone()));
   void fail() => reportError(exception: StateError('fixture image failed'));
@@ -59,27 +61,13 @@ void main() {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1;
       addTearDown(tester.view.reset);
-      final recorder = ui.PictureRecorder();
-      Canvas(recorder).drawRect(
-        const Rect.fromLTWH(0, 0, 200, 200),
-        Paint()..color = Colors.blue,
-      );
-      final picture = recorder.endRecording();
-      final image = await picture.toImage(200, 200);
-      picture.dispose();
+      final bytes = await cachedReaderPng(tester, 200, 200);
       final pages = [
         for (var i = 0; i < 2; i++)
-          UChapDataPreload(null, null, null, false, null, i, null, i)
-            ..decodedImage = image.clone()
+          UChapDataPreload(null, null, null, true, bytes, i, null, i)
             ..loadedWidth = 200
             ..loadedHeight = 200,
       ];
-      addTearDown(() {
-        for (final page in pages) {
-          page.decodedImage?.dispose();
-        }
-        image.dispose();
-      });
       final scroll = ReaderScrollController(), list = ListController();
       addTearDown(scroll.dispose);
       addTearDown(list.dispose);
@@ -163,15 +151,10 @@ void main() {
   testWidgets('double pages paint the selected canvas behind both images', (
     tester,
   ) async {
-    final recorder = ui.PictureRecorder();
-    Canvas(recorder).drawColor(Colors.blue, BlendMode.src);
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(200, 200);
-    picture.dispose();
+    final bytes = await cachedReaderPng(tester, 200, 200);
     final pages = [
       for (var i = 0; i < 2; i++)
-        UChapDataPreload(null, null, null, false, null, i, null, i)
-          ..decodedImage = image.clone()
+        UChapDataPreload(null, null, null, true, bytes, i, null, i)
           ..loadedWidth = 200
           ..loadedHeight = 200,
     ];
@@ -223,10 +206,6 @@ void main() {
     );
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
-    for (final page in pages) {
-      page.decodedImage?.dispose();
-    }
-    image.dispose();
   });
 
   testWidgets('GIF loading, failure and retry reserve the image column', (

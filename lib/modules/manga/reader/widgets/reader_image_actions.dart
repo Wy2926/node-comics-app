@@ -49,7 +49,7 @@ Future<void> showReaderImageActions({
   final Widget panel;
   final providers = ProviderScope.containerOf(context, listen: false);
   Future<Uint8List?> readOriginal() async =>
-      data.archiveImage ??
+      data.original.archiveImage ??
       await (await data.readerFile(providers))?.readAsBytes();
   if (isMobile && !isTv) {
     final pageIndex = data.index ?? data.pageIndex;

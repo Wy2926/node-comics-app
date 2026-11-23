@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +10,7 @@ import 'package:mangayomi/modules/manga/reader/managers/chapter_preload_manager.
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
+import 'package:mangayomi/modules/manga/archive_reader/models/models.dart';
 import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
 
 final ch1 = Chapter(id: 101, mangaId: 1, name: 'Chapter 1', url: '/c1');
@@ -24,14 +26,7 @@ List<UChapDataPreload> chapterPages(Chapter ch, int count, {int? wideAt}) => [
 ];
 
 GetChapterPagesModel _model(List<UChapDataPreload> pages) =>
-    GetChapterPagesModel(
-      path: null,
-      pageUrls: [],
-      isLocaleList: [],
-      archiveImages: [],
-      uChapDataPreload: pages,
-      localImagePaths: [],
-    );
+    GetChapterPagesModel(path: null, pageUrls: [], uChapDataPreload: pages);
 
 ReaderPageIndexMath doublePage(List<UChapDataPreload> pages) =>
     ReaderPageIndexMath(
@@ -249,6 +244,33 @@ void main() {
   });
 
   group('preloading', () {
+    test('archive reload is shared, retryable and a stale read cannot refill an evicted chapter', () async {
+      final archive = ReaderArchive('fixture.cbz');
+      final pages = chapterPages(ch1, 2);
+      final bytes = Uint8List.fromList([8, 3]);
+      final result = [LocalImage()..image = bytes, LocalImage()..image = bytes];
+      final gate = Completer<List<LocalImage>?>();
+      var requests = 0;
+      Future<List<LocalImage>?> load(String _) {
+        requests++;
+        return gate.future;
+      }
+
+      final old = archive.read(0, pages, load),
+          shared = archive.read(1, pages, load);
+      expect(requests, 1);
+      archive.evict();
+      gate.complete(result);
+      expect(await Future.wait([old, shared]), [bytes, bytes]);
+      expect(pages.map((p) => p.archiveImage), everyElement(isNull));
+      archive.retain();
+      await expectLater(
+        archive.read(0, pages, (_) async => []),
+        throwsA(isA<FileSystemException>()),
+      );
+      expect(await archive.read(0, pages, (_) async => result), bytes);
+      expect(pages[1].archiveImage, same(bytes));
+    });
     test(
       'waiting spread becomes next image without moving earlier spreads',
       () async {
@@ -288,7 +310,6 @@ void main() {
       final initial = _model(chapterPages(ch1, 2));
       for (final page in initial.uChapDataPreload) {
         final bytes = Uint8List.fromList([1, 2, 3]);
-        initial.archiveImages.add(bytes);
         page.archiveImage = bytes;
         page.chapterUrlModel = initial;
       }
@@ -304,9 +325,7 @@ void main() {
       final evicted = manager.evictOldChapters(ch3);
 
       expect(evicted.map((i) => manager.pages[i].chapter?.id).toSet(), {101});
-      expect(manager.isChapterEvicted(ch1), isTrue);
 
-      expect(initial.archiveImages, everyElement(isNull));
       expect(
         initial.uChapDataPreload.map((p) => p.archiveImage),
         everyElement(isNull),
@@ -314,9 +333,10 @@ void main() {
 
       // Scrolling back restores an earlier chapter without moving it after
       // the tail. Chapters 1/2/3 are now neighbours; only chapter 4 is evicted.
-      manager.markChapterAsLoaded(ch1);
-      expect(manager.isChapterEvicted(ch1), isFalse);
-      final backwards = manager.evictOldChapters(ch2);
+      final backwards = manager.evictOldChapters(
+        ch2,
+        inWindow: [manager.pages.first],
+      );
       expect(backwards.map((i) => manager.pages[i].chapter?.id).toSet(), {104});
     });
   });

@@ -2,8 +2,6 @@ import 'settings/comic_reader_scope.dart';
 import 'reader_image_format.dart';
 import 'widgets/reader_animated_image.dart';
 
-import 'reader_page_image.dart';
-
 import 'settings/comic_reader_preferences.dart';
 
 import 'package:flutter/material.dart';
@@ -14,7 +12,7 @@ import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart'
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/src/min_subsampling_image_view.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 
-class ImageViewVertical extends ConsumerStatefulWidget {
+class ImageViewVertical extends StatefulWidget {
   final UChapDataPreload data;
   final void Function(UChapDataPreload data, Offset globalPosition)
   onLongPressData;
@@ -36,11 +34,11 @@ class ImageViewVertical extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ImageViewVertical> createState() => _ImageViewVerticalState();
+  State<ImageViewVertical> createState() => _ImageViewVerticalState();
 }
 
-class _ImageViewVerticalState extends ConsumerState<ImageViewVertical> {
-  bool _animated = false;
+class _ImageViewVerticalState extends State<ImageViewVertical> {
+  ImageProvider? _gif;
   @override
   void initState() {
     super.initState();
@@ -51,16 +49,19 @@ class _ImageViewVerticalState extends ConsumerState<ImageViewVertical> {
   void didUpdateWidget(ImageViewVertical oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.data != oldWidget.data) {
-      _animated = false;
+      _gif = null;
       _resolveFormat();
     }
   }
 
   Future<void> _resolveFormat() async {
     final data = widget.data;
-    final animated = await isReaderGif(data);
-    if (mounted && identical(data, widget.data) && animated != _animated) {
-      setState(() => _animated = animated);
+    final gif = await readerGif(
+      data,
+      ProviderScope.containerOf(context, listen: false),
+    );
+    if (mounted && identical(data, widget.data) && gif != _gif) {
+      setState(() => _gif = gif);
     }
   }
 
@@ -72,9 +73,9 @@ class _ImageViewVerticalState extends ConsumerState<ImageViewVertical> {
     final fit = profile.mode == ComicReadingMode.scroll
         ? BoxFit.fitWidth
         : profile.boxFit;
-    final imageWidget = _animated && identical(display, widget.data)
+    final imageWidget = _gif != null && identical(display, widget.data)
         ? ReaderAnimatedImage(
-            image: display.getImageProvider(ref, true),
+            image: _gif!,
             fit: fit,
             cropBorders: profile.crop,
             naturalHeight: !widget.isHorizontal,

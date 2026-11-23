@@ -329,6 +329,7 @@
         button.addEventListener('click', async event => {
           event.preventDefault(); event.stopPropagation();
           const current=badge.item, action=current.action;
+          if (action==='upgrade' && !event.isTrusted) return;
           if (!active || button.disabled || !action) return;
           try { record(current.id,current.revision); } catch (_) { dropBadge(current.id); return; }
           button.disabled=true;

@@ -91,8 +91,10 @@ void main() {
         source,
       );
       images.retain([next.page]);
+      await cancelled.timeout(const Duration(seconds: 1));
+      expect(source.releases, 0);
       source.pending!.complete();
-      await cancelled;
+      await Future<void>.delayed(Duration.zero);
       expect(source.releases, 1);
       final current = await images.acquire(next, TranslationCancellation());
       expect(source.reads, 2);

@@ -27,12 +27,6 @@ class ChapterPreloadManager {
   /// previous chapter must not move it after the tail of the reading list.
   final List<String> _chapterOrder = [];
 
-  /// Set of chapter IDs whose page data has been evicted (image/archive data
-  /// cleared but the pages themselves still sit in [_pages]). Lets callers
-  /// cheaply check "does this chapter need a reload?" in O(1) instead of
-  /// scanning every page of the chapter looking for cleared data.
-  final Set<String> _evictedChapterIds = {};
-
   final Set<ChapterDirection> _loading = {};
   bool _disposed = false;
 
@@ -175,14 +169,6 @@ class ChapterPreloadManager {
     }
   }
 
-  /// Returns `true` if [chapter]'s pages were evicted and still need a
-  /// reload before they can render. O(1) - use this to skip the more
-  /// expensive per-page scan in the common case where nothing was evicted.
-  bool isChapterEvicted(Chapter? chapter) {
-    final id = _getChapterIdentifier(chapter);
-    return id != null && _evictedChapterIds.contains(id);
-  }
-
   /// Gets a unique identifier for a chapter.
   String? _getChapterIdentifier(Chapter? chapter) {
     if (chapter == null) return null;
@@ -198,7 +184,10 @@ class ChapterPreloadManager {
 
   /// Evicts old chapters when the loaded chapters exceed the threshold.
   /// Returns the indices of the pages that were evicted.
-  List<int> evictOldChapters(Chapter currentChapter) {
+  List<int> evictOldChapters(
+    Chapter currentChapter, {
+    Iterable<UChapDataPreload> inWindow = const [],
+  }) {
     final currentId = _getChapterIdentifier(currentChapter);
     if (currentId == null) return [];
 
@@ -207,6 +196,13 @@ class ChapterPreloadManager {
     if (currentIndex == -1) return [];
 
     final idsToKeep = <String>{currentId};
+    for (final page in inWindow) {
+      final id = _getChapterIdentifier(page.chapter);
+      if (id == null) continue;
+      page.chapterUrlModel?.archive?.retain();
+      idsToKeep.add(id);
+      _loadedChapterIds.add(id);
+    }
     if (currentIndex - 1 >= 0) {
       idsToKeep.add(_chapterOrder[currentIndex - 1]);
     }
@@ -226,41 +222,18 @@ class ChapterPreloadManager {
       final id = _getChapterIdentifier(page.chapter);
       if (id != null && idsToEvict.contains(id)) {
         page.archiveImage = null;
-        page.decodedImage?.dispose();
-        page.decodedImage = null;
         page.resolvedFilePath = null;
         final model = page.chapterUrlModel;
         if (model != null && clearedModels.add(model)) {
-          // The model also retains the archive bytes and original unsplit
-          // pages. Clearing only the visible page did not release that memory.
-          model.archiveImages.fillRange(0, model.archiveImages.length, null);
-          for (final original in model.uChapDataPreload) {
-            original.archiveImage = null;
-            original.decodedImage?.dispose();
-            original.decodedImage = null;
-            original.resolvedFilePath = null;
-          }
+          model.archive?.evict();
         }
         evictedIndices.add(i);
       }
     }
 
     _loadedChapterIds.removeAll(idsToEvict);
-    _evictedChapterIds.addAll(idsToEvict);
 
     return evictedIndices;
-  }
-
-  /// Marks a chapter as loaded again (used after reloading evicted pages).
-  void markChapterAsLoaded(Chapter chapter) {
-    final chapterId = _getChapterIdentifier(chapter);
-    if (chapterId != null) {
-      _loadedChapterIds.add(chapterId);
-      if (!_chapterOrder.contains(chapterId)) {
-        _chapterOrder.add(chapterId);
-      }
-      _evictedChapterIds.remove(chapterId);
-    }
   }
 
   /// Disposes of all resources.
@@ -270,14 +243,11 @@ class ChapterPreloadManager {
     // Clear pages
     for (final page in _pages) {
       page.onRetryChapter = null;
-      page.decodedImage?.dispose();
-      page.decodedImage = null;
       page.resolvedFilePath = null;
     }
     _pages.clear();
     _loadedChapterIds.clear();
     _chapterOrder.clear();
-    _evictedChapterIds.clear();
 
     // Clear callbacks
     onPagesUpdated = null;

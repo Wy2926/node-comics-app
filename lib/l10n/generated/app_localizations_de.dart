@@ -5400,6 +5400,13 @@ class AppLocalizationsDe extends AppLocalizations {
   String get translation_quota_exhausted => 'Unzureichende Übersetzungsquote.';
 
   @override
+  String get translation_upgrade_quota => 'Upgrade';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Die Zahlungsseite konnte nicht geöffnet werden. Bitte versuche es später erneut.';
+
+  @override
   String get translation_unsupported_language =>
       'Der Dienst unterstützt diese Zielsprache nicht.';
 

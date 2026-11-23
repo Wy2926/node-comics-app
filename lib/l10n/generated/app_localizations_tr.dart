@@ -5362,6 +5362,13 @@ class AppLocalizationsTr extends AppLocalizations {
   String get translation_quota_exhausted => 'Yetersiz çeviri kotası.';
 
   @override
+  String get translation_upgrade_quota => 'Yükselt';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Ödeme sayfası açılamadı. Daha sonra tekrar deneyin.';
+
+  @override
   String get translation_unsupported_language =>
       'Hizmet bu hedef dili desteklemiyor.';
 

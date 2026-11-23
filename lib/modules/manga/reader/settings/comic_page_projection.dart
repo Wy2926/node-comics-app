@@ -31,11 +31,12 @@ List<UChapDataPreload> projectComicPages(
                 page.directory,
                 page.pageUrl,
                 page.isLocale,
-                page.archiveImage,
+                null,
                 page.index,
                 page.chapterUrlModel,
                 page.pageIndex,
                 srcRect: rect,
+                sourcePage: page,
                 localImagePath: page.localImagePath,
               )
               ..resolvedFilePath = page.resolvedFilePath

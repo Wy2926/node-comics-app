@@ -2252,6 +2252,8 @@
   "translation_outcome_unknown": "Hasilnya perlu verifikasi. Itu belum diserahkan kembali.",
   "translation_rate_limited": "Permintaan terbatas. Terjemahan akan dilanjutkan secara otomatis.",
   "translation_quota_exhausted": "Kuota terjemahan tidak mencukupi.",
+  "translation_upgrade_quota": "Tingkatkan",
+  "translation_upgrade_unavailable": "Halaman pembayaran tidak dapat dibuka. Coba lagi nanti.",
   "translation_unsupported_language": "Layanan tidak mendukung bahasa target ini.",
   "translation_upgrade_required": "Protokol terjemahan tidak kompatibel. Perbarui aplikasi.",
   "translation_remote_failed": "Terjemahan gagal untuk halaman ini. Anda dapat mencoba lagi secara manual.",

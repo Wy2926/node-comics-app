@@ -5423,6 +5423,13 @@ class AppLocalizationsFr extends AppLocalizations {
   String get translation_quota_exhausted => 'Quota de traduction insuffisant.';
 
   @override
+  String get translation_upgrade_quota => 'Mettre à niveau';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Impossible d’ouvrir la page de paiement. Réessayez plus tard.';
+
+  @override
   String get translation_unsupported_language =>
       'Le service ne prend pas en charge cette langue cible.';
 

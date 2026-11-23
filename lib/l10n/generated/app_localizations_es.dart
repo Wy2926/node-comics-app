@@ -5405,6 +5405,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get translation_quota_exhausted => 'Cuota de traducción insuficiente.';
 
   @override
+  String get translation_upgrade_quota => 'Mejorar plan';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'No se pudo abrir la página de pago. Inténtalo más tarde.';
+
+  @override
   String get translation_unsupported_language =>
       'El servicio no admite este idioma de destino.';
 

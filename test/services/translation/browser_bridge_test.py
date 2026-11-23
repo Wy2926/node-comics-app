@@ -129,6 +129,10 @@ __PAINT_FIXTURE__
   assert(button.textContent==='Retry' && button.getAttribute('aria-label')==='Retry this image','locale switch did not update visible and accessible actions');
   button.click(); button.click(); await wait(1);
   assert(actions.length===1 && actions[0].id===item.id && actions[0].action==='retry','single image retry duplicated or misrouted');
+  await call('state',{active:true,translated:true,theme,items:[{...failed,label:'额度不足',detail:'',action:'upgrade',actionLabel:'升级'}]});
+  assert(badge.shadowRoot.querySelector('[role=status]').innerText==='额度不足' && button.textContent==='升级','quota badge added a generic failure');
+  button.click(); await wait(1);
+  assert(actions.length===1,'a scripted click opened the external payment page');
   await call('state',{active:true,translated:false,items:[{...failed,label:'状态待确认',action:'verify',actionLabel:'核实'}]});
   assert(badge.style.display!=='none','original display hid image status');
   button.click(); await wait(1);

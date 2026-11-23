@@ -5415,6 +5415,13 @@ class AppLocalizationsPl extends AppLocalizations {
   String get translation_quota_exhausted => 'Niewystarczający limit tłumaczeń.';
 
   @override
+  String get translation_upgrade_quota => 'Ulepsz plan';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Nie udało się otworzyć strony płatności. Spróbuj ponownie później.';
+
+  @override
   String get translation_unsupported_language =>
       'Usługa nie obsługuje tego języka docelowego.';
 

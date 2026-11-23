@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,6 +18,10 @@ import 'package:path_provider_platform_interface/path_provider_platform_interfac
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/manga/reader/reader_translation.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
+import 'package:mangayomi/modules/manga/reader/utils/reader_page_window.dart';
+import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
+import 'package:mangayomi/modules/manga/reader/settings/comic_reader_scope.dart';
+import 'package:mangayomi/modules/manga/reader/widgets/reader_overlays.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 
@@ -27,13 +30,17 @@ class _LocalRuntime implements ChannelRuntime {
   List<TranslationTarget> window = [];
   int reads = 0, releases = 0;
   bool automatic = false;
+  PageTranslationState? failure;
+  final performed = <TranslationAction>[];
   @override
   Stream<void> get changes => _changes.stream;
   @override
-  PageTranslationState stateFor(TranslationPage page) => PageTranslationState(
-    phase: TranslationPhase.succeeded,
-    result: TranslationResultRef('local', page.identity),
-  );
+  PageTranslationState stateFor(TranslationPage page) =>
+      failure ??
+      PageTranslationState(
+        phase: TranslationPhase.succeeded,
+        result: TranslationResultRef('local', page.identity),
+      );
   @override
   Future<void> restore(List<TranslationTarget> targets) async {}
   @override
@@ -52,7 +59,10 @@ class _LocalRuntime implements ChannelRuntime {
   Future<void> perform(
     TranslationTarget target,
     TranslationAction action,
-  ) async {}
+  ) async {
+    performed.add(action);
+  }
+
   @override
   Future<DisplayImageLease> readResult(
     TranslationResultRef result,
@@ -72,6 +82,17 @@ class _LocalRuntime implements ChannelRuntime {
 }
 
 class _LocalService extends TranslationService {
+  int upgrades = 0;
+  @override
+  Future<bool> openBillingUpgrade(
+    ChannelRuntime? expectedRuntime,
+    bool Function() isCurrent,
+  ) async {
+    if (!identical(runtime, expectedRuntime) || !isCurrent()) return false;
+    upgrades++;
+    return true;
+  }
+
   _LocalService(ChannelRuntime value) {
     runtime = value;
   }
@@ -87,6 +108,90 @@ class _CachePath extends PathProviderPlatform {
 }
 
 void main() {
+  testWidgets(
+    'translation retry and upgrade receive taps through page zones; surrounding taps still navigate',
+    (tester) async {
+      final page = UChapDataPreload(null, null, null, true, null, 0, null, 0);
+      final window = ValueNotifier([page]);
+      final runtime = _LocalRuntime()
+        ..failure = const PageTranslationState(
+          phase: TranslationPhase.failed,
+          actions: {TranslationAction.retry},
+        );
+      final service = _LocalService(runtime);
+      int navigation = 0;
+      void turn() => navigation++;
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [translationServiceProvider.overrideWithValue(service)],
+          child: MaterialApp(
+            locale: const Locale('zh'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: ComicReaderScope(
+                profile: const ComicBookSettings(mode: ComicReadingMode.paged)
+                    .resolve(const ComicReaderDefaults()),
+                habits: const ComicReaderHabits(),
+                child: ReaderTranslationHost(
+                  window: window,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: Builder(
+                          builder: (context) =>
+                              ReaderTranslationHost.withStatus(
+                                context,
+                                page,
+                                child: const SizedBox.expand(),
+                              ),
+                        ),
+                      ),
+                      Positioned.fill(
+                        child: ReaderOverlays(
+                          isReverseHorizontal: false,
+                          hasCurrentPageImageError: false,
+                          isContinuousMode: false,
+                          onToggleUI: turn,
+                          onPreviousPage: turn,
+                          onNextPage: turn,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('重试'));
+      await tester.pumpAndSettle();
+      expect(runtime.performed, [TranslationAction.retry]);
+      expect(navigation, 0);
+      runtime.failure = const PageTranslationState(
+        phase: TranslationPhase.failed,
+        failure: TranslationFailure('QUOTA_EXHAUSTED'),
+        actions: {TranslationAction.retry},
+      );
+      runtime._changes.add(null);
+      await tester.pumpAndSettle();
+      expect(find.text('额度不足'), findsOneWidget);
+      expect(find.textContaining('连接失败'), findsNothing);
+      await tester.tap(find.text('升级'));
+      await tester.pumpAndSettle();
+      expect(service.upgrades, 1);
+      expect(runtime.performed, [TranslationAction.retry]);
+      expect(navigation, 0);
+      await tester.tapAt(const Offset(12, 200));
+      await tester.pumpAndSettle();
+      expect(navigation, 1);
+      await tester.pumpWidget(const SizedBox());
+      window.dispose();
+      service.dispose();
+    },
+  );
   test(
     'translation and prefetch share the restored page, page Referer and retry',
     () async {
@@ -193,11 +298,10 @@ void main() {
   );
 
   testWidgets(
-    'split pages share one result, preserve source data and release decoded projections in background',
+    'split pages share one result, preserve source data and release display leases in background',
     (tester) async {
       final runtime = _LocalRuntime();
       final service = _LocalService(runtime);
-      final index = ValueNotifier<int?>(0);
       UChapDataPreload source(double x) => UChapDataPreload(
         null,
         null,
@@ -211,6 +315,9 @@ void main() {
         srcRect: Rect.fromLTWH(x, 0, 100, 80),
       )..resolvedFilePath = '/synthetic-original.png';
       final left = source(0), right = source(100);
+      final window = ValueNotifier(
+        ReaderPageWindow([left, right], 0, 1, backward: false).forward,
+      );
       late UChapDataPreload shownLeft, shownRight;
       await tester.pumpWidget(
         ProviderScope(
@@ -220,10 +327,7 @@ void main() {
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             home: ReaderTranslationHost(
-              pages: [left, right],
-              visibleCount: 2,
-              pageListenable: index,
-              actualIndex: () => index.value!,
+              window: window,
               child: Builder(
                 builder: (context) {
                   shownLeft = ReaderTranslationHost.display(context, left);
@@ -275,26 +379,21 @@ void main() {
       expect(runtime.automatic, isTrue);
       expect(runtime.reads, 1);
 
-      final recorder = ui.PictureRecorder();
-      ui.Canvas(recorder).drawRect(const Rect.fromLTWH(0, 0, 1, 1), Paint());
-      final picture = recorder.endRecording();
-      final decoded = picture.toImageSync(1, 1);
-      picture.dispose();
-      final originalDecoded = decoded.clone();
-      left.decodedImage = originalDecoded;
-      shownLeft.decodedImage = decoded;
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
       await tester.pump();
       expect(runtime.window, isEmpty);
       expect(runtime.releases, 1);
-      expect(decoded.debugDisposed, isTrue);
-      expect(originalDecoded.debugDisposed, isFalse);
+      expect(
+        ReaderTranslationHost.controllerOf(
+          tester.element(find.byType(Scaffold)),
+        )!.images,
+        isEmpty,
+      );
 
       // Paused applications release resources without scheduling a new frame.
       tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
       await tester.pumpWidget(const SizedBox());
-      originalDecoded.dispose();
-      index.dispose();
+      window.dispose();
       service.dispose();
     },
   );

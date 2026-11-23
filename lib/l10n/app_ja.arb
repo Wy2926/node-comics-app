@@ -2252,6 +2252,8 @@
   "translation_outcome_unknown": "結果は検証が必要です。再提出されていません。",
   "translation_rate_limited": "リクエストには制限があります。翻訳は自動的に再開されます。",
   "translation_quota_exhausted": "翻訳割り当てが不十分です。",
+  "translation_upgrade_quota": "アップグレード",
+  "translation_upgrade_unavailable": "お支払いページを開けませんでした。しばらくしてからお試しください。",
   "translation_unsupported_language": "このサービスはこのターゲット言語をサポートしていません。",
   "translation_upgrade_required": "変換プロトコルに互換性がありません。アプリを更新します。",
   "translation_remote_failed": "このページの翻訳は失敗しました。手動で再試行できます。",

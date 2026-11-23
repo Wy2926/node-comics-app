@@ -39,9 +39,11 @@ class UChapDataPreload {
   double? loadedHeight;
   double? loadedWidth;
 
-  /// Cached decoded image for MinSubsamplingImage to avoid re-decoding on scroll
-  Image? decodedImage;
-  bool decodedImageCropped = false;
+  /// Both crops resolve through the same chapter-owned original.
+  final UChapDataPreload? sourcePage;
+  UChapDataPreload get original => sourcePage ?? this;
+
+  final bool isArchiveEntry;
 
   /// Cached resolved local file path for SubsamplingScaleImageView to avoid resolving on scroll
   String? resolvedFilePath;
@@ -59,7 +61,8 @@ class UChapDataPreload {
     this.boundaryDirection,
     this.srcRect,
     this.localImagePath,
-  });
+    this.sourcePage,
+  }) : isArchiveEntry = archiveImage != null;
 
   /// Identifies this page among its neighbours in a list or page view, for
   /// widget keys. The two halves of a split wide page share [index] and only
@@ -80,6 +83,8 @@ class UChapDataPreload {
     required int this.pageIndex,
     this.boundaryDirection = ChapterDirection.next,
   }) : chapter = currentChapter,
+       sourcePage = null,
+       isArchiveEntry = false,
        isTransitionPage = true,
        directory = null,
        pageUrl = null,

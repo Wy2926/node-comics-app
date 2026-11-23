@@ -5071,7 +5071,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get translation_rate_limited => '请求受限，稍后自动恢复';
 
   @override
-  String get translation_quota_exhausted => '当前翻译额度不足';
+  String get translation_quota_exhausted => '额度不足';
+
+  @override
+  String get translation_upgrade_quota => '升级';
+
+  @override
+  String get translation_upgrade_unavailable => '未能打开官网支付页，请稍后重试';
 
   @override
   String get translation_unsupported_language => '服务暂不支持此目标语言';
@@ -10319,7 +10325,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get translation_rate_limited => '請求受限，稍後自動恢復';
 
   @override
-  String get translation_quota_exhausted => '當前翻譯額度不足';
+  String get translation_quota_exhausted => '額度不足';
+
+  @override
+  String get translation_upgrade_quota => '升級';
+
+  @override
+  String get translation_upgrade_unavailable => '無法開啟官網付款頁，請稍後再試';
 
   @override
   String get translation_unsupported_language => '服務暫不支援此目標語言';

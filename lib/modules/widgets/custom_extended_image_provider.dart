@@ -43,6 +43,7 @@ class _CacheManager {
   static final Map<String, DateTime> _lastEvictionCheck = {};
   static const _evictionThrottleInterval = Duration(minutes: 10);
   static bool _isEvicting = false;
+  static final retained = <String, int>{};
 
   static Future<int> getCacheSize(Directory cacheDir) async {
     if (!await cacheDir.exists()) return 0;
@@ -106,10 +107,9 @@ class _CacheManager {
         if (currentSize <= _maxCacheSize) break;
         try {
           final f = File(file.path);
-          if (await f.exists()) {
-            await f.delete();
-            currentSize -= file.size;
-          }
+          if (retained.containsKey(f.absolute.path)) continue;
+          await f.delete();
+          currentSize -= file.size;
         } catch (e) {
           if (kDebugMode) print('Failed to delete cache file: $e');
         }
@@ -130,6 +130,21 @@ class CustomExtendedNetworkImageProvider
     implements image_provider.ExtendedNetworkImageProvider {
   /// Deduplication map for in-flight image downloads to prevent multiple concurrent HTTP GET requests for the same URL
   static final _downloads = <(String?, String, bool), Future<_FetchedImage?>>{};
+
+  /// Keep a reader's encoded window eligible for display even over the LRU budget.
+  static VoidCallback retainFile(File file) {
+    final path = file.absolute.path;
+    final retained = _CacheManager.retained;
+    retained[path] = (retained[path] ?? 0) + 1;
+    return () {
+      final remaining = retained[path]! - 1;
+      if (remaining == 0) {
+        retained.remove(path);
+      } else {
+        retained[path] = remaining;
+      }
+    };
+  }
 
   /// Decode Base64 or URL-encoded data URI (e.g. data:image/gif;base64,...)
   static Uint8List? tryDecodeDataUri(String url) {

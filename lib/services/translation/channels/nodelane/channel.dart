@@ -58,6 +58,30 @@ class NodeLaneChannel implements TranslationChannel {
   );
 }
 
+class _ResultRead {
+  final cancel = TranslationCancellation();
+  late final Future<(File, int, int)> ready;
+  int readers = 0;
+
+  Future<(File, int, int)> join(TranslationCancellation caller) async {
+    readers++;
+    var released = false;
+    void release() {
+      if (released) return;
+      released = true;
+      if (--readers == 0) cancel.cancel();
+    }
+
+    final unlink = caller.onCancel(release);
+    try {
+      return await caller.waitFor(ready);
+    } finally {
+      unlink();
+      release();
+    }
+  }
+}
+
 class OfficialRuntime implements ChannelRuntime {
   OfficialRuntime({
     required this.scope,
@@ -85,8 +109,7 @@ class OfficialRuntime implements ChannelRuntime {
   final _manual = <String, TranslationCancellation>{};
   final _control = DbWriteQueue();
   final _resultQueue = DbWriteQueue();
-  final _resultJobs = <String, Future<(File, int, int)>>{};
-  final _resultCancellations = <String, TranslationCancellation>{};
+  final _resultJobs = <String, _ResultRead>{};
   final _life = TranslationCancellation();
   Map<String, dynamic>? _policy;
   DateTime? _policyTime, _retryAt;
@@ -279,7 +302,7 @@ class OfficialRuntime implements ChannelRuntime {
 
   @override
   Future<void> restore(List<TranslationTarget> targets) async {
-    for (final target in targets.take(4)) {
+    for (final target in targets) {
       _life.check();
       if (!_wanted.containsKey(target.page.identity)) continue;
       try {
@@ -301,7 +324,7 @@ class OfficialRuntime implements ChannelRuntime {
               phase: unknown
                   ? TranslationPhase.uncertain
                   : TranslationPhase.failed,
-              message: failure.message,
+              failure: failure,
               actions: {
                 unknown ? TranslationAction.verify : TranslationAction.retry,
               },
@@ -321,7 +344,7 @@ class OfficialRuntime implements ChannelRuntime {
     if (_life.isCancelled) return;
     final before = _wanted;
     final scheduledBefore = _scheduled;
-    _windows[consumer] = targets.take(4).toList(growable: false);
+    _windows[consumer] = List.unmodifiable(targets);
     if (automatic) {
       _automatic.add(consumer);
     } else {
@@ -353,9 +376,6 @@ class OfficialRuntime implements ChannelRuntime {
     if (wanted.isEmpty) {
       _stopWatching();
       _retryTimer?.cancel();
-      for (final cancel in _resultCancellations.values) {
-        cancel.cancel();
-      }
     } else {
       _pump();
       _watch();
@@ -431,7 +451,7 @@ class OfficialRuntime implements ChannelRuntime {
                             failure.code == 'OUTCOME_UNKNOWN')
                     ? TranslationPhase.uncertain
                     : TranslationPhase.failed,
-                message: failure.message,
+                failure: failure,
                 actions: local
                     ? const {TranslationAction.retry}
                     : const {TranslationAction.verify},
@@ -752,6 +772,11 @@ class OfficialRuntime implements ChannelRuntime {
       page,
       PageTranslationState(
         phase: phase,
+        failure: phase == TranslationPhase.failed
+            ? TranslationFailure(
+                receipt.inputError ?? receipt.errorCode ?? 'REMOTE_FAILED',
+              )
+            : null,
         noText: original,
         result: phase == TranslationPhase.succeeded && !original
             ? TranslationResultRef(scope, receipt.id)
@@ -769,9 +794,6 @@ class OfficialRuntime implements ChannelRuntime {
           TranslationPhase.uncertain => localizedMessage(
             (l10n) => l10n.translation_verify_result,
           ),
-          TranslationPhase.failed => TranslationFailure(
-            receipt.inputError ?? receipt.errorCode ?? 'REMOTE_FAILED',
-          ).message,
           TranslationPhase.succeeded =>
             receipt.resultExpired
                 ? localizedMessage((l10n) => l10n.translation_result_expired)
@@ -907,6 +929,8 @@ class OfficialRuntime implements ChannelRuntime {
     TranslationTarget target,
     TranslationAction action,
   ) async {
+    // Billing navigation belongs to the presentation layer, never to the job queue.
+    if (action == TranslationAction.upgrade) return;
     _life.check();
     if (!_wanted.containsKey(target.page.identity)) return;
     final manualKey = _sources.hashFor(target.page) ?? target.page.identity;
@@ -1034,22 +1058,21 @@ class OfficialRuntime implements ChannelRuntime {
     _life.check();
     cancellation.check();
     if (result.scope != scope) throw const TranslationFailure('AUTH_REQUIRED');
-    var job = _resultJobs[result.operationId];
-    if (job == null) {
-      final cancel = TranslationCancellation();
-      final unlink = _life.onCancel(cancel.cancel);
-      _resultCancellations[result.operationId] = cancel;
+    final id = result.operationId;
+    var job = _resultJobs[id];
+    if (job == null || job.cancel.isCancelled) {
+      final created = _ResultRead();
+      job = _resultJobs[id] = created;
+      final unlink = _life.onCancel(created.cancel.cancel);
       final epoch = repository.cacheEpoch;
-      job = _resultQueue
-          .run(() => _readResult(result, cancel, epoch))
+      created.ready = _resultQueue
+          .run(() => _readResult(result, created.cancel, epoch))
           .whenComplete(() {
             unlink();
-            _resultJobs.remove(result.operationId);
-            _resultCancellations.remove(result.operationId);
+            if (identical(_resultJobs[id], created)) _resultJobs.remove(id);
           });
-      _resultJobs[result.operationId] = job;
     }
-    final (file, width, height) = await job;
+    final (file, width, height) = await job.join(cancellation);
     _life.check();
     cancellation.check();
     return DisplayImageLease(
@@ -1067,6 +1090,7 @@ class OfficialRuntime implements ChannelRuntime {
   ) async {
     cancel.check();
     final data = await repository.read(_operation(ref.operationId));
+    cancel.check();
     if (data == null) throw const TranslationFailure('RESULT_UNAVAILABLE');
     final receipt = OfficialReceipt.fromJson(data);
     if (receipt.scope != scope ||

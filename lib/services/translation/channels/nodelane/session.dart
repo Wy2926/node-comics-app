@@ -85,6 +85,34 @@ class NodeLaneSession {
     }
   }
 
+  Future<Uri> billingUpgradeLink(TranslationCancellation cancel) async {
+    final epoch = _epoch, owner = userId;
+    if (owner == null) throw const TranslationFailure('AUTH_REQUIRED');
+    final api = NodeLaneHttp(base, token: accessToken);
+    try {
+      final result = await api.json(
+        'POST',
+        '/v1/billing/app-handoff',
+        cancellation: cancel,
+      );
+      cancel.check();
+      if (epoch != _epoch || userId != owner) {
+        throw const TranslationCancelled();
+      }
+      final code = result['code'];
+      if (result['account_id'] != owner ||
+          code is! String ||
+          !RegExp(r'^[A-Za-z0-9_-]{43}$').hasMatch(code)) {
+        throw const TranslationFailure('BILLING_UNAVAILABLE');
+      }
+      return base
+          .resolve('/pricing/?app=1')
+          .replace(fragment: 'app-billing=$code');
+    } finally {
+      api.close();
+    }
+  }
+
   Future<void> restore() async {
     final stored = await _vault.read(key: _key);
     if (stored == null) return;

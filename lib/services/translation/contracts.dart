@@ -25,6 +25,25 @@ class TranslationCancellation {
     if (_cancelled) throw const TranslationCancelled();
   }
 
+  /// Stop waiting without cancelling work shared by other consumers.
+  Future<T> waitFor<T>(Future<T> work) {
+    final done = Completer<T>();
+    final unlink = onCancel(
+      () => done.completeError(const TranslationCancelled()),
+    );
+    work.then(
+      (value) {
+        unlink();
+        if (!done.isCompleted) done.complete(value);
+      },
+      onError: (Object error, StackTrace stack) {
+        unlink();
+        if (!done.isCompleted) done.completeError(error, stack);
+      },
+    );
+    return done.future;
+  }
+
   void Function() onCancel(void Function() listener) {
     if (_cancelled) {
       listener();
@@ -94,7 +113,7 @@ enum TranslationPhase {
   failed,
 }
 
-enum TranslationAction { verify, readResult, retry, regenerate }
+enum TranslationAction { verify, readResult, retry, regenerate, upgrade }
 
 /// An adapter-owned reference. Consumers cannot build service URLs from it.
 class TranslationResultRef {
@@ -126,13 +145,16 @@ class DisplayImageLease {
 class PageTranslationState {
   const PageTranslationState({
     this.phase = TranslationPhase.idle,
-    this.message = '',
+    this._message = '',
+    this.failure,
     this.result,
     this.noText = false,
     this.actions = const {},
   });
   final TranslationPhase phase;
-  final String message;
+  final TranslationFailure? failure;
+  final String _message;
+  String get message => failure?.message ?? _message;
   final TranslationResultRef? result;
   final bool noText;
   final Set<TranslationAction> actions;
@@ -175,9 +197,14 @@ class TranslationFailure implements Exception {
   const TranslationFailure(this.code, {this.retryAfter});
   final String code;
   final Duration? retryAfter;
+  bool get quotaExhausted =>
+      code == 'QUOTA_EXHAUSTED' || code == 'DAILY_QUOTA_EXHAUSTED';
   String get message => localizedMessage(
     (l10n) => switch (code) {
       'AUTH_REQUIRED' => l10n.translation_auth_required,
+      'BILLING_UNAVAILABLE' => l10n.translation_upgrade_unavailable,
+      'RESULT_READ_FAILED' => l10n.translation_read_failed,
+      'ACTION_FAILED' => l10n.operation_retry,
       'SOURCE_CHANGED' => l10n.translation_source_changed,
       'SOURCE_MISSING' => l10n.translation_source_missing,
       'SOURCE_STORAGE' => l10n.comic_save_failed,
@@ -197,7 +224,8 @@ class TranslationFailure implements Exception {
       'TRANSLATION_MODE_UNAVAILABLE' => l10n.translation_unavailable,
       'OUTCOME_UNKNOWN' => l10n.translation_outcome_unknown,
       'RATE_LIMITED' => l10n.translation_rate_limited,
-      'QUOTA_EXHAUSTED' => l10n.translation_quota_exhausted,
+      'QUOTA_EXHAUSTED' ||
+      'DAILY_QUOTA_EXHAUSTED' => l10n.translation_quota_exhausted,
       'UNSUPPORTED_LANGUAGE' => l10n.translation_unsupported_language,
       'TRANSLATION_MODEL_UNAVAILABLE' => l10n.translation_model_unavailable,
       'CLIENT_UPGRADE_REQUIRED' => l10n.translation_upgrade_required,

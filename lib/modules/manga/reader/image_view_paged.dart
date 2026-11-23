@@ -14,9 +14,7 @@ import 'package:mangayomi/modules/manga/reader/widgets/color_filter_widget.dart'
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart'
     as ssiv;
 
-import 'reader_page_image.dart';
-
-class ImageViewPaged extends ConsumerStatefulWidget {
+class ImageViewPaged extends StatefulWidget {
   final UChapDataPreload data;
   final void Function(UChapDataPreload data, Offset globalPosition)
   onLongPressData;
@@ -44,11 +42,11 @@ class ImageViewPaged extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ImageViewPaged> createState() => _ImageViewPagedState();
+  State<ImageViewPaged> createState() => _ImageViewPagedState();
 }
 
-class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
-  bool _isAnimated = false;
+class _ImageViewPagedState extends State<ImageViewPaged> {
+  ImageProvider? _gif;
   String? _displayPath;
   (double, Offset)? _restoreView;
 
@@ -62,17 +60,19 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
   void didUpdateWidget(covariant ImageViewPaged oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.data != oldWidget.data) {
+      _gif = null;
       _checkIfAnimated();
     }
   }
 
   Future<void> _checkIfAnimated() async {
     final data = widget.data;
-    final isAnimated = await isReaderGif(data);
-    if (mounted && identical(data, widget.data) && _isAnimated != isAnimated) {
-      setState(() {
-        _isAnimated = isAnimated;
-      });
+    final gif = await readerGif(
+      data,
+      ProviderScope.containerOf(context, listen: false),
+    );
+    if (mounted && identical(data, widget.data) && _gif != gif) {
+      setState(() => _gif = gif);
     }
   }
 
@@ -103,7 +103,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
         : 0;
     final effectiveFit = profile.boxFit;
 
-    final bool isAnimated = !translated && _isAnimated;
+    final bool isAnimated = !translated && _gif != null;
 
     final ssivScaleType = switch (profile.fit) {
       ComicPageFit.contain => ssiv.ScaleType.centerInside,
@@ -114,7 +114,7 @@ class _ImageViewPagedState extends ConsumerState<ImageViewPaged> {
     Widget content;
     if (isAnimated) {
       content = ReaderAnimatedImage(
-        image: display.getImageProvider(ref, true),
+        image: _gif!,
         fit: effectiveFit,
         cropBorders: cropBorders,
         onFailure: widget.onFailure,

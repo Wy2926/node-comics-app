@@ -2252,6 +2252,8 @@
   "translation_outcome_unknown": "Il risultato necessita di verifica. Non è stato inviato nuovamente.",
   "translation_rate_limited": "Le richieste sono limitate. La traduzione riprenderà automaticamente.",
   "translation_quota_exhausted": "Quota di traduzione insufficiente.",
+  "translation_upgrade_quota": "Migliora piano",
+  "translation_upgrade_unavailable": "Impossibile aprire la pagina di pagamento. Riprova più tardi.",
   "translation_unsupported_language": "Il servizio non supporta questa lingua di destinazione.",
   "translation_upgrade_required": "Il protocollo di traduzione è incompatibile. Aggiorna l'app.",
   "translation_remote_failed": "Traduzione non riuscita per questa pagina. Puoi riprovare manualmente.",

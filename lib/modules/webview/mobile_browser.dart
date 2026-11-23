@@ -37,6 +37,7 @@ import 'browser_tabs_panel.dart';
 
 import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:mangayomi/modules/translation/translation_controls.dart';
+import 'package:mangayomi/modules/translation/translation_upgrade.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
@@ -1737,6 +1738,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       widget.tab.id,
       l10n: context.l10n,
       theme: translationImageTheme(context),
+      onUpgrade: (target) =>
+          openTranslationUpgrade(context, widget.tab.translation, target),
       onReading: (chapter, next) {
         if (!mounted ||
             widget.tab.chapter == chapter && widget.tab.nextChapter == next) {

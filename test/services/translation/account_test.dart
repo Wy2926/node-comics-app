@@ -5,6 +5,8 @@ import 'package:mangayomi/services/translation/channels/nodelane/account.dart';
 import 'package:mangayomi/services/translation/channels/nodelane/session.dart';
 import 'package:mangayomi/services/translation/contracts.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 Map<String, dynamic> me({String id = 'user-a'}) => {
   'user': {'id': id, 'name': 'Reader'},
@@ -121,6 +123,47 @@ void main() {
     expect(service.account, same(snapshot));
   });
 
+  test('billing opens once, drops stale links, and a failed external launch can be retried', () async {
+    final session = _Session(),
+        service = _Service(session),
+        runtime = _Runtime();
+    service.runtime = runtime;
+    addTearDown(service.dispose);
+    final previous = UrlLauncherPlatform.instance, launcher = _Launcher();
+    UrlLauncherPlatform.instance = launcher;
+    addTearDown(() => UrlLauncherPlatform.instance = previous);
+    final url = Uri.https('billing.example', '/pricing/');
+    var current = true;
+    Future<bool> open() => service.openBillingUpgrade(runtime, () => current);
+    final first = open();
+    expect(await open(), isFalse);
+    current = false;
+    session.link.complete(url);
+    expect(await first, isFalse);
+    expect(launcher.opens, 0);
+    current = true;
+    session.link = Completer<Uri>();
+    final stale = open();
+    service.runtime = _Runtime();
+    session.link.complete(url);
+    expect(await stale, isFalse);
+    expect(launcher.opens, 0);
+    service.runtime = runtime;
+    await expectLater(
+      open(),
+      throwsA(
+        isA<TranslationFailure>().having(
+          (e) => e.code,
+          'code',
+          'BILLING_UNAVAILABLE',
+        ),
+      ),
+    );
+    launcher.available = true;
+    expect(await open(), isTrue);
+    expect(launcher.opens, 2);
+  });
+
   test(
     'logout and disposal cancel reads and reject late account data',
     () async {
@@ -153,6 +196,9 @@ class _Session extends NodeLaneSession {
   String? id = 'user-a';
   int reads = 0;
   var pending = Completer<NodeLaneAccount>();
+  var link = Completer<Uri>();
+  @override
+  Future<Uri> billingUpgradeLink(TranslationCancellation cancel) => link.future;
   TranslationCancellation? cancellation;
   @override
   String? get userId => id;
@@ -173,4 +219,22 @@ class _Service extends TranslationService {
   _Service(NodeLaneSession session) : super(session: session);
   @override
   Future<void> initialize() async {}
+}
+
+class _Runtime extends Fake implements ChannelRuntime {
+  @override
+  Future<void> dispose() async {}
+}
+
+class _Launcher extends UrlLauncherPlatform {
+  bool available = false;
+  int opens = 0;
+  @override
+  LinkDelegate? get linkDelegate => null;
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    expect(options.mode, PreferredLaunchMode.externalApplication);
+    opens++;
+    return available;
+  }
 }

@@ -5325,6 +5325,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get translation_quota_exhausted => 'حصة الترجمة غير كافية.';
 
   @override
+  String get translation_upgrade_quota => 'ترقية';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'تعذر فتح صفحة الدفع. حاول مرة أخرى لاحقًا.';
+
+  @override
   String get translation_unsupported_language =>
       'الخدمة لا تدعم هذه اللغة الهدف.';
 

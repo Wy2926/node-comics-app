@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:mangayomi/modules/manga/reader/controllers/reader_viewport_anchor.dart';
@@ -15,9 +14,6 @@ import 'settings/comic_reader_settings.dart';
 
 import 'package:photo_view/photo_view.dart';
 import 'package:mangayomi/modules/widgets/nodelane_empty_state.dart';
-import 'package:mangayomi/services/downloaded_chapter.dart';
-import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_providers.dart';
-import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/utils/platform_utils.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart'
     as ssiv;
@@ -52,6 +48,9 @@ import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/manga/reader/utils/double_page_zoom_pan.dart';
 import 'package:mangayomi/modules/manga/reader/utils/reader_page_index_math.dart';
+
+import 'utils/reader_page_window.dart';
+
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/modules/manga/reader/providers/manga_reader_provider.dart';
 import 'package:mangayomi/modules/library/widgets/library_entry_utils.dart'
@@ -248,10 +247,9 @@ class _MangaChapterPageGalleryState
     );
     _rebuildDetail.close();
 
-    _evictionAndPrefetchDebounce?.cancel();
     _imagePrefetcher.dispose();
     _hasCurrentPageImageError.dispose();
-    _currentPageViewIndex.dispose();
+    _forwardPages.dispose();
     _panAnimator.dispose();
     disposeAutoScroll();
     _autoScroll.removeListener(onAutoScrollChanged);
@@ -308,7 +306,8 @@ class _MangaChapterPageGalleryState
       _readerInForeground = true;
       _foregroundWaiter?.complete();
       _foregroundWaiter = null;
-      _prefetchPagesInOrder();
+      _resourceRange = null;
+      _syncPageWindow();
       _scheduleReadProgressListener();
       if (keepOn) {
         WakelockPlus.enable();
@@ -418,7 +417,8 @@ class _MangaChapterPageGalleryState
 
   final _failedPages = <String>{};
   final _hasCurrentPageImageError = ValueNotifier<bool>(false);
-  Timer? _evictionAndPrefetchDebounce;
+  final _forwardPages = ValueNotifier<List<UChapDataPreload>>(const []);
+  (List<UChapDataPreload>, int, int, bool, int?)? _resourceRange;
 
   void _updateHasCurrentError() {
     final actual = _getCurrentPagesActualIndex();
@@ -470,9 +470,6 @@ class _MangaChapterPageGalleryState
     }
     return saved;
   }();
-  late final ValueNotifier<int?> _currentPageViewIndex = ValueNotifier(
-    _currentIndex,
-  );
   late final ValueNotifier<int> _currentPageDisplayIndex = ValueNotifier(
     _savedPageIndex,
   );
@@ -607,7 +604,6 @@ class _MangaChapterPageGalleryState
       final currentActual = _pageViewToActualIndex(index);
       _visiblePageIdentity = after[currentActual].identity;
       _currentIndex = index;
-      _currentPageViewIndex.value = index;
       _updateChapterIfNeeded(currentActual);
       _updateDisplayIndex(currentActual);
       setState(() {});
@@ -640,7 +636,7 @@ class _MangaChapterPageGalleryState
         await WidgetsBinding.instance.endOfFrame;
       }
       if (!_disposed.isCompleted) {
-        _scheduleEvictionsAndPrefetch();
+        _syncPageWindow();
       }
     },
   );
@@ -690,17 +686,11 @@ class _MangaChapterPageGalleryState
 
   bool _readerInForeground = true;
   late final _imagePrefetcher = ReaderImagePrefetcher(
-    load: (page, isCurrent) async {
-      final file = await page.readerFile(
-        ProviderScope.containerOf(context, listen: false),
-      );
-      if (mounted && isCurrent() && file != null) {
-        page.resolvedFilePath = file.path;
-      }
-    },
+    load: (page) => page.retainReaderFile(
+      ProviderScope.containerOf(context, listen: false),
+    ),
   );
 
-  int get pagePreloadAmount => 3;
   late bool _isBookmarked = _readerController.getChapterBookmarked();
 
   bool _isView = false;
@@ -814,12 +804,7 @@ class _MangaChapterPageGalleryState
                   top: false,
                   bottom: false,
                   child: ReaderTranslationHost(
-                    pages: pages,
-                    pageListenable: _currentPageViewIndex,
-                    actualIndex: () => _getCurrentPagesActualIndex(),
-                    visibleCount: effectivePageMode == PageMode.doublePage
-                        ? 2
-                        : 1,
+                    window: _forwardPages,
                     child: Stack(
                       children: [
                         ReaderPageContent(
@@ -972,7 +957,6 @@ class _MangaChapterPageGalleryState
                             _readingBackward = jumpIndex < (_currentIndex ?? 0);
                             _backwardScrollPending = _readingBackward;
                             _currentIndex = jumpIndex;
-                            _currentPageViewIndex.value = jumpIndex;
                             if (_readerMode.isContinuous) {
                               unawaited(
                                 _restoreViewportAnchor(
@@ -989,7 +973,9 @@ class _MangaChapterPageGalleryState
                                 readerMode: _readerMode,
                               );
                             }
-                            _scheduleEvictionsAndPrefetch();
+                            _syncPageWindow(
+                              first: _pageViewToActualIndex(jumpIndex),
+                            );
                           },
                           onSettingsPressed: (context) =>
                               showComicReaderSettings(
@@ -1155,16 +1141,13 @@ class _MangaChapterPageGalleryState
     final bool pageChanged = _currentIndex != newIndex;
     if (pageChanged) _readingBackward = newIndex < (_currentIndex ?? newIndex);
     _currentIndex = newIndex;
-    _currentPageViewIndex.value = newIndex;
     final pagesLength = pages.length;
     if (_currentIndex! >= 0 && _currentIndex! < pagesLength) {
       final actualIndex = _pageViewToActualIndex(_currentIndex!);
       _visiblePageIdentity = pages[actualIndex].identity;
       _updateChapterIfNeeded(actualIndex);
 
-      if (pagesLength - 1 - last <= pagePreloadAmount) {
-        _triggerChapterPreload(ChapterDirection.next);
-      }
+      _syncPageWindow(first: first, last: last);
       // Layout/prepend notifications alone never recursively fetch earlier
       // chapters. Only a backward reading action re-arms the leading edge.
       if (_backwardScrollPending && actualIndex <= 2) {
@@ -1172,19 +1155,8 @@ class _MangaChapterPageGalleryState
         _triggerChapterPreload(ChapterDirection.previous);
       }
 
-      // Ensure the current chapter's pages are reloaded if they were evicted,
-      // and evict old chapters' pages to free memory. Gated on pageChanged
-      // (not just index-in-bounds) since this listener fires on every scroll
-      // frame during a fling, not just once per settled page - unlike the
-      // paged-mode handler, which only runs on discrete PageView transitions.
-      // Both checks below do a linear scan over `pages`, so running them
-      // unconditionally here would re-scan dozens of times per second during
-      // continuous scrolling.
       _updateDisplayIndex(actualIndex);
-      if (pageChanged) {
-        _updateHasCurrentError();
-        _scheduleEvictionsAndPrefetch();
-      }
+      if (pageChanged) _updateHasCurrentError();
     }
   }
 
@@ -1252,15 +1224,17 @@ class _MangaChapterPageGalleryState
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted || _restoringPosition) return;
         final mode = _readerMode;
-        _prefetchPagesInOrder();
         if (mode.isContinuous) {
           _readProgressListener();
-        } else if (_extendedController.hasClients &&
-            _currentIndex != null &&
-            _currentIndex! < _pageViewPageCount) {
-          final actual = _pageViewToActualIndex(_currentIndex!);
-          if (pages[actual].chapter?.id != chapter.id) {
-            unawaited(_onPageChanged(_currentIndex!));
+        } else {
+          _syncPageWindow();
+          if (_extendedController.hasClients &&
+              _currentIndex != null &&
+              _currentIndex! < _pageViewPageCount) {
+            final actual = _pageViewToActualIndex(_currentIndex!);
+            if (pages[actual].chapter?.id != chapter.id) {
+              _onPageChanged(_currentIndex!);
+            }
           }
         }
       });
@@ -1278,7 +1252,7 @@ class _MangaChapterPageGalleryState
 
     // Kick off ordered prefetch before the first frame so lower-indexed pages
     // win the HTTP race against the simultaneous widget-driven loads.
-    _prefetchPagesInOrder();
+    _syncPageWindow();
 
     // Start the next chapter in the background, keeping a visible boundary.
     _triggerChapterPreload(ChapterDirection.next);
@@ -1301,117 +1275,48 @@ class _MangaChapterPageGalleryState
     }
   }
 
-  /// Reloads a chapter's page image data if it was previously evicted by
-  /// [ChapterPreloadManager.evictOldChapters] (e.g. the reader scrolled
-  /// forward far enough that this chapter's data was cleared to free memory,
-  /// then scrolled back into it). Re-reads the local `.cbz` archive and
-  /// re-populates each page's `archiveImage`.
-  ///
-  /// Only applies to archive-backed local chapters (cbz/zip/etc.) - plain
-  /// image-folder chapters carry [UChapDataPreload.localImagePath] pointing
-  /// straight at their real file on disk, so there's nothing to evict or
-  /// reload for them in the first place.
-  ///
-  /// Cheap no-op for the common case where [currentChapter] was never
-  /// evicted, via [ChapterPreloadManager.isChapterEvicted] - avoids scanning
-  /// every page of the chapter on every page-change.
-  Future<void> _checkAndReloadEvictedPages(Chapter currentChapter) async {
-    if (!_preloadManager.isChapterEvicted(currentChapter)) return;
-
-    final chapterId = currentChapter.id;
-    bool needsReload = false;
-    for (final page in pages) {
-      if (page.chapter?.id == chapterId &&
-          !page.isTransitionPage &&
-          page.isLocale == true &&
-          page.archiveImage == null &&
-          page.localImagePath == null) {
-        needsReload = true;
-        break;
-      }
-    }
-
-    if (needsReload) {
-      final isLocalArchive = (currentChapter.archivePath ?? '').isNotEmpty;
-      final archivePath = isLocalArchive
-          ? await resolveLocalArchivePath(currentChapter.archivePath!)
-          : (await findDownloadedChapter(currentChapter))?.archive?.path;
-      if (!mounted) return;
-
-      if (archivePath != null && await File(archivePath).exists()) {
-        try {
-          final local = await ref.read(
-            getArchiveDataFromFileProvider(archivePath).future,
-          );
-          if (!mounted) return;
-          final images = local.images ?? [];
-          for (final page in pages) {
-            // A page's index is its image's position in the archive. Not a
-            // running count: both halves of a split wide page share one.
-            final imgIdx = page.index;
-            if (page.chapter?.id == currentChapter.id &&
-                !page.isTransitionPage &&
-                imgIdx != null &&
-                imgIdx < images.length) {
-              page.archiveImage = images[imgIdx].image;
-            }
-          }
-          _preloadManager.markChapterAsLoaded(currentChapter);
-          if (mounted) {
-            setState(() {});
-          }
-        } catch (e) {
-          if (kDebugMode) {
-            debugPrint('Error reloading evicted chapter pages: $e');
-          }
-        }
-      }
-    } else {
-      // Remote pages and image folders can resolve from their existing URLs /
-      // paths. Restore their membership so subsequent eviction stays bounded.
-      _preloadManager.markChapterAsLoaded(currentChapter);
-    }
-  }
-
-  /// Fetch encoded images in the current window without decoding offscreen
-  /// pages. Replacing the queue preserves a reader-wide limit of three workers.
-  void _prefetchPagesInOrder() {
+  void _syncPageWindow({int? first, int? last}) {
     if (!mounted || !_readerInForeground || pages.isEmpty) return;
-    final snapshot = pages;
-    final actualIdx = _pageViewToActualIndex(_currentIndex ?? 0);
-    final startIdx = actualIdx.clamp(0, snapshot.length - 1);
-    final preloadAmount = pagePreloadAmount;
-    final forwardLimit = (startIdx + (_readingBackward ? 2 : preloadAmount))
-        .clamp(0, snapshot.length - 1);
-    final backwardLimit = (startIdx - (_readingBackward ? preloadAmount : 2))
-        .clamp(0, snapshot.length - 1);
-    _imagePrefetcher.update([
-      snapshot[startIdx],
-      if (_readingBackward) ...[
-        for (var i = startIdx - 1; i >= backwardLimit; i--) snapshot[i],
-        for (var i = startIdx + 1; i <= forwardLimit; i++) snapshot[i],
-      ] else ...[
-        for (var i = startIdx + 1; i <= forwardLimit; i++) snapshot[i],
-        for (var i = startIdx - 1; i >= backwardLimit; i--) snapshot[i],
-      ],
-    ]);
+    if (first == null &&
+        _readerMode.isContinuous &&
+        _listController.isAttached) {
+      final range = _listController.visibleRange;
+      first = range?.$1;
+      last = range?.$2;
+    }
+    first ??= _pageViewToActualIndex(_currentIndex ?? 0);
+    last ??= _isDoublePageActive
+        ? _indexMath.spreads[_actualToPageViewIndex(first)].secondIndex ?? first
+        : first;
+    final range = (pages, first, last, _readingBackward, chapter.id);
+    if (_resourceRange == range) return;
+    _resourceRange = range;
+    final window = ReaderPageWindow(
+      pages,
+      first,
+      last,
+      backward: _readingBackward,
+    );
+    final evicted = _preloadManager.evictOldChapters(
+      chapter,
+      inWindow: window.prefetch,
+    );
+    if (evicted.isNotEmpty) {
+      final sources = _preloadManager.pages;
+      final gone = {for (final i in evicted) sources[i].chapter?.id};
+      for (final page in pages.where((p) => gone.contains(p.chapter?.id))) {
+        _failedPages.remove(page.identity);
+        _pageControllers.remove(page.identity)?.dispose();
+      }
+    }
+    _imagePrefetcher.update(window.prefetch);
+    if (!listEquals(_forwardPages.value, window.forward)) {
+      _forwardPages.value = window.forward;
+    }
+    if (window.needsNextChapter) _triggerChapterPreload(ChapterDirection.next);
   }
 
-  /// Handles page changes in PageView mode (discrete pages).
-  ///
-  /// Responsibilities:
-  /// - Convert PageView index -> actual page index (handles double-page mode).
-  /// - Update reader progress and chapter if the new page belongs to another chapter.
-  /// - Reset zoom/scale of the previous page so swiping back works smoothly.
-  /// - Trigger flash animation on page change.
-  /// - Update display index and persist progress.
-  /// - Preload next chapter when nearing the end of the current one.
-  /// - Reload evicted pages if needed and evict old chapter pages to free memory.
-  /// - Prefetch pages in correct order for smoother reading.
-  ///
-  /// This is the main handler for all logic that should occur when the user
-  /// swipes to a new page in PageView mode.
-  Future<void> _onPageChanged(int index) async {
+  void _onPageChanged(int index) {
     if (!mounted ||
         _restoringPosition ||
         index < 0 ||
@@ -1441,51 +1346,14 @@ class _MangaChapterPageGalleryState
     if (pageChanged) _readingBackward = index < (_currentIndex ?? index);
     _visiblePageIdentity = pages[actualIndex].identity;
     _currentIndex = index;
-    _currentPageViewIndex.value = index;
 
     _updateDisplayIndex(actualIndex);
 
-    // ── Next-chapter preloading: trigger when near the end ──
-    final distToEnd = pages.length - 1 - actualIndex;
-    if (distToEnd <= pagePreloadAmount) {
-      _triggerChapterPreload(ChapterDirection.next);
-    }
+    _syncPageWindow(first: actualIndex);
 
     if (pageChanged && _readingBackward && actualIndex <= 2) {
       _triggerChapterPreload(ChapterDirection.previous);
     }
-    await _handleEvictionsAndPrefetch();
-  }
-
-  Future<void> _handleEvictionsAndPrefetch() async {
-    // Ensure the current chapter's pages are reloaded if they were evicted
-    await _checkAndReloadEvictedPages(chapter);
-    if (!mounted) return;
-
-    // Evict old chapters' pages to free memory
-    final sources = _preloadManager.pages;
-    final evicted = _preloadManager.evictOldChapters(chapter);
-    for (final index in evicted) {
-      final source = sources[index];
-      for (final page in pages.where(
-        (p) => p.chapter?.id == source.chapter?.id && p.index == source.index,
-      )) {
-        _failedPages.remove(page.identity);
-        _pageControllers.remove(page.identity)?.dispose();
-      }
-    }
-    if (evicted.isNotEmpty) _projectPages();
-
-    // Prefetch pages in order for the new page window
-    _prefetchPagesInOrder();
-  }
-
-  void _scheduleEvictionsAndPrefetch() {
-    _evictionAndPrefetchDebounce?.cancel();
-    _evictionAndPrefetchDebounce = Timer(const Duration(milliseconds: 250), () {
-      if (!mounted) return;
-      _handleEvictionsAndPrefetch();
-    });
   }
 
   /// Updates the active chapter when the user scrolls or swipes into a page

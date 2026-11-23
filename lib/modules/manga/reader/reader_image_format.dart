@@ -1,4 +1,5 @@
-import 'dart:io';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 
@@ -8,22 +9,30 @@ import 'u_chap_data_preload.dart';
 
 /// Sniff local bytes because downloaded GIFs can have a .jpg file name.
 /// Resolving a cached path does not fetch the remote image.
-Future<bool> isReaderGif(UChapDataPreload data) async {
-  if (data.pageUrl?.url.trim().toLowerCase().contains('.gif') == true) {
-    return true;
-  }
-  final archive = data.archiveImage;
-  if (archive != null) return isGifImage(archive);
+Future<ImageProvider?> readerGif(
+  UChapDataPreload data,
+  ProviderContainer providers,
+) async {
   try {
-    final source = await data.cachedReaderFile;
-    if (source == null) return false;
+    if (data.original.isArchiveEntry) {
+      final bytes = await data.archiveBytes(providers);
+      return bytes != null && isGifImage(bytes) ? MemoryImage(bytes) : null;
+    }
+    if (data.pageUrl?.url.trim().toLowerCase().contains('.gif') == true) {
+      return data.getImageProvider(providers, true);
+    }
+    final source = await data.cachedReaderFile(providers);
+    if (source == null) return null;
     final file = await source.open();
     try {
-      return isGifImage(await file.read(6));
+      return isGifImage(await file.read(6))
+          ? data.getImageProvider(providers, true)
+          : null;
     } finally {
       await file.close();
     }
-  } on FileSystemException {
-    return false;
+  } catch (_) {
+    // Sniffing is optional. The image widget owns source errors and retries.
+    return null;
   }
 }

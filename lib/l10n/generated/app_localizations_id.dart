@@ -5355,6 +5355,13 @@ class AppLocalizationsId extends AppLocalizations {
   String get translation_quota_exhausted => 'Kuota terjemahan tidak mencukupi.';
 
   @override
+  String get translation_upgrade_quota => 'Tingkatkan';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Halaman pembayaran tidak dapat dibuka. Coba lagi nanti.';
+
+  @override
   String get translation_unsupported_language =>
       'Layanan tidak mendukung bahasa target ini.';
 

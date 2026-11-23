@@ -16,10 +16,12 @@ List<TranslationAction> translationImageMenuActions(
       controller.targetFor(target.page) == null) {
     return const [];
   }
-  return const [
+  final state = controller.state(target);
+  return [
     TranslationAction.regenerate,
     TranslationAction.readResult,
-  ].where(controller.state(target).actions.contains).toList();
+    if (state.failure?.quotaExhausted == true) TranslationAction.retry,
+  ].where(state.actions.contains).toList();
 }
 
 /// The same per-image actions in the reader's existing menu and a web image menu.
@@ -43,9 +45,12 @@ class TranslationImageActions extends StatelessWidget {
         children: [
           for (final action in actions)
             NodeLaneRow(
-              title: action == TranslationAction.regenerate
-                  ? context.l10n.translation_regenerate_image
-                  : context.l10n.translation_read_image,
+              title: switch (action) {
+                TranslationAction.regenerate =>
+                  context.l10n.translation_regenerate_image,
+                TranslationAction.retry => context.l10n.retry,
+                _ => context.l10n.translation_read_image,
+              },
               icon: action == TranslationAction.regenerate
                   ? icons.translate
                   : icons.refresh,

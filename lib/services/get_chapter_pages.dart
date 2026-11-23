@@ -10,6 +10,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/modules/library/providers/file_scanner.dart';
 import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_providers.dart';
+import 'package:mangayomi/modules/manga/archive_reader/models/models.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/services/downloaded_chapter.dart';
 import 'package:mangayomi/utils/utils.dart';
@@ -17,24 +18,56 @@ import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.d
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 part 'get_chapter_pages.g.dart';
 
+/// Archive bytes belong to the chapter; concurrent page readers share a reload.
+class ReaderArchive {
+  ReaderArchive(this.path);
+  final String path;
+  Future<List<LocalImage>?>? _reading;
+  bool _retain = true;
+
+  void evict() {
+    _retain = false;
+    _reading = null;
+  }
+
+  void retain() => _retain = true;
+
+  Future<Uint8List> read(
+    int index,
+    List<UChapDataPreload> pages,
+    Future<List<LocalImage>?> Function(String path) load,
+  ) async {
+    final request = _reading ??= load(path);
+    try {
+      final images = await request;
+      if (images == null ||
+          index >= images.length ||
+          images[index].image == null) {
+        throw const FileSystemException('Archive page unavailable');
+      }
+      if (_retain && identical(_reading, request)) {
+        for (final page in pages) {
+          final i = page.index!;
+          if (i < images.length) page.archiveImage = images[i].image;
+        }
+      }
+      return images[index].image!;
+    } finally {
+      if (identical(_reading, request)) _reading = null;
+    }
+  }
+}
+
 class GetChapterPagesModel {
   Directory? path;
   List<PageUrl> pageUrls = [];
-  List<bool> isLocaleList = [];
-  List<Uint8List?> archiveImages = [];
-  // Parallel to archiveImages: the real on-disk path for pages that are
-  // standalone files (local image-folder chapters), so they never have to be
-  // read into memory just to get a path back out. Null for every page that
-  // isn't a plain folder page (archive entries, downloaded/remote pages).
-  List<String?> localImagePaths = [];
+  final ReaderArchive? archive;
   List<UChapDataPreload> uChapDataPreload;
   GetChapterPagesModel({
     required this.path,
     required this.pageUrls,
-    required this.isLocaleList,
-    required this.archiveImages,
+    this.archive,
     required this.uChapDataPreload,
-    required this.localImagePaths,
   });
 }
 
@@ -102,18 +135,16 @@ Future<GetChapterPagesModel> getChapterPages(
       }
     }
 
-    final chapterModel = GetChapterPagesModel(
-      path: path,
-      pageUrls: pageUrls,
-      isLocaleList: isLocaleList,
-      archiveImages: archiveImages,
-      uChapDataPreload: [],
-      localImagePaths: <String?>[],
-    );
-
     final archivePath = isLocalArchive
         ? resolvedArchivePath
         : downloaded?.archive?.path;
+    final localImagePaths = <String?>[];
+    final chapterModel = GetChapterPagesModel(
+      path: path,
+      pageUrls: pageUrls,
+      archive: archivePath == null ? null : ReaderArchive(archivePath),
+      uChapDataPreload: [],
+    );
 
     if (pageUrls.isNotEmpty || archivePath != null || downloaded != null) {
       if (archivePath != null) {
@@ -126,7 +157,7 @@ Future<GetChapterPagesModel> getChapterPages(
           // to isLocaleList so index i always refers to the same page across
           // all three lists.
           archiveImages.add(image.image);
-          chapterModel.localImagePaths.add(image.path);
+          localImagePaths.add(image.path);
           isLocaleList.add(true);
         }
       } else {
@@ -137,7 +168,7 @@ Future<GetChapterPagesModel> getChapterPages(
             : downloaded!.pageCount;
         for (var i = 0; i < pageCount; i++) {
           archiveImages.add(null);
-          chapterModel.localImagePaths.add(null);
+          localImagePaths.add(null);
           if (await findDownloadedPageFileAsync(path!, i) != null) {
             isLocaleList.add(true);
           } else {
@@ -172,9 +203,7 @@ Future<GetChapterPagesModel> getChapterPages(
             i,
             chapterModel,
             i,
-            localImagePath: i < chapterModel.localImagePaths.length
-                ? chapterModel.localImagePaths[i]
-                : null,
+            localImagePath: localImagePaths[i],
           ),
         );
       }

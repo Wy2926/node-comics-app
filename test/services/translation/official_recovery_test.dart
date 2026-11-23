@@ -403,6 +403,83 @@ void main() {
     return frozen;
   }
 
+  test('seven new targets submit and restore while both obsolete sources are still blocked', () async {
+    final file = (target.source as _Source).file;
+    final held = [_HeldSource(file), _HeldSource(file)];
+    final old = [
+      for (var i = 0; i < 2; i++)
+        TranslationTarget(TranslationPage('old-$i', '1'), held[i]),
+    ];
+    final value = runtime()..setWindow('reader', old);
+    await Future.wait(held.map((s) => s.acquired.future));
+    final next = <TranslationTarget>[];
+    for (int i = 0; i < 7; i++) {
+      final file = await File('${directory.path}/page-$i.png')
+          .writeAsBytes(img.encodePng(img.Image(width: 8 + i, height: 12)));
+      next.add(
+        TranslationTarget(TranslationPage('new-$i', '1'), _Source(file)),
+      );
+    }
+    try {
+      value.setWindow('reader', next);
+      await _until(() => next.every((t) => value.stateFor(t.page).noText));
+      expect(puts, hasLength(7));
+      final restored = runtime()..setWindow('reader', next, automatic: false);
+      await restored.restore(next);
+      expect(next.every((t) => restored.stateFor(t.page).noText), isTrue);
+      expect(puts, hasLength(7));
+    } finally {
+      for (final s in held) {
+        s.resume.complete();
+      }
+    }
+  });
+
+  test('last reader cancels queued result I/O, another reader can rejoin and share it', () async {
+    serveFullImage(tileWebp, 'image/webp');
+    final old = runtime()..setWindow('reader', [target]);
+    await _until(() => old.stateFor(target.page).result != null);
+    final result = old.stateFor(target.page).result!;
+    await stop(old);
+    final held = _HeldReadRepository(
+      repository,
+      'operation:${old.scope}:${result.operationId}',
+    );
+    repository = held;
+    final next = runtime();
+    final first = TranslationCancellation(), second = TranslationCancellation();
+    final abandoned = expectLater(
+      next.readResult(result, first),
+      throwsA(isA<TranslationCancelled>()),
+    );
+    await held.started.future;
+    first.cancel();
+    await abandoned.timeout(const Duration(seconds: 1));
+    next.setWindow('reader', [target], automatic: false);
+    held.resume.complete();
+    // Drain the serialized result queue without touching the abandoned result.
+    await expectLater(
+      next.readResult(
+        TranslationResultRef(next.scope, 'missing'),
+        TranslationCancellation(),
+      ),
+      throwsA(isA<TranslationFailure>()),
+    );
+    expect(downloads, 0);
+    expect((await repository.read(held.key))?['resultKey'], isNull);
+    final shared = expectLater(
+      next.readResult(result, second),
+      throwsA(isA<TranslationCancelled>()),
+    );
+    final current = next.readResult(result, TranslationCancellation());
+    second.cancel();
+    await shared.timeout(const Duration(seconds: 1));
+    expect(downloads, 0);
+    (await current).release();
+    expect(downloads, 1);
+    expect(puts, hasLength(1));
+  });
+
   test('after a model switch a verified-absent UUID replays its frozen model and format; only regeneration uses the new choice', () async {
     await (target.source as _Source).file.writeAsBytes(
       img.encodePng(img.Image(width: 8, height: 16384)),
@@ -493,6 +570,7 @@ void main() {
       const TranslationFailure('QUOTA_EXHAUSTED').message,
     );
     expect(first.stateFor(target.page).actions, {TranslationAction.retry});
+    expect(first.stateFor(target.page).failure?.quotaExhausted, isTrue);
     await stop(first);
     rejectCreate = null;
     final next = runtime()..setWindow('web', [target]);
@@ -500,6 +578,7 @@ void main() {
       () => next.stateFor(target.page).phase == TranslationPhase.failed,
     );
     expect(puts, hasLength(1));
+    expect(next.stateFor(target.page).failure?.quotaExhausted, isTrue);
     await next.perform(target, TranslationAction.retry);
     await _until(() => next.stateFor(target.page).noText);
     expect(puts.last.$1, puts.first.$1);

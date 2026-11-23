@@ -9,19 +9,27 @@ import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 class ReaderImagePrefetcher {
   ReaderImagePrefetcher({required this.load});
 
-  final Future<void> Function(UChapDataPreload page, bool Function() isCurrent)
-  load;
+  final Future<void Function()> Function(UChapDataPreload page) load;
   final _pending = Queue<UChapDataPreload>();
   final _active = <UChapDataPreload>{};
+  final _retained = <UChapDataPreload, void Function()>{};
   Set<UChapDataPreload> _window = {};
   bool _disposed = false;
 
   void update(Iterable<UChapDataPreload> pages) {
     if (_disposed) return;
     _window = pages.where((page) => !page.isTransitionPage).toSet();
+    for (final page
+        in _retained.keys.where((p) => !_window.contains(p)).toList()) {
+      _retained.remove(page)!();
+    }
     _pending
       ..clear()
-      ..addAll(_window.where((page) => !_active.contains(page)));
+      ..addAll(
+        _window.where(
+          (page) => !_active.contains(page) && !_retained.containsKey(page),
+        ),
+      );
     _pump();
   }
 
@@ -35,7 +43,12 @@ class ReaderImagePrefetcher {
 
   Future<void> _run(UChapDataPreload page) async {
     try {
-      await load(page, () => !_disposed && _window.contains(page));
+      final release = await load(page);
+      if (!_disposed && _window.contains(page)) {
+        _retained[page] = release;
+      } else {
+        release();
+      }
     } catch (_) {
       // Visible image widgets own errors/retries; background failure only
       // releases its slot so it cannot block the rest of the reading window.
@@ -48,6 +61,10 @@ class ReaderImagePrefetcher {
   void clear() {
     _window.clear();
     _pending.clear();
+    for (final release in _retained.values) {
+      release();
+    }
+    _retained.clear();
   }
 
   void dispose() {

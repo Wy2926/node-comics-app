@@ -134,6 +134,25 @@ void main() {
     },
   );
 
+  test('quota uses the current badge locale and keeps manual retry in the image menu', () async {
+    runtime.states['first'] = const PageTranslationState(
+      phase: TranslationPhase.failed,
+      failure: TranslationFailure('QUOTA_EXHAUSTED'),
+      actions: {TranslationAction.retry},
+    );
+    final l10n = AppLocalizationsZh();
+    final badge = TranslationImageStatus.forTarget(
+      view,
+      first,
+      l10n,
+    ).toJson(l10n);
+    expect(badge['label'], '额度不足');
+    expect(badge['actionLabel'], '升级');
+    expect(translationImageMenuActions(view, first), [TranslationAction.retry]);
+    await view.perform(first, TranslationAction.retry);
+    expect(runtime.actions, [('first', TranslationAction.retry)]);
+  });
+
   test(
     'single-image actions reject duplicates and ignore late account errors',
     () async {

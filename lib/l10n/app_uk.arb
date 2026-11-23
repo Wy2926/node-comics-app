@@ -2252,6 +2252,8 @@
   "translation_outcome_unknown": "Результат потребує перевірки. Він не був повторно поданий.",
   "translation_rate_limited": "Кількість запитів обмежена. Переклад відновиться автоматично.",
   "translation_quota_exhausted": "Недостатня квота перекладу.",
+  "translation_upgrade_quota": "Покращити план",
+  "translation_upgrade_unavailable": "Не вдалося відкрити сторінку оплати. Спробуйте пізніше.",
   "translation_unsupported_language": "Служба не підтримує цю цільову мову.",
   "translation_upgrade_required": "Протокол трансляції несумісний. Оновіть програму.",
   "translation_remote_failed": "Помилка перекладу для цієї сторінки. Ви можете повторити спробу вручну.",

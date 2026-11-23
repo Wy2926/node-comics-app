@@ -24,14 +24,13 @@ class SourceImages {
         _reads.remove(key)!.close();
       }
     }
-    final read = _reads.putIfAbsent(key, () => _SourceRead(target));
-    try {
-      await read.ready;
-    } catch (_) {
-      if (identical(_reads[key], read)) _reads.remove(key);
-      read.close();
-      rethrow;
-    }
+    final read = _reads.putIfAbsent(
+      key,
+      () => _SourceRead(target, (failed) {
+        if (identical(_reads[key], failed)) _reads.remove(key);
+      }),
+    );
+    await cancellation.waitFor(read.ready);
     cancellation.check();
     read.cancel.check();
     return read.lease();
@@ -53,8 +52,12 @@ class SourceImageLease extends OriginalImageLease {
 }
 
 class _SourceRead {
-  _SourceRead(TranslationTarget target) {
-    ready = _read(target);
+  _SourceRead(TranslationTarget target, void Function(_SourceRead) failed) {
+    ready = cancel.waitFor(_read(target)).catchError((Object error) {
+      failed(this);
+      close();
+      throw error;
+    });
   }
   final cancel = TranslationCancellation();
   late final Future<void> ready;

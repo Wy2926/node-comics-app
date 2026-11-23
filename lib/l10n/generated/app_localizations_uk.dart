@@ -5392,6 +5392,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get translation_quota_exhausted => 'Недостатня квота перекладу.';
 
   @override
+  String get translation_upgrade_quota => 'Покращити план';
+
+  @override
+  String get translation_upgrade_unavailable =>
+      'Не вдалося відкрити сторінку оплати. Спробуйте пізніше.';
+
+  @override
   String get translation_unsupported_language =>
       'Служба не підтримує цю цільову мову.';
 

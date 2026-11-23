@@ -15,7 +15,7 @@ class TranslationViewController extends ChangeNotifier {
   final images = <String, DisplayImageLease>{};
   final _requests = <String, TranslationCancellation>{};
   final _attempted = <String, String>{};
-  final _imageErrors = <String, String>{};
+  final _imageErrors = <String, TranslationFailure>{};
   final _expired = <String>{};
   final _actions = <String, Object>{};
   final _restored = <String>{};
@@ -49,7 +49,7 @@ class TranslationViewController extends ChangeNotifier {
   }
 
   void window(List<TranslationTarget> value) {
-    targets = value.take(4).toList();
+    targets = List.unmodifiable(value);
     final keep = targets.map((t) => t.page.identity).toSet();
     for (final key in images.keys.toList()) {
       if (!keep.contains(key)) images.remove(key)?.release();
@@ -84,7 +84,7 @@ class TranslationViewController extends ChangeNotifier {
     if (failure == null) return value;
     return PageTranslationState(
       phase: TranslationPhase.failed,
-      message: failure,
+      failure: failure,
       result: value.result,
       actions: {
         if (!_expired.contains(target.page.identity)) ...{
@@ -179,8 +179,8 @@ class TranslationViewController extends ChangeNotifier {
                   _expired.add(key);
                 }
                 _imageErrors[key] = e is TranslationFailure
-                    ? e.message
-                    : localizedMessage((l10n) => l10n.translation_read_failed);
+                    ? e
+                    : const TranslationFailure('RESULT_READ_FAILED');
                 notifyListeners();
               }
             })
@@ -196,6 +196,7 @@ class TranslationViewController extends ChangeNotifier {
     TranslationTarget target,
     TranslationAction action,
   ) async {
+    if (action == TranslationAction.upgrade) return;
     final attached = runtime;
     final key = target.page.identity;
     if (_disposed ||
@@ -221,11 +222,11 @@ class TranslationViewController extends ChangeNotifier {
       // Navigation and account replacement invalidate the old action.
     } catch (e) {
       if (!_disposed && epoch == _epoch && targetFor(target.page) != null) {
-        final message = e is TranslationFailure
-            ? e.message
-            : localizedMessage((l10n) => l10n.operation_retry);
-        _imageErrors[key] = message;
-        error = message;
+        final failure = e is TranslationFailure
+            ? e
+            : const TranslationFailure('ACTION_FAILED');
+        _imageErrors[key] = failure;
+        error = failure.message;
       }
     } finally {
       if (identical(_actions[key], request)) _actions.remove(key);

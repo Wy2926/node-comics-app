@@ -314,7 +314,8 @@ class NodeLaneHttp {
         'TRANSLATION_MODEL_UNAVAILABLE',
       503 when code == 'TRANSLATION_MODEL_UNAVAILABLE' =>
         'TRANSLATION_MODEL_UNAVAILABLE',
-      _ when code == 'DAILY_QUOTA_EXHAUSTED' => 'QUOTA_EXHAUSTED',
+      _ when code == 'DAILY_QUOTA_EXHAUSTED' || code == 'QUOTA_EXHAUSTED' =>
+        'QUOTA_EXHAUSTED',
       401 || 403 => 'AUTH_REQUIRED',
       429 => 'RATE_LIMITED',
       410 when code == 'RESULT_EXPIRED' => 'RESULT_EXPIRED',

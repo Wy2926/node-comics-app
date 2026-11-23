@@ -11,12 +11,14 @@ import 'package:mangayomi/modules/translation/translation_display_switch.dart';
 import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/modules/translation/translation_image_status.dart';
 import 'package:mangayomi/modules/translation/translation_image_actions.dart';
+import 'package:mangayomi/modules/translation/translation_upgrade.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/providers/l10n_providers.dart';
 import 'package:mangayomi/modules/manga/reader/subsampling_scale_image_view/subsampling_scale_image_view.dart';
 
 import 'reader_page_image.dart';
 import 'u_chap_data_preload.dart';
+import 'widgets/reader_interactive_region.dart';
 
 TranslationPage readerTranslationPage(UChapDataPreload data) {
   final manga = data.chapter?.manga.value;
@@ -77,17 +79,11 @@ class ReaderSourceImageReader implements SourceImageReader {
 class ReaderTranslationHost extends ConsumerStatefulWidget {
   const ReaderTranslationHost({
     super.key,
-    required this.pages,
-    required this.visibleCount,
+    required this.window,
     required this.child,
-    required this.pageListenable,
-    required this.actualIndex,
   });
-  final List<UChapDataPreload> pages;
-  final int visibleCount;
+  final ValueListenable<List<UChapDataPreload>> window;
   final Widget child;
-  final ValueListenable<int?> pageListenable;
-  final int Function() actualIndex;
   @override
   ConsumerState<ReaderTranslationHost> createState() =>
       _ReaderTranslationHostState();
@@ -155,8 +151,13 @@ class ReaderTranslationHost extends ConsumerStatefulWidget {
               builder: (context, constraints) {
                 final badge = TranslationImageBadge(
                   status: status,
+                  actionRegion: (button) =>
+                      ReaderInteractiveRegion(child: button),
                   onAction: status.action == null
                       ? null
+                      : status.action == TranslationAction.upgrade
+                      ? () =>
+                            openTranslationUpgrade(context, controller, target)
                       : () => controller.perform(target, status.action!),
                 );
                 Widget position() {
@@ -210,14 +211,13 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
   final _projections = <String, UChapDataPreload>{};
   late final service = ref.read(translationServiceProvider);
   bool _foreground = true;
-  bool _windowScheduled = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     service.addListener(_attach);
     controller.addListener(_releaseUnusedProjections);
-    widget.pageListenable.addListener(_scheduleWindow);
+    widget.window.addListener(_window);
     service
         .initialize()
         .then((_) {
@@ -239,26 +239,19 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
         : <String>{};
     for (final key in _projections.keys.toList()) {
       if (!retainedPaths.contains(_projections[key]!.localImagePath)) {
-        _projections.remove(key)?.decodedImage?.dispose();
+        _projections.remove(key);
       }
     }
-  }
-
-  void _scheduleWindow() {
-    if (_windowScheduled) return;
-    _windowScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _windowScheduled = false;
-      if (mounted) _window();
-    });
   }
 
   @override
   void didUpdateWidget(ReaderTranslationHost oldWidget) {
     super.didUpdateWidget(oldWidget);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _window();
-    });
+    if (oldWidget.window != widget.window) {
+      oldWidget.window.removeListener(_window);
+      widget.window.addListener(_window);
+      _window();
+    }
   }
 
   @override
@@ -282,29 +275,14 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
   }
 
   void _window() {
-    final targets = <TranslationTarget>[];
-    final seen = <String>{};
     final providers = ProviderScope.containerOf(context, listen: false);
-    for (final data in widget.pages.skip(
-      widget.actualIndex().clamp(0, widget.pages.length),
-    )) {
-      if (data.isTransitionPage) continue;
-      final page = readerTranslationPage(data);
-      if (!seen.add(page.identity)) continue;
-      targets.add(
-        TranslationTarget(page, ReaderSourceImageReader(data, providers)),
-      );
-      if (targets.length >= widget.visibleCount + 2 || targets.length >= 4) {
-        break;
-      }
-    }
-    final keep = targets.map((t) => t.page.key).toSet();
-    for (final key in _projections.keys.toList()) {
-      if (!keep.any((page) => key.startsWith(page))) {
-        _projections.remove(key)?.decodedImage?.dispose();
-      }
-    }
-    controller.window(targets);
+    controller.window([
+      for (final data in widget.window.value)
+        TranslationTarget(
+          readerTranslationPage(data),
+          ReaderSourceImageReader(data, providers),
+        ),
+    ]);
   }
 
   UChapDataPreload display(UChapDataPreload original) {
@@ -319,7 +297,6 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
     final key = '${page.key}:${original.srcRect}';
     final previous = _projections[key];
     if (previous?.localImagePath == image.file.path) return previous!;
-    previous?.decodedImage?.dispose();
     final rect = original.srcRect;
     final factor = rect == null ? 1.0 : image.height / rect.height;
     return _projections[key] =
@@ -353,10 +330,7 @@ class _ReaderTranslationHostState extends ConsumerState<ReaderTranslationHost>
     service.removeListener(_attach);
     controller.removeListener(_releaseUnusedProjections);
     controller.dispose();
-    widget.pageListenable.removeListener(_scheduleWindow);
-    for (final data in _projections.values) {
-      data.decodedImage?.dispose();
-    }
+    widget.window.removeListener(_window);
     super.dispose();
   }
 

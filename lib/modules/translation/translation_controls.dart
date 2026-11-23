@@ -14,6 +14,7 @@ import 'translation_display_switch.dart';
 import 'translation_language_picker.dart';
 import 'translation_model_picker.dart';
 import 'translation_settings.dart';
+import 'translation_upgrade.dart';
 import 'translation_view_controller.dart';
 
 Future<void> showTranslationControls(
@@ -65,6 +66,9 @@ class TranslationControlsContent extends ConsumerWidget {
             .where((s) => s.phase == TranslationPhase.succeeded)
             .length;
         final issues = states.where((s) => s.hasIssue).toList();
+        final quotaTarget = controller.targets
+            .where((t) => controller.state(t).failure?.quotaExhausted == true)
+            .firstOrNull;
         final reasons = {
           for (final issue in issues)
             if (issue.message.isNotEmpty) issue.message,
@@ -82,6 +86,18 @@ class TranslationControlsContent extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.error,
                   ),
                 ),
+                if (quotaTarget != null)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: TextButton(
+                      onPressed: () => openTranslationUpgrade(
+                        context,
+                        controller,
+                        quotaTarget,
+                      ),
+                      child: Text(context.l10n.translation_upgrade_quota),
+                    ),
+                  ),
                 const SizedBox(height: NodeLaneTokens.space12),
               ],
               if (!browser) ...[

@@ -69,7 +69,7 @@ class ReaderPageContent extends StatelessWidget {
     bool attached,
   )
   onDoublePageControllerChanged;
-  final Future<void> Function(int index) onPageChanged;
+  final ValueChanged<int> onPageChanged;
 
   const ReaderPageContent({
     super.key,

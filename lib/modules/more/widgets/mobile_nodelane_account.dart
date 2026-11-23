@@ -89,16 +89,29 @@ class _AccountViewState extends ConsumerState<_AccountView>
     if (_websiteOpen) return;
     _websiteOpen = true;
     try {
-      // The website owns its own login and billing flow. Never pass app tokens.
+      if (free) {
+        if (!await service.openBillingUpgrade(
+          service.runtime,
+          () => mounted && ModalRoute.of(context)?.isCurrent != false,
+        )) {
+          _websiteOpen = false;
+        }
+        return;
+      }
       final opened = await launchUrl(
-        Uri.https('comics.nodelane.net', free ? '/pricing/' : '/account/'),
+        Uri.https('comics.nodelane.net', '/account/'),
         mode: LaunchMode.externalApplication,
       );
       if (!opened) throw StateError('Unavailable');
     } catch (_) {
       _websiteOpen = false;
       if (mounted) {
-        showNodeLaneNotice(context.l10n.failed, kind: NodeLaneNoticeKind.error);
+        showNodeLaneNotice(
+          free
+              ? context.l10n.translation_upgrade_unavailable
+              : context.l10n.failed,
+          kind: NodeLaneNoticeKind.error,
+        );
       }
     }
   }

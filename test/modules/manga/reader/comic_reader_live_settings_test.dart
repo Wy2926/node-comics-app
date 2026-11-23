@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -21,6 +20,7 @@ import 'package:mangayomi/modules/translation/translation_controls.dart';
 import 'package:mangayomi/modules/widgets/nodelane_bubble.dart';
 
 import '../../../helpers/bubble_finders.dart';
+import '../../../helpers/cached_reader_png.dart';
 
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences.dart';
 import 'package:mangayomi/modules/manga/reader/settings/comic_reader_preferences_provider.dart';
@@ -137,25 +137,21 @@ void main() {
     WidgetTester tester, {
     bool settle = true,
     bool savedPage = false,
+    int imageHeight = 400,
+    int pageCount = 8,
   }) async {
     tester.view.physicalSize = const Size(400, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-    final recorder = ui.PictureRecorder();
-    Canvas(recorder).drawColor(Colors.blue, BlendMode.src);
-    final picture = recorder.endRecording();
-    final image = await picture.toImage(200, 400);
-    picture.dispose();
+    final bytes = await cachedReaderPng(tester, 200, imageHeight);
     final pages = List.generate(
-      8,
-      (i) => UChapDataPreload(chapter, null, null, true, null, i, null, i)
-        ..decodedImage = image.clone()
+      pageCount,
+      (i) => UChapDataPreload(chapter, null, null, true, bytes, i, null, i)
         ..loadedWidth = 200
-        ..loadedHeight = 400
+        ..loadedHeight = imageHeight.toDouble()
         ..resolvedFilePath = '/fixture/page-$i.png',
     );
-    image.dispose();
     final translation = _Translation();
     final container = ProviderContainer(
       overrides: [
@@ -177,9 +173,6 @@ void main() {
       pageUrls: [
         for (var i = 0; i < pages.length; i++) PageUrl('/fixture/page-$i.png'),
       ],
-      isLocaleList: [],
-      archiveImages: [],
-      localImagePaths: [],
       uChapDataPreload: pages,
     );
     await tester.pumpWidget(
@@ -251,6 +244,44 @@ void main() {
         await tester.pumpAndSettle();
         expect(reader.scrollController.offset, offset);
       }
+    },
+  );
+
+  testWidgets(
+    'translation follows visible strips rather than the finished progress label',
+    (tester) async {
+      await mount(tester, pageCount: 24, imageHeight: 90);
+      final view = content(tester);
+      final translation = ReaderTranslationHost.controllerOf(
+        tester.element(find.byType(ImageViewWebtoon)),
+      )!;
+      List<int> targets() => [
+        for (final page in view.pages)
+          if (!page.isTransitionPage &&
+              translation.targetFor(readerTranslationPage(page)) != null)
+            page.index! + 1,
+      ];
+      expect(targets(), [1, 2, 3, 4, 5, 6, 7]);
+      view.listController.jumpToItem(
+        index: view.pages.length - 1,
+        scrollController: view.scrollController,
+        alignment: 1,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('24 / 24'), findsWidgets);
+      expect(targets(), containsAll([21, 22, 23, 24]));
+      tester.view.physicalSize = const Size(400, 2200);
+      await tester.pumpAndSettle();
+      const screen = Rect.fromLTWH(0, 0, 400, 2200);
+      final visible = [
+        for (final p in view.pages)
+          if (!p.isTransitionPage &&
+              find.byKey(ValueKey(p.identity)).evaluate().isNotEmpty &&
+              tester.getRect(find.byKey(ValueKey(p.identity))).overlaps(screen))
+            p.index! + 1,
+      ];
+      expect(visible.length, greaterThan(7));
+      expect(targets(), containsAll(visible));
     },
   );
 

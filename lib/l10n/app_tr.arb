@@ -2252,6 +2252,8 @@
   "translation_outcome_unknown": "Sonucun doğrulanması gerekiyor. Tekrar gönderilmedi.",
   "translation_rate_limited": "İstekler sınırlıdır. Çeviri otomatik olarak devam edecektir.",
   "translation_quota_exhausted": "Yetersiz çeviri kotası.",
+  "translation_upgrade_quota": "Yükselt",
+  "translation_upgrade_unavailable": "Ödeme sayfası açılamadı. Daha sonra tekrar deneyin.",
   "translation_unsupported_language": "Hizmet bu hedef dili desteklemiyor.",
   "translation_upgrade_required": "Çeviri protokolü uyumsuz. Uygulamayı güncelleyin.",
   "translation_remote_failed": "Bu sayfanın çevirisi başarısız oldu. Manuel olarak tekrar deneyebilirsiniz.",

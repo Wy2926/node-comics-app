@@ -125,6 +125,18 @@ void main() {
                     'next_billed_at': '2026-12-03T08:00:00Z',
                   },
                 };
+        case '/v1/billing/app-handoff':
+          expect(request.method, 'POST');
+          expect(
+            request.headers.value('authorization'),
+            'Bearer renewed-access',
+          );
+          reads.add((request.method, request.uri.path));
+          body = {
+            'account_id': wrongUser ? 'other' : 'user-1',
+            'code': 'a' * 43,
+            'url': 'https://other.invalid/',
+          };
         default:
           fail('Unexpected request: ${request.uri.path}');
       }
@@ -155,6 +167,23 @@ void main() {
     messenger.setMockMethodCallHandler(browser, null);
     HttpOverrides.global = previousOverrides;
     await server.close(force: true);
+  });
+
+  test('upgrade uses the signed-in account and opens only a same-origin one-time fragment', () async {
+    final session = NodeLaneSession(base);
+    await expectLater(
+      session.billingUpgradeLink(TranslationCancellation()),
+      throwsA(isA<TranslationFailure>()),
+    );
+    await session.login();
+    final url = await session.billingUpgradeLink(TranslationCancellation());
+    expect(url, Uri.parse('$base/pricing/?app=1#app-billing=${'a' * 43}'));
+    expect(reads.last, ('POST', '/v1/billing/app-handoff'));
+    wrongUser = true;
+    await expectLater(
+      session.billingUpgradeLink(TranslationCancellation()),
+      throwsA(isA<TranslationFailure>()),
+    );
   });
 
   test('native client survives PKCE exchange, renewal and session restore', () async {

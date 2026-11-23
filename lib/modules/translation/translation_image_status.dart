@@ -53,6 +53,13 @@ class TranslationImageStatus {
     if (controller.isPerforming(target)) {
       return TranslationImageStatus(l10n.translation_processing, working: true);
     }
+    if (state.failure?.quotaExhausted == true) {
+      return TranslationImageStatus(
+        l10n.translation_quota_exhausted,
+        issue: true,
+        action: TranslationAction.upgrade,
+      );
+    }
     if (controller.isReading(target) &&
         state.phase == TranslationPhase.succeeded) {
       return TranslationImageStatus(l10n.translation_reading, working: true);
@@ -105,6 +112,7 @@ class TranslationImageStatus {
     TranslationAction.retry => l10n.retry,
     TranslationAction.verify => l10n.translation_verify,
     TranslationAction.readResult => l10n.translation_reread,
+    TranslationAction.upgrade => l10n.translation_upgrade_quota,
     _ => '',
   };
   Map<String, Object?> toJson(AppLocalizations l10n) => {
@@ -121,15 +129,34 @@ class TranslationImageStatus {
 
 /// Sits inside the image, outside its color filter. Only the button takes taps.
 class TranslationImageBadge extends StatelessWidget {
-  const TranslationImageBadge({super.key, required this.status, this.onAction});
+  const TranslationImageBadge({
+    super.key,
+    required this.status,
+    this.onAction,
+    this.actionRegion,
+  });
   final TranslationImageStatus status;
   final VoidCallback? onAction;
+  final Widget Function(Widget button)? actionRegion;
 
   @override
   Widget build(BuildContext context) {
     if (!status.visible) return const SizedBox.shrink();
     final t = NodeLaneTokens.of(context), icons = NodeLaneIcons.of(context);
     final color = status.issue ? Theme.of(context).colorScheme.error : t.accent;
+    late final button = TextButton(
+      onPressed: onAction,
+      style: TextButton.styleFrom(
+        foregroundColor: t.accent,
+        minimumSize: const Size(
+          NodeLaneTokens.minTapTarget,
+          NodeLaneTokens.minTapTarget,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space12),
+        textStyle: t.readerSecondary.copyWith(fontWeight: FontWeight.w600),
+      ),
+      child: Text(status.actionLabel(context.l10n)),
+    );
     return Tooltip(
       message: status.detail.isEmpty ? status.label : status.detail,
       child: Material(
@@ -179,24 +206,7 @@ class TranslationImageBadge extends StatelessWidget {
                   ],
                 ),
               ),
-              if (status.action != null)
-                TextButton(
-                  onPressed: onAction,
-                  style: TextButton.styleFrom(
-                    foregroundColor: t.accent,
-                    minimumSize: const Size(
-                      NodeLaneTokens.minTapTarget,
-                      NodeLaneTokens.minTapTarget,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: NodeLaneTokens.space12,
-                    ),
-                    textStyle: t.readerSecondary.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  child: Text(status.actionLabel(context.l10n)),
-                ),
+              if (status.action != null) actionRegion?.call(button) ?? button,
             ],
           ),
         ),

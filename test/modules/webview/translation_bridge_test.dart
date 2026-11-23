@@ -65,6 +65,7 @@ class _Controller extends Fake implements InAppWebViewController {
 
 class _Runtime extends Fake implements ChannelRuntime {
   File? resultFile;
+  TranslationFailure? failure;
   void Function(List<TranslationTarget>)? onWindow;
   @override
   Stream<void> get changes => const Stream.empty();
@@ -81,6 +82,9 @@ class _Runtime extends Fake implements ChannelRuntime {
 
   @override
   PageTranslationState stateFor(TranslationPage page) => PageTranslationState(
+    phase: failure == null ? TranslationPhase.idle : TranslationPhase.failed,
+    failure: failure,
+    actions: {if (failure != null) TranslationAction.retry},
     result: resultFile == null
         ? null
         : const TranslationResultRef('local', 'op'),
@@ -331,6 +335,43 @@ void main() {
     expect(engine.states.last.$1, isNot(scope));
   });
 
+  test('web upgrade requires a quota error on the current image revision and never runs a translation', () async {
+    final engine = _InPageReader(),
+        runtime = _Runtime()
+          ..failure = const TranslationFailure('DAILY_QUOTA_EXHAUSTED');
+    final reader = TranslationViewController()..attach(runtime);
+    final upgrades = <TranslationTarget>[];
+    final connected = WebTranslationBridge(
+      engine,
+      reader,
+      'quota',
+      l10n: AppLocalizationsEn(),
+      onUpgrade: (target) async => upgrades.add(target),
+    );
+    addTearDown(reader.dispose);
+    addTearDown(connected.dispose);
+    const origin = 'https://reader.example', document = '$origin/chapter';
+    await connected.install(Uri.parse(document));
+    var sequence = 0;
+    Future<bool> send(Map<String, Object> data) => engine.send!(
+      origin,
+      document,
+      {'token': engine.token, 'seq': ++sequence, ...data},
+    );
+    await send({
+      'items': [
+        {'id': '1', 'revision': 'current', 'kind': 'pixels', 'url': ''},
+      ],
+    });
+    Future<bool> upgrade(String revision) =>
+        send({'id': '1', 'revision': revision, 'action': 'upgrade'});
+    expect(await upgrade('old'), isFalse);
+    expect(await upgrade('current'), isTrue);
+    runtime.failure = const TranslationFailure('RATE_LIMITED');
+    expect(await upgrade('current'), isFalse);
+    expect(upgrades, [reader.targets.single]);
+  });
+
   test('archived SVG uses the original viewport and falls back to its bytes if pixel export fails', () async {
     final files = WebImageTestDirectory();
     await files.setUp();
@@ -369,6 +410,7 @@ void main() {
       ],
     });
     final target = reader.targets.single;
+    late Directory archiveDirectory;
     for (final tainted in [false, true]) {
       engine.unreadablePixels = tainted;
       final lease = await target.source.acquire(
@@ -376,6 +418,7 @@ void main() {
         TranslationCancellation(),
       );
       try {
+        if (tainted) archiveDirectory = lease.file.parent;
         expect(engine.validated, {
           'id': '1',
           'revision': '2',
@@ -393,6 +436,7 @@ void main() {
       }
     }
     connected.navigate();
+    await waitDeleted(archiveDirectory);
   });
 
   test('reinstall starts a fresh window sequence and consecutive updates are not dropped', () async {

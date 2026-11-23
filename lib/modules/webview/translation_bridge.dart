@@ -54,6 +54,7 @@ class WebTranslationBridge {
     required this._l10n,
     this._theme = const {},
     this.onImageMenu,
+    this.onUpgrade,
     this.onReading,
   }) {
     transport.listen(_receive);
@@ -65,6 +66,7 @@ class WebTranslationBridge {
   final TranslationViewController view;
   final String tabId;
   final Future<void> Function(TranslationTarget)? onImageMenu;
+  final Future<void> Function(TranslationTarget)? onUpgrade;
   final void Function(bool chapter, String? next)? onReading;
   Map<String, Object> _theme;
   AppLocalizations _l10n;
@@ -176,7 +178,12 @@ class WebTranslationBridge {
               action) {
         return false;
       }
-      await view.perform(target, action);
+      if (action == TranslationAction.upgrade) {
+        if (onUpgrade == null) return false;
+        await onUpgrade!(target);
+      } else {
+        await view.perform(target, action);
+      }
       return true;
     }
     final items = value['items'];

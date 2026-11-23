@@ -17,14 +17,7 @@ UChapDataPreload page(Chapter chapter, int index) =>
     UChapDataPreload(chapter, null, null, false, null, index, null, index);
 
 GetChapterPagesModel model(List<UChapDataPreload> pages) =>
-    GetChapterPagesModel(
-      path: null,
-      pageUrls: [],
-      isLocaleList: [],
-      archiveImages: [],
-      uChapDataPreload: pages,
-      localImagePaths: [],
-    );
+    GetChapterPagesModel(path: null, pageUrls: [], uChapDataPreload: pages);
 
 void main() {
   test(
@@ -63,8 +56,11 @@ void main() {
       expect(manager.pages.map((p) => p.chapter?.id), [0, 1, 2, 3]);
       expect(manager.pages.map((p) => p.pageIndex), [0, 1, 2, 3]);
 
-      manager.evictOldChapters(chapters[3]);
-      expect(manager.isChapterEvicted(chapters[0]), isTrue);
+      final evicted = manager.evictOldChapters(chapters[3]);
+      expect(
+        evicted.map((i) => manager.pages[i].chapter),
+        contains(chapters[0]),
+      );
       await manager.loadAdjacentChapter(
         ChapterDirection.next,
         findChapter: (_) => chapters[0],
@@ -73,10 +69,11 @@ void main() {
       );
       expect(manager.pages.last.chapterState, ChapterLoadState.failed);
       expect(manager.pages.where((p) => p.chapter?.id == 0), hasLength(1));
-      manager.markChapterAsLoaded(chapters[0]);
-      manager.evictOldChapters(chapters[1]);
-      expect(manager.isChapterEvicted(chapters[0]), isFalse);
-      expect(manager.isChapterEvicted(chapters[3]), isTrue);
+      final returning = manager.evictOldChapters(
+        chapters[1],
+        inWindow: [manager.pages.first],
+      );
+      expect(returning.map((i) => manager.pages[i].chapter), [chapters[3]]);
       manager.dispose();
     },
   );
