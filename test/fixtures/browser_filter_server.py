@@ -37,6 +37,8 @@ NAVIGATION = b"""<!doctype html><meta name="viewport" content="width=device-widt
 <button onclick="history.back()">Page back</button>
 <a href="/navigation?background=1">Background chapter</a>
 <p>needle one, needle two</p>
+<label>Test password <input type="password" autocomplete="off"></label>
+<output id="length">Password length: 0</output>
 <script>
 const load = Number(sessionStorage.fixtureLoads || 0) + 1;
 sessionStorage.fixtureLoads = load;
@@ -51,6 +53,9 @@ document.querySelector('#chapter').onclick = () => {
   render();
 };
 draft.oninput = render;
+document.querySelector('input[type=password]').oninput = e => {
+  document.querySelector('#length').textContent = `Password length: ${e.target.value.length}`;
+};
 addEventListener('popstate', render);
 render();
 </script>"""

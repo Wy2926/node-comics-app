@@ -4,11 +4,13 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:mangayomi/services/http/rhttp/src/model/settings.dart';
 import 'package:mangayomi/services/download_manager/m3u8/models/download.dart';
 import 'package:mangayomi/services/download_manager/m3u8/models/ts_info.dart';
@@ -115,6 +117,7 @@ class DownloadIsolatePool {
 
   Future<void> submitFileDownload({
     required String taskId,
+    Set<String> sessionOrigins = const {},
     required List<PageUrl> pageUrls,
     required int concurrentDownloads,
     required ItemType itemType,
@@ -129,6 +132,8 @@ class DownloadIsolatePool {
       taskId: taskId,
       type: _TaskType.fileDownload,
       params: FileDownloadParams(
+        sessionOrigins: sessionOrigins,
+        token: sessionOrigins.isEmpty ? null : RootIsolateToken.instance,
         pageUrls: pageUrls,
         concurrentDownloads: concurrentDownloads,
         itemType: itemType,
@@ -293,11 +298,15 @@ class _DownloadTask {
 
 /// Parameters for file download
 class FileDownloadParams {
+  final Set<String> sessionOrigins;
+  final RootIsolateToken? token;
   final List<PageUrl> pageUrls;
   final int concurrentDownloads;
   final ItemType itemType;
 
   FileDownloadParams({
+    this.sessionOrigins = const {},
+    this.token,
     required this.pageUrls,
     required this.concurrentDownloads,
     required this.itemType,
@@ -481,10 +490,16 @@ void _workerEntryPoint(SendPort mainPort) async {
     if (message is _WorkerTask) {
       try {
         if (message.type == _TaskType.fileDownload) {
+          final params = message.params as FileDownloadParams;
+          if (params.token case final token?) {
+            BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+          }
           await _processFileDownload(
-            message.params as FileDownloadParams,
+            params,
             message.replyPort,
-            httpClient,
+            params.sessionOrigins.isEmpty
+                ? httpClient
+                : SourceSessionClient(params.sessionOrigins, httpClient),
           );
         } else if (message.type == _TaskType.m3u8Download) {
           await processM3u8Download(

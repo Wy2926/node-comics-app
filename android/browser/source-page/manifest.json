@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "NodeLane Source Page",
+  "version": "1.0",
+  "browser_specific_settings": {"gecko": {"id": "source-page@nodelane.net"}},
+  "optional_permissions": ["userScripts"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {"scripts": ["background.js"]},
+  "externally_connectable": {"ids": ["reader@nodelane.net"]}
+}

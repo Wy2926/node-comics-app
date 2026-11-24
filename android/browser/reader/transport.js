@@ -9,7 +9,11 @@
       let value, error;
       try {
         if (url.split('#')[0] !== location.href.split('#')[0]) throw Error('SOURCE_CHANGED');
-        if (operation === 'siteProtection') {
+        if (operation === 'sourcePage') {
+          value = await browser.runtime.sendMessage('source-page@nodelane.net', {
+            url: location.href, scripts: args.scripts,
+          });
+        } else if (operation === 'siteProtection') {
           value = await browser.runtime.sendMessage('uBlock0@raymondhill.net', {
             what: 'nodelaneSiteProtection', url: location.href.split('#')[0], enabled: args.enabled,
           });

@@ -88,6 +88,7 @@ def browserAssets = tasks.register('prepareBrowserExtensions', Sync) {
     }
     from(rootProject.file('browser/ublock')) { into 'extensions/ublock' }
     from(rootProject.file('browser/reader')) { into 'extensions/reader' }
+    from(rootProject.file('browser/source-page')) { into 'extensions/source-page' }
     inputs.file(reader)
     into(browserAssetsDir)
     doFirst {

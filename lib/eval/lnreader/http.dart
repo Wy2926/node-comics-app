@@ -6,35 +6,23 @@ import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/eval/http_response_extensions.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:http/http.dart' as http;
 
 class JsHttpClient {
   late JavascriptRuntime runtime;
-  JsHttpClient(this.runtime);
+  final Set<String> origins;
+  JsHttpClient(this.runtime, {this.origins = const {}});
 
   void init() {
-    InterceptedClient client() {
-      return MClient.init();
-    }
+    http.Client client() => SourceSessionClient(origins, MClient.init());
 
-    runtime.onMessage('http_head', (dynamic args) async {
-      return await _toHttpResponse(client(), "HEAD", args);
-    });
-    runtime.onMessage('http_get', (dynamic args) async {
-      return await _toHttpResponse(client(), "GET", args);
-    });
-    runtime.onMessage('http_post', (dynamic args) async {
-      return await _toHttpResponse(client(), "POST", args);
-    });
-    runtime.onMessage('http_put', (dynamic args) async {
-      return await _toHttpResponse(client(), "PUT", args);
-    });
-    runtime.onMessage('http_delete', (dynamic args) async {
-      return await _toHttpResponse(client(), "DELETE", args);
-    });
-    runtime.onMessage('http_patch', (dynamic args) async {
-      return await _toHttpResponse(client(), "PATCH", args);
-    });
+    for (final method in jsHttpMethods) {
+      runtime.onMessage(
+        'http_${method.toLowerCase()}',
+        (dynamic args) => _toHttpResponse(client(), method, args),
+      );
+    }
     runtime.evaluate('''
 class Response {
   constructor(url, result) {

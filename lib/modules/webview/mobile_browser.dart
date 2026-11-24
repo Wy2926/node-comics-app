@@ -42,6 +42,7 @@ import 'package:mangayomi/modules/translation/translation_view_controller.dart';
 import 'package:mangayomi/services/translation/identity.dart';
 import 'package:mangayomi/services/translation/translation_service.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/browser_host.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/repositories/browser_reader_repository.dart';
@@ -264,10 +265,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
 
   Future<void> _restore() async {
     try {
-      if (Platform.isAndroid) {
-        _useGecko = await GeckoBrowserPage.supported();
-        if (!mounted) return;
-      }
+      _useGecko = await hasBrowserHost;
+      if (!mounted) return;
       await browserSessionStore.load();
       if (!mounted) return;
       tabs.addAll(

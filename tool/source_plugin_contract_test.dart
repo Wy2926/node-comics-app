@@ -78,21 +78,21 @@ ${contract['setup'] ?? ''}
               'preferences': service.getSourcePreferences().length,
             };
           case 'search':
-            final result = await service.search(
-              args[0],
-              args[1],
-              contract['nativeFilters'] == true
-                  ? service.getFilterList().filters
-                  : [],
-            );
+          case 'popular':
+            final result = contract['method'] == 'popular'
+                ? await service.getPopular(args[0])
+                : await service.search(
+                    args[0],
+                    args[1],
+                    contract['nativeFilters'] == true
+                        ? service.getFilterList().filters
+                        : [],
+                  );
             return {
               'count': result.list.length,
               'name': result.list.firstOrNull?.name,
               'next': result.hasNextPage,
             };
-          case 'popular':
-            final result = await service.getPopular(args[0]);
-            return {'count': result.list.length};
           case 'detail':
             final result = await service.getDetail(args[0]);
             return {

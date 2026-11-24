@@ -14,6 +14,7 @@ import 'package:mangayomi/models/source_image_processing.dart';
 import 'package:mangayomi/services/source_images/tile_shuffle.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:mangayomi/utils/avif.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
 import 'package:path/path.dart';
@@ -174,6 +175,7 @@ class CustomExtendedNetworkImageProvider
     this.timeRetry = const Duration(milliseconds: 100),
     String? cacheKey,
     this.imageProcessing,
+    this.sessionOrigins = const {},
     this.printError = true,
     this.cacheRawData = false,
     this.cancelToken,
@@ -241,6 +243,7 @@ class CustomExtendedNetworkImageProvider
 
   final bool showCloudFlareError;
   final SourceImageProcessing? imageProcessing;
+  final Set<String> sessionOrigins;
 
   final String? imageCacheFolderName;
 
@@ -491,9 +494,11 @@ class CustomExtendedNetworkImageProvider
     if (request.headers['User-Agent'] == 'Aidoku') {
       request.headers['User-Agent'] = settingsRepository.current.userAgent!;
     }
-    StreamedResponse response = await MClient.init(
-      showCloudFlareError: showCloudFlareError,
-    ).send(request);
+    final client = MClient.init(showCloudFlareError: showCloudFlareError);
+    if (sourceSessionMatches(sessionOrigins, resolved, request.headers)) {
+      return SourceSessionClient(sessionOrigins, client).send(request);
+    }
+    StreamedResponse response = await client.send(request);
 
     if (response.statusCode != HttpStatus.ok) {
       await response.stream.listen((_) {}).cancel();

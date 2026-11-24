@@ -53,17 +53,20 @@ void main() {
       },
     );
 
-    test('page lists are isolated by manga and chapter URL', () async {
+    test('page lists are isolated by manga, chapter URL and login', () async {
       final oldChapter = Chapter(name: 'Ch 1', mangaId: 10, url: '/old-url');
       final newChapter = Chapter(name: 'Ch 1', mangaId: 10, url: '/new-url');
       final otherManga = Chapter(name: 'Ch 1', mangaId: 20, url: '/old-url');
       final pages = [PageUrl('https://example.com/1.jpg')];
 
-      await cache.putPageListToCache(oldChapter, pages);
-
-      expect(await cache.getPageListFromCache(oldChapter), isNotNull);
-      expect(await cache.getPageListFromCache(newChapter), isNull);
-      expect(await cache.getPageListFromCache(otherManga), isNull);
+      await cache.putPageListToCache(oldChapter, pages, sessionScope: 'viewer');
+      Future<List<PageUrl>?> read(Chapter c, [String? scope = 'viewer']) =>
+          cache.getPageListFromCache(c, sessionScope: scope);
+      expect(await read(oldChapter), isNotNull);
+      expect(await read(newChapter), isNull);
+      expect(await read(otherManga), isNull);
+      expect(await read(oldChapter, 'another-viewer'), isNull);
+      expect(await read(oldChapter, null), isNull);
     });
 
     test('Mihon proxy handles never survive a bridge restart', () async {

@@ -2,21 +2,20 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show PlatformViewHitTestBehavior;
 import 'package:mangayomi/modules/widgets/nodelane_controls.dart';
 import 'package:mangayomi/theme/nodelane_tokens.dart';
+import 'package:mangayomi/services/browser_host.dart';
 
 import 'browser_page_controller.dart';
 import 'browser_url.dart';
 import 'image_archive.dart';
 import 'reader_transport.dart';
 
-const _host = 'nodelane/browser';
-const _manager = MethodChannel(_host);
-
 class GeckoBrowserPage extends BrowserPageController
     implements ReaderTransport, BrowserProtection {
   GeckoBrowserPage(int id, Future<void> Function(MethodCall) onEvent)
-    : _channel = MethodChannel('$_host/$id') {
+    : _channel = MethodChannel('${browserHost.name}/$id') {
     _channel.setMethodCallHandler((event) async {
       if (event.method == 'blockerBadge') {
         _badge.value = event.arguments as String?;
@@ -43,19 +42,34 @@ class GeckoBrowserPage extends BrowserPageController
   @override
   Listenable get changes => _badge;
   ReaderMessage? _receive;
-  static Widget view(String lease, ValueChanged<int> created) => AndroidView(
-    viewType: _host,
-    creationParams: lease,
-    creationParamsCodec: const StandardMessageCodec(),
-    onPlatformViewCreated: created,
-  );
+  static Widget view(Object leaseOrTicket, [ValueChanged<int>? created]) =>
+      Builder(
+        builder: (context) => PlatformViewLink(
+          viewType: browserHost.name,
+          surfaceFactory: (_, controller) => AndroidViewSurface(
+            controller: controller as AndroidViewController,
+            gestureRecognizers: const {},
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          ),
+          // Gecko's SurfaceView needs the Activity window for the Android IME.
+          onCreatePlatformView: (params) =>
+              PlatformViewsService.initSurfaceAndroidView(
+                id: params.id,
+                viewType: params.viewType,
+                layoutDirection: Directionality.of(context),
+                creationParams: leaseOrTicket,
+                creationParamsCodec: const StandardMessageCodec(),
+                onFocus: () => params.onFocusChanged(true),
+              )..addOnPlatformViewCreatedListener((id) {
+                params.onPlatformViewCreated(id);
+                created?.call(id);
+              }),
+        ),
+      );
   static Future<void> release(String lease) =>
-      _manager.invokeMethod('release', lease);
-  static Future<bool> supported() async =>
-      await const MethodChannel('com.kodjodevf.mangayomi.device')
-          .invokeMethod<bool>('hasGeckoBrowser') ==
-      true;
-  static Future<void> clearCookies() => _manager.invokeMethod('clearCookies');
+      browserHost.invokeMethod('release', lease);
+  static Future<void> clearCookies() =>
+      browserHost.invokeMethod('clearCookies');
   Future<bool> attach(String url, bool active) async =>
       await _channel.invokeMethod<bool>('attach', {
         'url': url,
@@ -90,11 +104,11 @@ class GeckoBrowserPage extends BrowserPageController
       _channel.invokeMethod('blocker', {'url': url, 'action': action.name});
 
   static Future<void> releaseTools(int ticket) =>
-      _manager.invokeMethod('releasePanel', ticket);
+      browserHost.invokeMethod('releasePanel', ticket);
 
   static Future<void> showTools(BuildContext context, int ticket) async {
     final navigator = Navigator.of(context, rootNavigator: true);
-    final channel = MethodChannel('$_host/panel/$ticket');
+    final channel = MethodChannel('${browserHost.name}/panel/$ticket');
     final route = MaterialPageRoute<void>(
       builder: (context) => NodeLaneSurface(
         child: Scaffold(
@@ -105,14 +119,7 @@ class GeckoBrowserPage extends BrowserPageController
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          body: SafeArea(
-            top: false,
-            child: AndroidView(
-              viewType: _host,
-              creationParams: ticket,
-              creationParamsCodec: const StandardMessageCodec(),
-            ),
-          ),
+          body: SafeArea(top: false, child: view(ticket)),
         ),
       ),
     );

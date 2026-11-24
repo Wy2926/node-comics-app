@@ -8,132 +8,68 @@ import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:http_interceptor/http_interceptor.dart';
 import 'package:mangayomi/eval/http_response_extensions.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:http/http.dart' as http;
 
 class JsHttpClient {
   late JavascriptRuntime runtime;
   final SourcePackage? package;
-  JsHttpClient(this.runtime, {this.package});
+  final Set<String> origins;
+  JsHttpClient(this.runtime, {this.package, this.origins = const {}});
 
   void init() {
     // MClient.init reads the settings row and builds a new interceptor stack;
     // doing that per request added measurable overhead to every source call.
     // Reuse one client per distinct request options for this runtime's life.
-    final clientCache = <String, InterceptedClient>{};
-    InterceptedClient client(dynamic reqcopyWith) {
+    final clientCache = <String, http.Client>{};
+    http.Client client(dynamic reqcopyWith) {
       final map = (reqcopyWith as Map?)?.toMapStringDynamic;
       return clientCache.putIfAbsent(
         jsonEncode(map ?? const <String, dynamic>{}),
         // Linux source catalogue requests otherwise carry no browser identity.
         // Keep other platforms unchanged and preserve any explicit source UA.
-        () => MClient.init(
-          reqcopyWith: package == null
-              ? map
-              : {
-                  ...?map,
-                  'useDartHttpClient': true,
-                  'verifyCertificates': true,
-                },
-          useDefaultUserAgent: Platform.isLinux,
+        () => SourceSessionClient(
+          origins,
+          MClient.init(
+            reqcopyWith: package == null
+                ? map
+                : {
+                    ...?map,
+                    'useDartHttpClient': true,
+                    'verifyCertificates': true,
+                    'followRedirects': false,
+                  },
+            useDefaultUserAgent: Platform.isLinux,
+          ),
+          followRedirects: package == null
+              ? (map?['followRedirects'] as bool?)
+              : false,
+          maxRedirects: map?['maxRedirects'] as int?,
         ),
       );
     }
 
-    runtime.onMessage('http_head', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "HEAD",
-        args,
-        package: package,
+    for (final method in jsHttpMethods) {
+      runtime.onMessage(
+        'http_${method.toLowerCase()}',
+        (dynamic args) =>
+            _toHttpResponse(client(args[1]), method, args, package: package),
       );
-    });
-    runtime.onMessage('http_get', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "GET",
-        args,
-        package: package,
-      );
-    });
-    runtime.onMessage('http_post', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "POST",
-        args,
-        package: package,
-      );
-    });
-    runtime.onMessage('http_put', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "PUT",
-        args,
-        package: package,
-      );
-    });
-    runtime.onMessage('http_delete', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "DELETE",
-        args,
-        package: package,
-      );
-    });
-    runtime.onMessage('http_patch', (dynamic args) async {
-      return await _toHttpResponse(
-        client(args[1]),
-        "PATCH",
-        args,
-        package: package,
-      );
-    });
+    }
     runtime.evaluate('''
 class Client {
     constructor(reqcopyWith) {
         this.reqcopyWith = reqcopyWith;
     }
-    async head(url, headers) {
-        const result = await sendMessage(
-            "http_head",
-            JSON.stringify([null, this.reqcopyWith, url, headers])
-        );
-        return JSON.parse(result);
+    static async #send(method, options, ...args) {
+        return JSON.parse(await sendMessage("http_" + method, JSON.stringify([null, options, ...args])));
     }
-    async get(url, headers) {
-        const result = await sendMessage(
-            "http_get",
-            JSON.stringify([null, this.reqcopyWith, url, headers])
-        );
-        return JSON.parse(result);
-    }
-    async post(url, headers, body) {
-        const result = await sendMessage(
-            "http_post",
-            JSON.stringify([null, this.reqcopyWith, url, headers, body])
-        );
-        return JSON.parse(result);
-    }
-    async put(url, headers, body) {
-        const result = await sendMessage(
-            "http_put",
-            JSON.stringify([null, this.reqcopyWith, url, headers, body])
-        );
-        return JSON.parse(result);
-    }
-    async delete(url, headers, body) {
-        const result = await sendMessage(
-            "http_delete",
-            JSON.stringify([null, this.reqcopyWith, url, headers, body])
-        );
-        return JSON.parse(result);
-    }
-    async patch(url, headers, body) {
-        const result = await sendMessage(
-            "http_patch",
-            JSON.stringify([null, this.reqcopyWith, url, headers, body])
-        );
-        return JSON.parse(result);
-    }
+    async head(url, headers) { return Client.#send("head", this.reqcopyWith, url, headers); }
+    async get(url, headers) { return Client.#send("get", this.reqcopyWith, url, headers); }
+    async post(url, headers, body) { return Client.#send("post", this.reqcopyWith, url, headers, body); }
+    async put(url, headers, body) { return Client.#send("put", this.reqcopyWith, url, headers, body); }
+    async delete(url, headers, body) { return Client.#send("delete", this.reqcopyWith, url, headers, body); }
+    async patch(url, headers, body) { return Client.#send("patch", this.reqcopyWith, url, headers, body); }
 }
 ''');
   }
@@ -190,8 +126,8 @@ Future<String> _packageHttpResponse(
   var uri = Uri.parse(args[2] as String);
   final headers = (args[3] as Map?)?.toMapStringString ?? {};
   final body = args.length > 4 ? args[4] : null;
+  package.checkRequest(uri);
   for (var hop = 0; hop < 5; hop++) {
-    package.checkRequest(uri);
     final request = http.Request(method, uri)..followRedirects = false;
     request.headers.addAll(headers);
     if (body != null) {
@@ -221,7 +157,10 @@ Future<String> _packageHttpResponse(
       if (location == null || method != 'GET' && method != 'HEAD') {
         throw StateError('插件请求重定向无法安全重试');
       }
-      uri = uri.resolve(location);
+      final next = uri.resolve(location);
+      package.checkRequest(next);
+      if (uri.origin != next.origin) stripCrossOriginHeaders(headers);
+      uri = next;
       continue;
     }
     final bytes = BytesBuilder(copy: false);

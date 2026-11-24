@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
-import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:mangayomi/eval/javascript/js_common.dart';
 import 'package:flutter_qjs/quickjs/ffi.dart';
@@ -13,13 +14,26 @@ import 'package:js_packer/js_packer.dart';
 import 'package:mangayomi/eval/http_response_extensions.dart';
 import 'package:mangayomi/eval/model/m_bridge.dart';
 import 'package:mangayomi/providers/storage_provider.dart';
+import 'package:mangayomi/services/browser_host.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:mangayomi/services/http/hls_proxy.dart';
 import 'package:mangayomi/utils/cryptoaes/js_unpacker.dart';
 
 class JsUtils {
   late JavascriptRuntime runtime;
-  JsUtils(this.runtime);
+  final Set<String> origins;
+  JsUtils(this.runtime, {this.origins = const {}});
+  final _pages = <String>{};
+  bool _disposed = false;
+
+  void dispose() {
+    _disposed = true;
+    for (final id in _pages) {
+      browserHost.invokeMethod<void>('releaseSourcePage', id).ignore();
+    }
+    _pages.clear();
+  }
 
   void init() {
     registerJsCommon(runtime);
@@ -60,15 +74,41 @@ class JsUtils {
       return MBridge.parseDates(list, format, locale);
     });
     runtime.onMessage('evaluateJavascriptViaWebview', (dynamic args) async {
+      final uri = Uri.tryParse(args[0] as String);
+      final headers = (args[1] as Map).toMapStringString!;
+      final scripts = args[2] as List;
+      final seconds = args.length > 3 ? args[3] ?? 30 : 30;
+      if (uri != null &&
+          sourceSessionMatches(origins, uri, headers) &&
+          await hasBrowserHost) {
+        if (_disposed) return '';
+        final random = Random.secure();
+        final id = base64UrlEncode(
+          List.generate(16, (_) => random.nextInt(256)),
+        );
+        _pages.add(id);
+        try {
+          return await browserHost.invokeMethod<String>('sourcePage', {
+                'id': id,
+                'url': uri.toString(),
+                'headers': headers,
+                'scripts': scripts.cast<String>(),
+                'seconds': seconds,
+              }) ??
+              '';
+        } finally {
+          _pages.remove(id);
+        }
+      }
       return http
           .post(
             Uri.parse('http://localhost:$cfPort/evaluateJavascriptViaWebview'),
             headers: {HttpHeaders.contentTypeHeader: 'application/json'},
             body: jsonEncode({
               'url': args[0]!,
-              'headers': (args[1]! as Map).toMapStringString!,
-              'scripts': (args[2]! as List).map((e) => e.toString()).toList(),
-              "time": args.length > 3 ? args[3] ?? 30 : 30,
+              'headers': headers,
+              'scripts': scripts.map((e) => e.toString()).toList(),
+              'time': seconds,
             }),
           )
           .then((res) {

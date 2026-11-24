@@ -54,7 +54,10 @@ class ChapterCache {
   /// Retrieves the cached page list for [chapter], if present.
   ///
   /// Returns `null` if the cache file is missing or corrupt.
-  Future<List<PageUrl>?> getPageListFromCache(Chapter chapter) async {
+  Future<List<PageUrl>?> getPageListFromCache(
+    Chapter chapter, {
+    String? sessionScope,
+  }) async {
     try {
       final file = await _getCacheFile(chapter);
       if (!await file.exists()) {
@@ -65,7 +68,10 @@ class ChapterCache {
       if (content.isEmpty) return null;
 
       final dynamic decoded = jsonDecode(content);
-      if (decoded is! Map<String, dynamic>) return null;
+      if (decoded is! Map<String, dynamic> ||
+          decoded['sessionScope'] != sessionScope) {
+        return null;
+      }
 
       final pagesRaw = decoded['pages'] as List?;
       if (pagesRaw == null || pagesRaw.isEmpty) return null;
@@ -90,7 +96,11 @@ class ChapterCache {
   }
 
   /// Writes [pages] for [chapter] to the disk cache.
-  Future<void> putPageListToCache(Chapter chapter, List<PageUrl> pages) async {
+  Future<void> putPageListToCache(
+    Chapter chapter,
+    List<PageUrl> pages, {
+    String? sessionScope,
+  }) async {
     try {
       // Do not cache empty or placeholder page lists
       if (pages.isEmpty || pages.every((p) => p.url.isEmpty)) return;
@@ -103,6 +113,7 @@ class ChapterCache {
       final data = {
         'timestamp': DateTime.now().millisecondsSinceEpoch,
         'chapterUrl': chapter.url,
+        'sessionScope': ?sessionScope,
         'pages': pages.map((p) => p.toJson()).toList(),
       };
 

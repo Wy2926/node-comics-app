@@ -8,6 +8,7 @@ import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/services/source_package.dart';
 import 'package:mangayomi/services/source_catalog_config.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 
 void main() {
   const code = 'class DefaultExtension {}';
@@ -107,6 +108,62 @@ void main() {
         throwsStateError,
       );
     }
+  });
+  test('browser session scope comes from the installed source, not the requested URL', () {
+    final source =
+        fixture(
+            changes: {
+              'requestHosts': ['comix.to', 'api.comix.to'],
+            },
+          )
+          ..sourceCodeLanguage = SourceCodeLanguage.javascript
+          ..repo = Repo(jsonUrl: nodeLaneCatalogUrl);
+    expect(sourceSessionOrigins(source), isEmpty);
+    source.isAdded = true;
+    expect(
+      sourceSessionMatches(
+        sourceSessionOrigins(source),
+        Uri.parse('https://api.comix.to/item'),
+      ),
+      isTrue,
+    );
+    source.repo = Repo(jsonUrl: 'https://other.test/index.json');
+    final origins = sourceSessionOrigins(source);
+    expect(origins, {'https://comix.to'});
+    for (final language in [
+      SourceCodeLanguage.javascript,
+      SourceCodeLanguage.lnreader,
+    ]) {
+      final legacy = Source(
+        baseUrl: 'https://legacy.test/comics',
+        isAdded: true,
+      )..sourceCodeLanguage = language;
+      expect(sourceSessionOrigins(legacy), {'https://legacy.test'});
+    }
+    for (final header in ['Cookie', 'AUTHORIZATION']) {
+      expect(
+        sourceSessionMatches(origins, Uri.parse(source.baseUrl!), {
+          header: 'explicit',
+        }),
+        isFalse,
+      );
+    }
+    for (final url in [
+      'https://user@comix.to',
+      'https://comix.to.elsewhere.test',
+      'http://comix.to',
+      'https://comix.to:444',
+    ]) {
+      expect(sourceSessionMatches(origins, Uri.parse(url)), isFalse);
+    }
+    final h = {
+      'Cookie': 'fixture',
+      'X-Token': 'fixture',
+      'Referer': 'https://comix.to/item?ticket=fixture',
+      'Accept': 'image/*',
+    };
+    stripCrossOriginHeaders(h);
+    expect(h, {'Referer': 'https://comix.to/', 'Accept': 'image/*'});
   });
   test('catalog collisions cannot overwrite another repository, even if its name matches', () {
     final incoming = fixture();

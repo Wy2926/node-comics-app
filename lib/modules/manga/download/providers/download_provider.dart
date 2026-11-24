@@ -23,9 +23,9 @@ import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/services/download_manager/download_queue_order.dart';
 import 'package:mangayomi/services/download_manager/m_downloader.dart';
 import 'package:mangayomi/services/get_video_list.dart';
-import 'package:mangayomi/services/chapter_cache.dart';
 import 'package:mangayomi/services/get_chapter_pages.dart';
 import 'package:mangayomi/services/http/m_client.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:mangayomi/services/download_manager/m3u8/m3u8_downloader.dart';
 import 'package:mangayomi/services/download_manager/m3u8/models/download.dart';
 import 'package:mangayomi/utils/chapter_recognition.dart';
@@ -96,6 +96,7 @@ Future<void> downloadChapter(
     );
 
     List<PageUrl> pageUrls = [];
+    Set<String> sessionOrigins = const {};
     PageUrl? novelPage;
     List<PageUrl> pages = [];
     final StorageProvider storageProvider = StorageProvider();
@@ -256,20 +257,13 @@ Future<void> downloadChapter(
     }
 
     setProgress(DownloadProgress(0, 0, itemType));
-    void savePageUrls() {
-      // Re-downloading a chapter that is already on disk reads it locally, and
-      // local pages carry no url. Storing those placeholders would leave the
-      // chapter unreadable from its source once the download is deleted.
-      if (pageUrls.every((pageUrl) => pageUrl.url.isEmpty)) return;
-      ChapterCache().putPageListToCache(chapter, pageUrls);
-    }
-
     if (itemType == ItemType.manga) {
       ref
           .read(getChapterPagesProvider(chapter: chapter).future)
           .then((value) {
             if (value.pageUrls.isNotEmpty) {
               pageUrls = value.pageUrls;
+              sessionOrigins = value.sessionOrigins;
               isOk = true;
             } else {
               startFailure = "No pages returned by the source";
@@ -426,7 +420,10 @@ Future<void> downloadChapter(
             }
           }
           final page = pageUrls[index];
-          final cookie = MClient.getCookiesPref(page.url);
+          final cookie =
+              sourceSessionMatches(sessionOrigins, Uri.parse(page.url))
+              ? const <String, String>{}
+              : MClient.getCookiesPref(page.url);
           final headers = itemType == ItemType.manga
               ? ref.read(
                   headersProvider(
@@ -438,12 +435,12 @@ Future<void> downloadChapter(
               : itemType == ItemType.anime
               ? videoHeader
               : htmlHeader;
+          final pageHeaders = {...headers};
           if (cookie.isNotEmpty) {
             final userAgent = ref.read(userAgentStateProvider);
-            headers.addAll(cookie);
-            headers[HttpHeaders.userAgentHeader] = userAgent;
+            pageHeaders.addAll(cookie);
+            pageHeaders[HttpHeaders.userAgentHeader] = userAgent;
           }
-          Map<String, String> pageHeaders = {...headers};
           pageHeaders.addAll(page.headers ?? {});
 
           if (itemType == ItemType.manga) {
@@ -483,12 +480,11 @@ Future<void> downloadChapter(
 
       if (pages.isEmpty && pageUrls.isNotEmpty) {
         await processConvert();
-        savePageUrls();
         await setProgress(DownloadProgress(1, 1, itemType, isCompleted: true));
       } else {
-        savePageUrls();
         await MDownloader(
           chapter: chapter,
+          sessionOrigins: sessionOrigins,
           pageUrls: pages,
           subtitles: subtitles,
           subDownloadDir: subtitleDirectoryBase,

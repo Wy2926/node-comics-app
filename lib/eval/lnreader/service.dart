@@ -13,6 +13,7 @@ import 'package:mangayomi/models/page.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/models/video.dart';
 import 'package:mangayomi/repositories/source_preference_repository.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 
 import '../interface.dart';
 import 'js_cheerio.dart';
@@ -45,7 +46,7 @@ class LNReaderExtensionService implements ExtensionService {
 module={},exports=Function("return this")(),Object.defineProperties(module,{namespace:{set:function(a){exports=a}},exports:{set:function(a){for(var b in a)a.hasOwnProperty(b)&&(exports[b]=a[b])},get:function(){return exports}}});
 ''');
     JsPolyfills(runtime).init();
-    JsHttpClient(runtime).init();
+    JsHttpClient(runtime, origins: sourceSessionOrigins(source)).init();
     JsLibs(runtime).init();
     JsHtmlParser(runtime).init();
     _jsCheerio = JsCheerio(runtime)..init();

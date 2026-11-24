@@ -27,8 +27,9 @@ Android 本地使用 MuMu，按 [AGENTS](../AGENTS.md) 查询实际 ADB 地址�
 ## 运行边界
 
 - **原版 APK**：沿用 `m_extension_server` 与 Mihon 桥。上游 64 位 ID 以字符串保存在 `additionalParams.mihonSourceId`，安装与调用使用相同身份，本地数据库 ID 不变。Android 桥保留原包为单次 API、网页或图片请求设置的 `User-Agent`；没有指定时才使用默认值，已有验证会话按主机匹配。作品／章节网址由原扩展解析，图片沿用其拦截器及本地代理。含临时代理地址的页图清单不写磁盘；遇到旧缓存会重新向原包取整章清单。更换运行类型不保证旧 URL 可用，不自动增加站点映射或删除书籍。
-- **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 取得元数据；不提供 Node 或完整浏览器环境。`Client` 按声明的精确 HTTPS 主机校验请求和重定向，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
-- **网页验证**：复用现有设备 WebView；Cookie、UA 留设备。隐藏页面与可见浏览器的会话共享须实测，不把所有 403 当作 Cloudflare，也不承诺自动解题。日志隐藏凭据和查询值。
+- **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 提供元数据；插件不在 Node 或 Firefox 标签中运行。插件调用 `Client`，由 App 宿主为当前请求选择浏览器会话或原有 HTTP 客户端。官方包的请求和重定向按声明的精确 HTTPS 主机校验，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
+- **网站会话**：在[支持 GeckoView 的 Android 设备](MOBILE_UI_DESIGN.md#多标签浏览器)上，所有已安装的 JS 来源（含第三方和 LNReader）访问本站时默认复用内置浏览器会话，无需声明会话能力或修改插件。从来源卡片打开网站并登录，返回来源重试即可，关闭标签不影响会话。原先仅在系统 WebView 登录的站点需在 Gecko 登录一次。官方目录沿用已有 `requestHosts`；其他 JS 来源按已有 `baseUrl` 的 HTTPS origin 精确匹配。`Client`、LNReader 的 `fetchApi`、漫画正文和下载按实际目标请求；显式提供 Cookie／Authorization 的 HTTP 请求保留插件自己的身份。宿主不导出 Cookie，不向 JS 回传 `Set-Cookie`，也不将 Gecko 凭据写入 App 的 Cookie 表。站外 CDN 仍可取图，不继承来源站点的凭据。网站 Cookie 变化后，新打开的在线章节不复用旧会话的清单或原图缓存；已下载内容保留。
+- **网页脚本与验证**：同站 `evaluateJavascriptViaWebview` 使用临时的独立标签，保留 `setResponse` 接口；脚本不在用户正在阅读的标签中执行。普通 HTTP 不会替网站生成存在 `localStorage`／页面脚本中的令牌。系统 WebView 设备、原版 APK 等继续使用原有验证会话；不把所有 403 当作 Cloudflare。日志隐藏凭据和查询值。
 - **图片处理**：`PageUrl.imageProcessing` 声明通用操作，具体参数留插件。支持 `image.tile-shuffle.v1` 网格还原、`image.tile-transpose.v1` 对齐图块转置（右、下余边保留）与 `image.strip-reverse.v1` 横向条带倒序（余数归首条）；阅读、下载、翻译共用结果，缓存身份包含处理参数，成功才缓存。既有像素处理每张限 12 MiB、800 万像素、256 块、单帧，后台串行处理且最多排队 4 项。条带操作可由插件声明 `skipGif: true` 原样保留 GIF 动画，下载保留 PNG／GIF 扩展名。这是处理边界，不是普通图片准入规则。
 - **通用密码工具**：`crypto.md5.v1` 提供同步 UTF-8 `md5(text)`；`crypto.aes-ecb.v1` 提供同步 `decryptAESECB(base64, keyHex)`（AES-ECB／PKCS7，16／24／32 字节密钥）。使用现有 crypto／encrypt 依赖，非法密钥、密文和解码失败抛错；网站协议常量与签名规则留插件。
 
@@ -42,6 +43,7 @@ Android 本地使用 MuMu，按 [AGENTS](../AGENTS.md) 查询实际 ADB 地址�
 | 原生来源身份与失败恢复 | `lib/eval/mihon/source_identity.dart`、`lib/eval/mihon/service.dart`；`test/eval/mihon/` |
 | Android 原包请求头 | `android/mihon/`；`android/build.gradle` 在构建目录适配锁定的 `m_extension_server`，不修改 Pub 缓存；回归 `:m_extension_server:testDebugUnitTest --tests '*SourceUserAgentTest'` |
 | JS 请求与资源释放 | `lib/eval/javascript/http.dart`、`source_runtime.dart`；`test/eval/js_http_test.dart`、`js_http_lifecycle_test.dart` |
+| Android 来源会话 | `lib/services/http/source_session_client.dart`、`android/app/src/main/kotlin/com/nodelane/comics/GeckoSourceHttp.kt`；`flutter run -d <设备> --print-dtd -t test/fixtures/gecko_source_session_smoke.dart` 用本地 HttpOnly 夹具验证关标签、阅读与下载原图、隐藏网页超时恢复、跨站跳转与登出后的缓存隔离 |
 | 图片还原与缓存 | `lib/services/source_images/tile_shuffle.dart`；`test/services/source_image_processing_test.dart` |
 | 章节身份与进度 | `test/modules/manga/detail/chapter_catalog_identity_test.dart` |
 | 跨仓库 JS 契约 | `tool/source_plugin_contract_test.dart`，由插件仓库显式传入构建产物与样本 |

@@ -42,6 +42,12 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
         ).also { processRuntime = it }
     }
     private val manager = MethodChannel(messenger, HOST)
+    private val sourceHttp = GeckoSourceHttp(messenger) { runtime }
+    val sourceCache = SourceCacheScope(activity.applicationContext)
+    val sourcePages = mutableMapOf<String, GeckoSourcePage>()
+    private var sourceScripts: GeckoResult<WebExtension>? = null
+    private var installingReader: GeckoResult<WebExtension>? = null
+    private var readerAddon: WebExtension? = null
     private val pages = mutableMapOf<String, GeckoPage>()
     private var installing: GeckoResult<WebExtension>? = null
     private var blocker: WebExtension? = null
@@ -58,13 +64,27 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
     init {
         manager.setMethodCallHandler { call, result ->
             when (call.method) {
+                "sourceCacheScope" -> {
+                    val hosts = call.arguments as List<*>
+                    readerExtension().accept({ result.success(sourceCache.scope(hosts.filterIsInstance<String>())) },
+                        { result.error("sourceCache", null, null) })
+                }
+                "sourcePage" -> {
+                    try { GeckoSourcePage(this, call, result).also {
+                        check(!sourcePages.containsKey(it.id))
+                        sourcePages[it.id] = it
+                        it.enqueue()
+                    } }
+                    catch (_: Exception) { result.error("sourcePage", null, null) }
+                }
+                "releaseSourcePage" -> { sourcePages[call.arguments as String]?.finish(); result.success(null) }
                 "release" -> {
                     pages.remove(call.arguments as String)?.close()
                     result.success(null)
                 }
                 "clearCookies" -> runtime.storageController.clearData(
                     StorageController.ClearFlags.COOKIES or StorageController.ClearFlags.AUTH_SESSIONS
-                ).accept({ result.success(null) }, { result.error("cookies", null, null) })
+                ).accept({ sourceCache.cleared(null); result.success(null) }, { result.error("cookies", null, null) })
                 "releasePanel" -> {
                     if (call.arguments == panelId) closePanel(notify = false)
                     result.success(null)
@@ -83,11 +103,45 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
                 blocker = extension
                 extension.setActionDelegate(this)
                 extension.setTabDelegate(this)
-                controller.ensureBuiltIn("resource://android/assets/extensions/reader/", READER)
+                readerExtension()
             }
         installing = ready
         ready.accept({}, { if (installing === ready) installing = null })
         return ready
+    }
+
+    private fun readerExtension(): GeckoResult<WebExtension> {
+        installingReader?.let { return it }
+        val ready = runtime.webExtensionController.ensureBuiltIn("resource://android/assets/extensions/reader/", READER).map { reader ->
+            check(!disposed && reader != null)
+            reader.setMessageDelegate(sourceCache, "sourceCache")
+            readerAddon = reader
+            reader
+        }
+        installingReader = ready
+        ready.accept({}, { if (installingReader === ready) installingReader = null })
+        return ready
+    }
+
+    fun sourcePageExtension(): GeckoResult<WebExtension> {
+        sourceScripts?.let { return it }
+        val controller = runtime.webExtensionController
+        val id = "source-page@nodelane.net"
+        val ready = controller.ensureBuiltIn("resource://android/assets/extensions/source-page/", id)
+            .then { extension ->
+                if (extension != null && "userScripts" in extension.metaData!!.grantedOptionalPermissions)
+                    GeckoResult.fromValue(extension)
+                else controller.addOptionalPermissions(id, arrayOf("userScripts"), emptyArray(), emptyArray())
+            }.then { readerExtension() }
+        sourceScripts = ready
+        ready.accept({}, { if (sourceScripts === ready) sourceScripts = null })
+        return ready
+    }
+
+    fun startSourcePages() {
+        if (disposed) return
+        val free = 2 - sourcePages.values.count { it.started }
+        if (free > 0) sourcePages.values.filterNot { it.started }.take(free).forEach { it.start() }
     }
 
     override fun create(context: Context, viewId: Int, args: Any?): PlatformView {
@@ -217,6 +271,9 @@ internal class GeckoBrowser(private val activity: Activity, val messenger: Binar
 
     fun close() {
         disposed = true
+        sourceHttp.close()
+        sourcePages.values.toList().forEach { it.finish() }
+        readerAddon?.setMessageDelegate(null, "sourceCache")
         closePanel()
         blocker?.setActionDelegate(null)
         blocker?.setTabDelegate(null)
@@ -350,9 +407,10 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
                 when (val action = call.argument<String>("action")) {
                     "reload" -> session.reload()
                     "clearSite" -> {
-                        host.runtime.storageController.clearDataFromHost(URI(url).host,
+                        val domain = URI(url).host
+                        host.runtime.storageController.clearDataFromHost(domain,
                             StorageController.ClearFlags.COOKIES or StorageController.ClearFlags.AUTH_SESSIONS
-                        ).accept({ result.success(null) }, { result.error("cookies", null, null) })
+                        ).accept({ host.sourceCache.cleared(domain); result.success(null) }, { result.error("cookies", null, null) })
                         return
                     }
                     else -> host.openBlocker(action)
@@ -373,6 +431,7 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
             }
             "reader" -> {
                 val request = JSONObject(call.arguments as String)
+                require(request.optString("operation") != "sourcePage")
                 val peer = port
                 val protection = request.optString("operation") == "siteProtection"
                 if (peer == null || request.optString("url").substringBefore('#') != url.substringBefore('#')) {

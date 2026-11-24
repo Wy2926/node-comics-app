@@ -1,6 +1,8 @@
 // Keep the HTTP wire shape shared across eval backends.
 import 'package:http/http.dart';
 
+const jsHttpMethods = ['HEAD', 'GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+
 extension ResponseExtexsion on Response {
   String get _decodedBody {
     // Some servers append an empty MIME parameter; keep the declared charset.

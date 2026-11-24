@@ -9,6 +9,7 @@ import 'package:mangayomi/modules/manga/archive_reader/providers/archive_reader_
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/utils/constant.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
+import 'package:mangayomi/utils/extensions/others.dart';
 import 'package:mangayomi/utils/headers.dart';
 import 'package:mangayomi/utils/reg_exp_matcher.dart';
 import 'package:path/path.dart' as p;
@@ -98,9 +99,12 @@ extension ReaderPageImage on UChapDataPreload {
     bool interactive,
   ) {
     final manga = chapter?.manga.value;
+    final scope = original.chapterUrlModel?.sessionScope;
     return CustomExtendedNetworkImageProvider(
       _url,
       imageProcessing: pageUrl?.imageProcessing,
+      sessionOrigins: original.chapterUrlModel?.sessionOrigins ?? const {},
+      cacheKey: scope == null ? null : keyToMd5('$scope:$_url'),
       cacheMaxAge: const Duration(days: 7),
       imageCacheFolderName: _folder,
       showCloudFlareError: interactive,

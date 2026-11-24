@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:mangayomi/services/source_package.dart';
 import 'package:mangayomi/services/source_catalog_config.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 
 import 'package:flutter_qjs/flutter_qjs.dart';
 import 'package:mangayomi/eval/javascript/dom_selector.dart';
@@ -29,6 +30,7 @@ class JsExtensionService implements ExtensionService {
   late Source source;
   bool _isInitialized = false;
   JsDomSelector? _jsDomSelector;
+  JsUtils? _utils;
   bool _hasRuntime = false;
 
   JsExtensionService(this.source, {this.executionTimeout});
@@ -41,9 +43,14 @@ class JsExtensionService implements ExtensionService {
     );
     _hasRuntime = true;
     try {
-      JsHttpClient(runtime, package: SourcePackage.of(source)).init();
+      final origins = sourceSessionOrigins(source);
+      JsHttpClient(
+        runtime,
+        package: SourcePackage.of(source),
+        origins: origins,
+      ).init();
       _jsDomSelector = JsDomSelector(runtime)..init();
-      JsUtils(runtime).init();
+      _utils = JsUtils(runtime, origins: origins)..init();
       JsVideosExtractors(runtime).init();
       JsPreferences(runtime, source).init();
       final sourceJson = jsonEncode(source.toMSource().toJson());
@@ -116,6 +123,8 @@ var extention = new DefaultExtension();
 
   @override
   void dispose() {
+    _utils?.dispose();
+    _utils = null;
     _jsDomSelector?.dispose();
     _jsDomSelector = null;
     if (_hasRuntime) runtime.dispose();

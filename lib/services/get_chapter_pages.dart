@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:mangayomi/modules/manga/reader/u_chap_data_preload.dart';
 import 'package:mangayomi/modules/more/settings/browse/providers/browse_state_provider.dart';
 import 'package:mangayomi/services/isolate_service.dart';
+import 'package:mangayomi/services/http/source_session_client.dart';
 import 'package:mangayomi/services/chapter_cache.dart';
 import 'package:mangayomi/services/chapter_load_error.dart';
 import 'package:mangayomi/utils/downloaded_page_file.dart';
@@ -63,11 +64,15 @@ class GetChapterPagesModel {
   Directory? path;
   List<PageUrl> pageUrls = [];
   final ReaderArchive? archive;
+  final Set<String> sessionOrigins;
+  final String? sessionScope;
   List<UChapDataPreload> uChapDataPreload;
   GetChapterPagesModel({
     required this.path,
     required this.pageUrls,
     this.archive,
+    this.sessionOrigins = const {},
+    this.sessionScope,
     required this.uChapDataPreload,
   });
 }
@@ -82,6 +87,8 @@ Future<GetChapterPagesModel> getChapterPages(
   try {
     Directory? path;
     List<PageUrl> pageUrls = [];
+    Set<String> sessionOrigins = const {};
+    String? sessionScope;
     List<bool> isLocaleList = [];
     final incognitoMode = ref.read(incognitoModeStateProvider);
     final storageProvider = StorageProvider();
@@ -109,9 +116,26 @@ Future<GetChapterPagesModel> getChapterPages(
     if (downloaded?.pagesDirectory != null) path = downloaded!.pagesDirectory;
 
     if (!chapter.manga.value!.isLocalArchive!) {
+      final manga = chapter.manga.value!;
+      final source = downloaded == null
+          ? getSource(
+              manga.lang!,
+              manga.source!,
+              manga.sourceId,
+              installedOnly: true,
+            )
+          : null;
+      final origins = sourceSessionOrigins(source);
+      if (await SourceSessionClient.cacheScope(origins) case final scope?) {
+        sessionOrigins = origins;
+        sessionScope = '${source!.id}:$scope';
+      }
       final chapterCache = ChapterCache();
       final cachedPages = (!forceRefresh && downloaded == null)
-          ? await chapterCache.getPageListFromCache(chapter)
+          ? await chapterCache.getPageListFromCache(
+              chapter,
+              sessionScope: sessionScope,
+            )
           : null;
 
       if (cachedPages != null && cachedPages.isNotEmpty) {
@@ -119,14 +143,7 @@ Future<GetChapterPagesModel> getChapterPages(
         pageUrls = cachedPages;
       } else if (downloaded == null) {
         // Only ask the source when there is nothing on disk to read. The
-        // extension is also resolved here rather than above, so a missing one
-        // can't take down a chapter that never needed it.
-        final source = getSource(
-          chapter.manga.value!.lang!,
-          chapter.manga.value!.source!,
-          chapter.manga.value!.sourceId,
-          installedOnly: true,
-        );
+        // extension can be missing when a local copy is available.
         if (source == null) throw ChapterDataError.missingSource;
         final url = chapter.url;
         if (url == null) throw ChapterDataError.missingUrl;
@@ -146,6 +163,8 @@ Future<GetChapterPagesModel> getChapterPages(
     final chapterModel = GetChapterPagesModel(
       path: path,
       pageUrls: pageUrls,
+      sessionOrigins: sessionOrigins,
+      sessionScope: sessionScope,
       archive: archivePath == null ? null : ReaderArchive(archivePath),
       uChapDataPreload: [],
     );
@@ -194,7 +213,11 @@ Future<GetChapterPagesModel> getChapterPages(
           !pagesFromCache &&
           downloaded == null &&
           pageUrls.isNotEmpty) {
-        await ChapterCache().putPageListToCache(chapter, pageUrls);
+        await ChapterCache().putPageListToCache(
+          chapter,
+          pageUrls,
+          sessionScope: sessionScope,
+        );
       }
       for (var i = 0; i < pageUrls.length; i++) {
         chapterModel.uChapDataPreload.add(

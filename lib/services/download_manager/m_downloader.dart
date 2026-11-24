@@ -19,6 +19,7 @@ class MDownloader {
   List<PageUrl> pageUrls;
   final int concurrentDownloads;
   final Chapter chapter;
+  final Set<String> sessionOrigins;
   final List<Track>? subtitles;
   final String? subDownloadDir;
 
@@ -31,6 +32,7 @@ class MDownloader {
 
   MDownloader({
     required this.chapter,
+    this.sessionOrigins = const {},
     required this.pageUrls,
     required this.subtitles,
     required this.subDownloadDir,
@@ -121,6 +123,7 @@ class MDownloader {
 
     await DownloadIsolatePool.instance.submitFileDownload(
       taskId: taskId,
+      sessionOrigins: sessionOrigins,
       pageUrls: pageUrls,
       concurrentDownloads: concurrentDownloads,
       itemType: chapter.manga.value!.itemType,
