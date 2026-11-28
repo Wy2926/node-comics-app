@@ -7,6 +7,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:mangayomi/services/source_catalog_refresh.dart';
 import 'package:mangayomi/services/source_package.dart';
+import 'package:mangayomi/modules/webview/browser_manga_preview.dart';
+import 'package:mangayomi/repositories/browser_manga_shelf.dart';
+import 'package:mangayomi/services/source_catalog_config.dart' show browserMangaPreviewCapability;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -352,6 +355,79 @@ class DefaultExtension extends MProvider {
       );
     });
 
+    Source previewSite() => Source(id: 73, baseUrl: 'https://preview.test', name: 'Preview', lang: 'en', isAdded: true,
+        sourceCode: '''
+class DefaultExtension extends MProvider {
+  browserMangaPreview({document}) { return {name:document.title, link:document.URL}; }
+  resolveBrowserManga(url) { return {name:'Target only',link:url.replace('/short', '/works/1')}; }
+}''',
+        packageInfoJson: jsonEncode({
+          'schema': 1, 'repositoryId': 'net.nodelane.extensions', 'slug': 'preview',
+          'size': 100, 'sha256': '0' * 64, 'requires': [],
+          'capabilities': [browserMangaPreviewCapability], 'requestHosts': ['preview.test', 'api.preview.test'],
+        }),
+      )..sourceCodeLanguage = SourceCodeLanguage.javascript;
+    test('browser preview only dispatches to a unique installed owner and drops late DOM replies', () async {
+      const base = 'https://preview.test', url = '$base/works/1';
+      final source = previewSite();
+      await sourceRepository.putAll([source]);
+      var current = true;
+      final reply = Completer<Object?>(), started = Completer<void>();
+      Future<BrowserMangaPreview?> read(String document, String target, {bool allowPage = false}) => resolveBrowserMangaPreview(
+        documentUrl: document, targetUrl: target, link: true, current: () => current,
+        page: (op, _) async {
+          if (!allowPage) fail('Unexpected access to the visible document');
+          if (op == 'mangaContext') return {'index': 1, 'timeOrigin': 42};
+          started.complete();
+          return reply.future;
+        },
+      );
+      expect((await read('https://elsewhere.test/private', url))?.name, 'Target only');
+      expect(await read(url, 'https://api.preview.test/private'), isNull);
+      final stale = read(url, url, allowPage: true);
+      await started.future;
+      current = false;
+      reply.complete({'name': 'Previous tab', 'link': url});
+      expect(await stale, isNull);
+      current = true;
+      await sourceRepository.putAll([source..id = 74]);
+      expect(await read(url, url), isNull);
+    });
+
+    test('chapter preview reuses a canonical shelf row, including after concurrent adds', () async {
+      final source = previewSite();
+      await sourceRepository.putAll([source]);
+      const preview = (sourceId: 73, targetUrl: 'https://preview.test/chapters/3',
+        link: 'https://preview.test/short', name: 'Target only', imageUrl: null,
+        author: null, status: Status.ongoing, chapterName: 'Chapter 3');
+      const canonical = 'https://preview.test/works/1';
+      final container = ProviderContainer();
+      addTearDown(container.dispose);
+      final provider = browserMangaShelfProvider(preview);
+      final saved = Completer<BrowserShelfEntry>();
+      container.listen(provider, (_, next) {
+        if (next.value?.favoriteId != null && !saved.isCompleted) saved.complete(next.requireValue);
+      });
+      final first = await container.read(provider.future);
+      expect(first, (link: canonical, favoriteId: null));
+      // 同书名、同网址但不同来源的收藏，不能充当本来源的记录。
+      final other = Manga.fromJson({'id': 89, 'sourceId': 99, 'name': preview.name,
+        'link': canonical, 'status': 0, 'favorite': true});
+      final legacy = Manga.fromJson({'id': 90, 'lang': 'en', 'source': source.name,
+        'link': '/works/1', 'status': 0, 'favorite': false, 'name': 'My title',
+        'lastRead': 12345, 'categories': [43]});
+      await app.isar.writeTxn(() => app.isar.mangas.putAll([other, legacy]));
+      await Future.wait([addBrowserManga(preview, first.link), addBrowserManga(preview, first.link)]);
+      final entry = await saved.future;
+      expect(entry.favoriteId, 90);
+      final book = await browserShelfFavorite(preview, entry);
+      expect([book.name, book.sourceId, book.lastRead, book.categories], ['My title', 73, 12345, [43]]);
+      expect(book.link, '/works/1');
+      expect(await app.isar.mangas.count(), 2);
+      await sourceRepository.putAll([source..isActive = false]);
+      await expectLater(addBrowserManga(preview, first.link), throwsStateError);
+      await expectLater(browserShelfFavorite(preview, entry), throwsStateError);
+    });
     test('QuickJS initialization is interrupted and subsequent installation still succeeds', () async {
       final source = Source(
         id: 72,

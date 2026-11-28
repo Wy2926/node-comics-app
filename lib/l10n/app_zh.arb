@@ -422,6 +422,7 @@
   "set_categories": "设置分类",
   "edit": "编辑",
   "in_library": "已在书架",
+  "not_in_library": "未在书架",
   "filter_scanlator_groups": "汉化组",
   "reset": "重置",
   "by_chapter_number": "按章节号",

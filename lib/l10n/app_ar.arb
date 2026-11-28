@@ -422,6 +422,7 @@
   "set_categories": "ضبط الفئات",
   "edit": "تحرير",
   "in_library": "في المكتبة",
+  "not_in_library": "ليس في المكتبة",
   "filter_scanlator_groups": "تصفية مجموعات المترجمين",
   "reset": "إعادة تعيين",
   "by_chapter_number": "حسب رقم الفصل",

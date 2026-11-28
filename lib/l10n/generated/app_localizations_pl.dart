@@ -952,6 +952,9 @@ class AppLocalizationsPl extends AppLocalizations {
   String get in_library => 'W bibliotece';
 
   @override
+  String get not_in_library => 'Poza biblioteką';
+
+  @override
   String get filter_scanlator_groups => 'Filtruj grupy skanerów';
 
   @override

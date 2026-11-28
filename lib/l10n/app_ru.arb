@@ -422,6 +422,7 @@
   "set_categories": "Установить категории",
   "edit": "Редактировать",
   "in_library": "В библиотеке",
+  "not_in_library": "Нет в библиотеке",
   "filter_scanlator_groups": "Фильтр групп переводчиков",
   "reset": "Сброс",
   "by_chapter_number": "По номеру главы",

@@ -57,6 +57,8 @@ class JsExtensionService implements ExtensionService {
 
       runtime.evaluate('''
 const NodeLane = Object.freeze({capabilities: Object.freeze(${jsonEncode(nodeLaneHostCapabilities.toList())})});
+// 只导出函数本身，不能把来源自定义的 toString 当成网页代码。
+const nodeLaneFunctionSource = Function.prototype.call.bind(Function.prototype.toString);
 class MProvider {
     get source() {
         return $sourceJson;
@@ -79,6 +81,7 @@ class MProvider {
     async getDetail(url) {
         throw new Error("getDetail not implemented");
     }
+    async resolveBrowserManga(url) { return null; }
     async getPageList() {
         throw new Error("getPageList not implemented");
     }
@@ -177,6 +180,18 @@ var extention = new DefaultExtension();
       await _extensionCallAsync('getDetail(${jsonEncode(url)})'),
     );
   }
+
+  String get browserMangaScript {
+    _init();
+    final result = runtime.evaluate(
+      'nodeLaneFunctionSource(extention.browserMangaPreview)',
+    );
+    _throwIfError(result, 'loading the browser manga preview');
+    return result.stringResult;
+  }
+
+  Future<Map<String, dynamic>?> resolveBrowserManga(String url) =>
+      _extensionCallAsync('resolveBrowserManga(${jsonEncode(url)})');
 
   @override
   Future<List<PageUrl>> getPageList(String url) async {

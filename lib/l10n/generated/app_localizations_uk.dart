@@ -952,6 +952,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get in_library => 'У бібліотеці';
 
   @override
+  String get not_in_library => 'Немає в бібліотеці';
+
+  @override
   String get filter_scanlator_groups => 'Групи сканатора фільтрів';
 
   @override

@@ -4,6 +4,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,6 +12,10 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:mangayomi/modules/webview/browser_navigation.dart';
 import 'package:mangayomi/modules/webview/browser_focus_tools.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_widgets.dart';
+import 'package:mangayomi/modules/webview/browser_manga_preview.dart';
+import 'package:mangayomi/modules/webview/browser_manga_widgets.dart';
+import 'package:mangayomi/repositories/browser_manga_shelf.dart';
+import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/modules/webview/mobile_browser_start_page.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/webview/browser_tabs_panel.dart';
@@ -86,6 +91,17 @@ void main() {
       ),
     );
   }
+
+  BrowserMangaPreview preview(int id) => (
+    sourceId: 1,
+    link: 'https://books.test/$id',
+    targetUrl: 'https://books.test/$id/read',
+    name: 'A long book title $id',
+    chapterName: 'Chapter $id',
+    author: null,
+    imageUrl: null,
+    status: Status.unknown,
+  );
 
   testWidgets('small-screen browser controls keep independent action targets', (
     tester,
@@ -182,6 +198,9 @@ void main() {
                 const Expanded(child: SizedBox.expand(key: Key('viewport'))),
                 MobileBrowserToolbar(
                   inline: inline,
+                  mangaButton: inline
+                      ? null
+                      : BrowserMangaButton(preview(1), openChapter: (_) {}),
                   tabCount: 1,
                   onTabs: (_) {},
                   onNew: () {},
@@ -195,6 +214,14 @@ void main() {
           scale: 2,
         );
         final viewport = tester.getRect(page), target = tester.getRect(button);
+        if (!inline) {
+          final book = preview(1);
+          expect(find.text(book.name), findsNothing);
+          expect(
+            tester.getSize(find.byTooltip('Manga · ${book.name}')),
+            const Size.square(44),
+          );
+        }
         expect(target.height, 44);
         expect(target.width, greaterThanOrEqualTo(44));
         expect(
@@ -210,6 +237,67 @@ void main() {
         expect(translated, isFalse);
       }
       expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'a link opens in the background before lookup; retry shows only the new target',
+    (tester) async {
+      final first = preview(1), second = preview(2);
+      final pending = Completer<BrowserMangaPreview?>();
+      var pressed = first, lookup = pending;
+      String? opened;
+      await mount(
+        tester,
+        Builder(
+          builder: (anchor) => TextButton(
+            child: const Text('link'),
+            onPressed: () async {
+              final url = pressed.targetUrl;
+              final background = await showNodeLaneBubble<bool>(
+                anchor,
+                label: 'link',
+                child: ProviderScope(
+                  overrides: [
+                    browserMangaShelfProvider.overrideWith(
+                      (_, p) => Stream.value((link: p.link, favoriteId: null)),
+                    ),
+                  ],
+                  child: BrowserLinkPanel(
+                    url: url,
+                    load: () => lookup.future,
+                    openChapter: (_) {},
+                  ),
+                ),
+              );
+              if (background == true) opened = url;
+            },
+          ),
+        ),
+        scale: 2,
+      );
+      await tester.tap(find.text('link'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('在后台标签页打开链接'));
+      await tester.pumpAndSettle();
+      expect(opened, first.targetUrl);
+      pressed = second;
+      lookup = Completer<BrowserMangaPreview?>();
+      await tester.tap(find.text('link'));
+      await tester.pumpAndSettle();
+      // 第二个气泡已打开，此时才送回第一个目标的摘要。
+      pending.complete(first);
+      lookup.completeError(StateError('offline'));
+      await tester.pumpAndSettle();
+      expect(find.text(first.name), findsNothing);
+      lookup = Completer<BrowserMangaPreview?>();
+      await tester.tap(find.text('重试'));
+      await tester.pump();
+      expect(find.text('重试'), findsNothing);
+      lookup.complete(second);
+      await tester.pumpAndSettle();
+      expect(find.text(second.name), findsOneWidget);
+      expect(find.text(second.chapterName!), findsOneWidget);
     },
   );
 

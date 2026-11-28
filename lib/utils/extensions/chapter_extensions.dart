@@ -20,18 +20,12 @@ import 'package:mangayomi/utils/extensions/string_extensions.dart';
 import 'package:path/path.dart' as p;
 
 extension ChapterExtension on Chapter {
-  Future<void> pushToReaderView(
-    BuildContext context, {
-    bool ignoreIsRead = false,
-  }) async {
-    var target = this;
-    if (!ignoreIsRead && (isRead ?? false)) {
+  Chapter get resumeTarget {
+    if (isRead ?? false) {
       final filteredChaps = manga.value!.getChapterListForReading();
       final current = filteredChaps.indexWhere((chapter) => chapter.id == id);
-      // A finished book still has a working reading entry. The reader already
-      // opens completed chapters at page one without clearing saved progress.
-      target =
-          filteredChaps
+      // 已读章节接续下一未读章；全书已读从头打开，不清空原进度。
+      return filteredChaps
               .skip(current + 1)
               .where((chapter) => !(chapter.isRead ?? false))
               .firstOrNull ??
@@ -39,8 +33,16 @@ extension ChapterExtension on Chapter {
           manga.value!.chapters.firstOrNull ??
           this;
     }
-    await pushMangaReaderView(context: context, chapter: target);
+    return this;
   }
+
+  Future<void> pushToReaderView(
+    BuildContext context, {
+    bool ignoreIsRead = false,
+  }) => pushMangaReaderView(
+    context: context,
+    chapter: ignoreIsRead ? this : resumeTarget,
+  );
 
   void cancelDownloads(int? downloadId) {
     // Cancel via the Isolate pool (new system)

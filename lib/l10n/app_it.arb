@@ -422,6 +422,7 @@
   "set_categories": "Imposta categorie",
   "edit": "Modifica",
   "in_library": "Nella libreria",
+  "not_in_library": "Non in libreria",
   "filter_scanlator_groups": "Filtra gruppi scanlator",
   "reset": "Reset",
   "by_chapter_number": "Per numero di capitolo",

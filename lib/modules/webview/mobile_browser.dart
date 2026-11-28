@@ -50,6 +50,8 @@ import 'package:mangayomi/repositories/browser_reader_repository.dart';
 import 'translation_bridge.dart';
 import 'browser_url.dart';
 import 'browser_navigation.dart';
+import 'browser_manga_preview.dart';
+import 'browser_manga_widgets.dart';
 import 'mobile_browser_widgets.dart';
 import 'browser_library_store.dart';
 import 'browser_library_panel.dart';
@@ -81,8 +83,10 @@ class BrowserTab {
   String? nextChapter, focusOnChapter;
   bool get focused => pageReady && chapter && focusOnChapter == url;
   int document = 0;
+  BrowserMangaPreview? mangaPreview;
   void resetReading() {
     document++;
+    mangaPreview = null;
     focusToolsOpen = chapter = pageReady = false;
     nextChapter = null;
   }
@@ -867,6 +871,19 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
     }
   }
 
+  Future<void> _readShelfChapter(BrowserTab tab, int id) async {
+    try {
+      await _openReader(tab, (chapter: true, id: id));
+    } catch (_) {
+      if (mounted) {
+        showNodeLaneNotice(
+          context.l10n.browser_action_failed,
+          kind: NodeLaneNoticeKind.error,
+        );
+      }
+    }
+  }
+
   Future<void> _showMenu(BuildContext anchor, BrowserTab tab) async {
     final l = context.l10n;
     final pageUrl = tab.url, document = tab.document;
@@ -1121,6 +1138,13 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
             listenable: tab.translation,
             builder: (context, _) => MobileBrowserToolbar(
               inline: inline,
+              mangaButton: tab.mangaPreview == null
+                  ? null
+                  : BrowserMangaButton(
+                      tab.mangaPreview!,
+                      key: ValueKey((tab.id, tab.document)),
+                      openChapter: (id) => _readShelfChapter(tab, id),
+                    ),
               tabCount: tabs.length,
               onBack: tab.canMove(-1) ? () => _history(-1) : null,
               onNew: () => _new(''),
@@ -1267,6 +1291,8 @@ class _MobileComicBrowserState extends ConsumerState<MobileComicBrowser>
                                         leavingDocument: () =>
                                             _rememberReading(item),
                                         newTab: _new,
+                                        openChapter: (id) =>
+                                            _readShelfChapter(item, id),
                                         editAddress: _addressFocus.requestFocus,
                                         recreate: () => _recreate(item),
                                         focusTools:
@@ -1304,6 +1330,7 @@ class _BrowserTabView extends StatefulWidget {
     required this.save,
     required this.leavingDocument,
     required this.newTab,
+    required this.openChapter,
     required this.editAddress,
     required this.recreate,
     this.focusTools,
@@ -1315,6 +1342,7 @@ class _BrowserTabView extends StatefulWidget {
   final VoidCallback save;
   final VoidCallback leavingDocument;
   final void Function(String, {bool background}) newTab;
+  final ValueChanged<int> openChapter;
   final VoidCallback editAddress;
   final VoidCallback recreate;
   final Widget Function(VoidCallback dismiss)? focusTools;
@@ -1344,6 +1372,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   double progress = 0;
   String? loadingUrl;
   int navigation = 0;
+  int _previewRequest = 0, _linkRequest = 0;
+  ModalRoute<dynamic>? _linkRoute;
   int activeMatch = 0, matches = 0;
   late final finder = FindInteractionController(
     onFindResultReceived: (_, ordinal, count, done) {
@@ -1453,6 +1483,13 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     }
     if (oldWidget.active != widget.active) {
       _visibility();
+      if (widget.active && widget.tab.pageReady) {
+        _refreshManga();
+      } else if (!widget.active) {
+        ++_previewRequest;
+        widget.tab.mangaPreview = null;
+        _dismissLink();
+      }
       if (!widget.active && widget.tab.findOpen) {
         widget.tab.findOpen = false;
         _find(_clearFind);
@@ -1475,6 +1512,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
 
   @override
   void dispose() {
+    _dismissLink();
     bridge?.dispose();
     gecko?.detach();
     if (identical(widget.tab.controller, page)) {
@@ -1497,6 +1535,52 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
     await (gecko?.clearFind() ?? finder.clearMatches());
   }
 
+  Future<BrowserMangaPreview?> _resolveManga(
+    String target,
+    bool link,
+    bool Function() current,
+  ) {
+    final documentUrl = widget.tab.url;
+    return resolveBrowserMangaPreview(
+      documentUrl: documentUrl,
+      targetUrl: target,
+      link: link,
+      current: current,
+      page: bridge?.foregroundDocument,
+    );
+  }
+
+  Future<void> _refreshManga() async {
+    if (!widget.active) return;
+    final ticket = ++_previewRequest, doc = widget.tab.document;
+    bool current() =>
+        mounted &&
+        widget.active &&
+        widget.tab.document == doc &&
+        ticket == _previewRequest;
+    BrowserMangaPreview? preview;
+    try {
+      preview = await _resolveManga(widget.tab.url, false, current);
+    } catch (_) {
+      // 工具栏是可选增强；重载或回到此页时重新识别，不把故障记为普通网页。
+    }
+    if (current() && widget.tab.mangaPreview != preview) {
+      widget.tab.mangaPreview = preview;
+      widget.changed();
+    }
+  }
+
+  void _dismissLink() {
+    ++_linkRequest;
+    final route = _linkRoute;
+    _linkRoute = null;
+    if (route != null) {
+      scheduleMicrotask(() {
+        if (route.isActive) route.navigator?.removeRoute(route);
+      });
+    }
+  }
+
   Future<void> _linkMenu(String url, {bool image = false}) async {
     if (!mounted || !widget.active || !isBrowserUrl(url) || _imageMenuOpen) {
       return;
@@ -1510,26 +1594,40 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       return;
     }
     _imageMenuOpen = true;
+    final ticket = ++_linkRequest;
+    bool current() =>
+        mounted &&
+        widget.active &&
+        doc == widget.tab.document &&
+        ticket == _linkRequest;
     final bool? confirmed;
     try {
       confirmed = await showNodeLaneBubble<bool>(
         context,
         label: Uri.parse(url).host,
         localPoint: _pressPoint,
-        child: NodeLaneBubblePanel(
-          title: Uri.parse(url).host,
-          child: SingleChildScrollView(
-            child: Builder(
-              builder: (panel) => NodeLaneRow(
-                title: context.l10n.browser_background_tab,
-                icon: NodeLaneIcons.of(context).add,
-                onTap: () => Navigator.pop(panel, true),
-              ),
-            ),
-          ),
+        width: NodeLaneTokens.bubbleToolWidth,
+        child: Builder(
+          builder: (panel) {
+            final route = ModalRoute.of(panel)!;
+            if (!current()) {
+              scheduleMicrotask(() {
+                if (route.isActive) route.navigator?.removeRoute(route);
+              });
+              return const SizedBox.shrink();
+            }
+            _linkRoute = route;
+            return BrowserLinkPanel(
+              url: url,
+              load: () => _resolveManga(url, true, current),
+              openChapter: widget.openChapter,
+            );
+          },
         ),
       );
     } finally {
+      _linkRoute = null;
+      ++_linkRequest;
       _imageMenuOpen = false;
     }
     if (confirmed == true &&
@@ -1888,6 +1986,8 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       allowContentAccess: false,
       allowFileAccessFromFileURLs: false,
       allowUniversalAccessFromFileURLs: false,
+      allowsLinkPreview: false,
+      disableLongPressContextMenuOnLinks: Platform.isIOS,
       sharedCookiesEnabled: true,
       useOnRenderProcessGone: true,
     ),
@@ -1920,18 +2020,29 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       }
       return false;
     },
-    onLongPressHitTestResult: !Platform.isAndroid
+    onLongPressHitTestResult: !Platform.isAndroid && !Platform.isIOS
         ? null
         : (web, hit) async {
             if (hit.type == InAppWebViewHitTestResultType.SRC_ANCHOR_TYPE &&
                 isBrowserUrl(hit.extra)) {
               _linkMenu(hit.extra!);
             } else if (hit.type ==
-                InAppWebViewHitTestResultType.SRC_IMAGE_ANCHOR_TYPE) {
+                    InAppWebViewHitTestResultType.SRC_IMAGE_ANCHOR_TYPE ||
+                Platform.isIOS &&
+                    hit.type == InAppWebViewHitTestResultType.IMAGE_TYPE) {
               final epoch = navigation;
-              final target = (await web.requestFocusNodeHref().catchError(
-                (_) => null,
-              ))?.url?.toString();
+              // WebKit 将 <a><figure><img> 命中为普通图片，此时只认本次真实触点的链接。
+              String? target;
+              if (hit.type == InAppWebViewHitTestResultType.IMAGE_TYPE) {
+                final hitContext = await bridge?.foregroundDocument
+                    ?.call('mangaContext', {})
+                    .catchError((_) => null);
+                if (hitContext case {'href': String href}) target = href;
+              } else {
+                target = (await web.requestFocusNodeHref().catchError(
+                  (_) => null,
+                ))?.url?.toString();
+              }
               if (mounted && navigation == epoch && isBrowserUrl(target)) {
                 await _linkMenu(target!, image: true);
               }
@@ -2056,6 +2167,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
       }
       if (!mounted || epoch != navigation) return false;
       tab.pageReady = true;
+      unawaited(_refreshManga());
     } catch (_) {
       if (!mounted || epoch != navigation) return false;
       if (widget.active && tab.pendingClip?.url == url) {
@@ -2097,6 +2209,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
   }
 
   void _changeDocument(String? url) {
+    _dismissLink();
     if (widget.active) widget.leavingDocument();
     _pressPoint = null;
     _focusTap = null;
@@ -2157,6 +2270,7 @@ class _BrowserTabViewState extends State<_BrowserTabView> {
 
   void _failed({bool recreate = false}) {
     if (!mounted) return;
+    _dismissLink();
     navigation++;
     bridge?.navigate();
     if (recreate) browserWebViewCache.remove(widget.tab.id);

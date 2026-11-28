@@ -15,7 +15,7 @@
   const overlays = new Map();
   const badges = new Map();
   const menus = new Map();
-  let press = null, pressTimer, menuBusy = false, suppressClick = null;
+  let press = null, pressTimer, menuBusy = false, suppressClick = null, pressedLink = null;
   let theme = {};
   let next = 0, nextVersion = 0, seq = 0, active = false, translated = false, displayScope, timer, disposed = false;
   let input = null, output = null, observer, restoreTimer;
@@ -262,6 +262,9 @@
     } catch (_) {} finally { menuBusy=false; }
   }
   function startPress(event) {
+    // 记录实际按中的链接；相同 href 的不同卡片不能按网址猜测。
+    pressedLink = event.isTrusted && event.isPrimary !== false && event.button === 0
+      ? event.composedPath().find(el => el.matches?.('a[href]')) : null;
     cancelPress();
     if (event.isPrimary===false || event.button!==0) return;
     const item=menuItem(event);
@@ -460,6 +463,11 @@
   async function call(token, operation, args) {
     if (token !== config.token || disposed) throw Error('BRIDGE_INVALID');
     if (operation === 'anchor') return anchor();
+    if (operation === 'mangaContext') {
+      const index = args.link && pressedLink?.isConnected && pressedLink.href === new URL(args.link).href
+        ? Array.prototype.indexOf.call(document.links, pressedLink) : -1;
+      return {index, href: pressedLink?.isConnected ? pressedLink.href : null, timeOrigin: performance.timeOrigin};
+    }
     if (operation === 'imageMenuClaimed') return !!press || menuBusy || Date.now() < (suppressClick?.until || 0);
     if (operation === 'restore') { restore(args); return true; }
     if (operation === 'state') {
@@ -598,6 +606,7 @@
     throw Error('BRIDGE_INVALID');
   }
   function dispose() {
+    pressedLink = null;
     disposed = true; cancelPress(); clearTimeout(timer); clearInterval(canvasTimer); cancelRestore(); observer?.disconnect();
     viewport?.disconnect(); near.clear(); slots=null; removeEventListener('resize', watchViewport);
     removeEventListener('scroll', schedule, true); removeEventListener('resize', schedule);

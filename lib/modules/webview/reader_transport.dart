@@ -12,6 +12,11 @@ typedef ReaderMessage = Future<bool> Function(
   Object? payload,
 );
 
+typedef BrowserDocumentCall = Future<Object?> Function(
+  String operation,
+  Map<String, dynamic> args,
+);
+
 /// Only messages from the top frame of the named document may reach the reader.
 abstract interface class ReaderTransport {
   void listen(ReaderMessage? receive);
@@ -75,6 +80,14 @@ class SystemReaderTransport implements ReaderTransport {
     String operation,
     Map<String, dynamic> args,
   ) async {
+    if (operation == 'browserMangaPreview') {
+      // WK 使用独立的内容世界；系统 Android 的独立世界通过同源子框架读取顶层文档。
+      final result = await web.callAsyncJavaScript(
+        functionBody: 'return ${args['program']};',
+        contentWorld: ContentWorld.world(name: 'NodeLaneSourcePreview'),
+      );
+      return {'value': result?.value, 'error': result?.error};
+    }
     final result = await web.callAsyncJavaScript(
       functionBody: '''
 try {

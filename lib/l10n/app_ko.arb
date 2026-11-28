@@ -422,6 +422,7 @@
   "set_categories": "카테고리 설정",
   "edit": "편집",
   "in_library": "보관함에 있음",
+  "not_in_library": "보관함에 없음",
   "filter_scanlator_groups": "번역 그룹 필터",
   "reset": "초기화",
   "by_chapter_number": "화 번호별",

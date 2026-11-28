@@ -438,11 +438,20 @@ private class GeckoPage(val host: GeckoBrowser) : GeckoSession.NavigationDelegat
                     result.error("document", null, null); return
                 }
                 if (protection && !host.isActive(session)) { result.error("document", null, null); return }
-                val id = ++nextId
-                peer.postMessage(request.put("id", id))
-                pending[id] = result
-                handler.postAtTime({ pending.remove(id)?.error("timeout", null, null) }, result,
-                    android.os.SystemClock.uptimeMillis() + if (protection) 10000 else 60000)
+                val preview = request.optString("operation") == "browserMangaPreview"
+                fun dispatch() {
+                    // 可选扩展按需加载；安装期间标签可能被切走或以同一 URL 重载。
+                    if (peer !== port || preview && (!visible || !host.isActive(session))) {
+                        result.error("document", null, null); return
+                    }
+                    val id = ++nextId
+                    peer.postMessage(request.put("id", id))
+                    pending[id] = result
+                    handler.postAtTime({ pending.remove(id)?.error("timeout", null, null) }, result,
+                        android.os.SystemClock.uptimeMillis() + if (protection || preview) 10000 else 60000)
+                }
+                if (preview) host.sourcePageExtension().accept({ dispatch() }, { result.error("extensions", null, null) })
+                else dispatch()
                 return
             }
             else -> { result.notImplemented(); return }

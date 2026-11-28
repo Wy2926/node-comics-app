@@ -956,6 +956,9 @@ class AppLocalizationsFr extends AppLocalizations {
   String get in_library => 'Dans la bibliothèque';
 
   @override
+  String get not_in_library => 'Pas dans la bibliothèque';
+
+  @override
   String get filter_scanlator_groups => 'Filtrer les groupes des traducteurs';
 
   @override

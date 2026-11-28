@@ -13,6 +13,10 @@
           value = await browser.runtime.sendMessage('source-page@nodelane.net', {
             url: location.href, scripts: args.scripts,
           });
+        } else if (operation === 'browserMangaPreview') {
+          value = await browser.runtime.sendMessage('source-page@nodelane.net', {
+            url: location.href, preview: args.program,
+          });
         } else if (operation === 'siteProtection') {
           value = await browser.runtime.sendMessage('uBlock0@raymondhill.net', {
             what: 'nodelaneSiteProtection', url: location.href.split('#')[0], enabled: args.enabled,

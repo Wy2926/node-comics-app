@@ -3,7 +3,6 @@ import 'package:mangayomi/theme/nodelane_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mangayomi/models/manga.dart';
-import 'package:mangayomi/repositories/history_repository.dart';
 import 'package:mangayomi/modules/more/providers/incognito_mode_state_provider.dart';
 import 'package:mangayomi/utils/extensions/build_context_extensions.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
@@ -26,22 +25,9 @@ class ContinueReaderButton extends ConsumerWidget {
     // chapter is resolved on tap — a live watch per grid cell made scrolling
     // large libraries churn dozens of query subscriptions.
     void resume() {
-      final incognitoMode = ref.read(incognitoModeStateProvider);
-      final history = incognitoMode
-          ? null
-          : historyRepository.findByMangaId(entry.id!);
-      if (history != null && !history.chapter.isLoaded) {
-        history.chapter.loadSync();
-      }
-      final lastReadChapter = history?.chapter.value;
-      if (lastReadChapter != null) {
-        lastReadChapter.pushToReaderView(context);
-      } else {
-        final firstChapter =
-            entry.getChapterListForReading().firstOrNull ??
-            entry.chapters.firstOrNull;
-        firstChapter?.pushToReaderView(context);
-      }
+      entry
+          .resumeChapter(incognito: ref.read(incognitoModeStateProvider))
+          ?.pushToReaderView(context);
     }
 
     if (large) {

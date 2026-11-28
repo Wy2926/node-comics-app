@@ -950,6 +950,9 @@ class AppLocalizationsTr extends AppLocalizations {
   String get in_library => 'Kütüphanede';
 
   @override
+  String get not_in_library => 'Kütüphanede değil';
+
+  @override
   String get filter_scanlator_groups => 'Tarama Gruplarını Filtrele';
 
   @override

@@ -954,6 +954,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get in_library => 'En la biblioteca';
 
   @override
+  String get not_in_library => 'No está en la biblioteca';
+
+  @override
   String get filter_scanlator_groups => 'Filtrar grupos de scanlation';
 
   @override

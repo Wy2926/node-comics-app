@@ -283,6 +283,16 @@ class WebTranslationBridge {
     }
   }
 
+  // 给浏览器工具的句柄只属于当前前台文档，重载同一 URL 也会失效。
+  BrowserDocumentCall? get foregroundDocument {
+    if (!_ready || !view.foreground || _disposed) return null;
+    final epoch = _epoch;
+    return (operation, args) async {
+      if (!view.foreground) throw const TranslationCancelled();
+      return _call(operation, args, epoch);
+    };
+  }
+
   void _changed() {
     _syncResources();
     if (!_ready || _disposed) return;

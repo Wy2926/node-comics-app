@@ -422,6 +422,7 @@
   "set_categories": "Встановити категорії",
   "edit": "Edit",
   "in_library": "У бібліотеці",
+  "not_in_library": "Немає в бібліотеці",
   "filter_scanlator_groups": "Групи сканатора фільтрів",
   "reset": "Скидання",
   "by_chapter_number": "За номером глави",

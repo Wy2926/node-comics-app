@@ -60,6 +60,8 @@ ${contract['setup'] ?? ''}
       final args = contract['args'] as List;
       Future<Map<String, dynamic>> run() async {
         switch (contract['method']) {
+          case 'browserPreview':
+            return await service.resolveBrowserManga(args[0]) ?? {};
           case 'filters':
             final filters = service.getFilterList().filters;
             return {

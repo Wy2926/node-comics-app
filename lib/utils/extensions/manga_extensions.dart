@@ -2,6 +2,7 @@ import 'package:mangayomi/models/chapter.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/repositories/download_repository.dart';
+import 'package:mangayomi/repositories/history_repository.dart';
 import 'package:mangayomi/repositories/settings_repository.dart';
 import 'package:mangayomi/utils/chapter_recognition.dart';
 
@@ -52,6 +53,17 @@ Map<int?, double?> _chapterSortKeys(
 }
 
 extension MangaExtensions on Manga {
+  /// 书架和网页入口共用续读起点；无痕模式不读取历史。
+  Chapter? resumeChapter({required bool incognito}) {
+    final history = incognito ? null : historyRepository.findByMangaId(id!);
+    if (history != null && !history.chapter.isLoaded) {
+      history.chapter.loadSync();
+    }
+    return history?.chapter.value ??
+        getChapterListForReading().firstOrNull ??
+        chapters.firstOrNull;
+  }
+
   /// Number of unread chapters, excluding chapters from scanlators the user has
   /// filtered out for this manga. Mirrors the chapter list's scanlator filter,
   /// so the library "unread" badge and the unread sort reflect what the user
@@ -83,22 +95,22 @@ extension MangaExtensions on Manga {
     final settings = settingsOverride ?? settingsRepository.current;
 
     final filterUnread =
-        (settings.chapterFilterUnreadList!
-                    .where((e) => e.mangaId == id)
+        (settings.chapterFilterUnreadList
+                    ?.where((e) => e.mangaId == id)
                     .firstOrNull ??
                 ChapterFilterUnread(mangaId: id, type: 0))
             .type!;
 
     final filterBookmarked =
-        (settings.chapterFilterBookmarkedList!
-                    .where((e) => e.mangaId == id)
+        (settings.chapterFilterBookmarkedList
+                    ?.where((e) => e.mangaId == id)
                     .firstOrNull ??
                 ChapterFilterBookmarked(mangaId: id, type: 0))
             .type!;
 
     final filterDownloaded =
-        (settings.chapterFilterDownloadedList!
-                    .where((e) => e.mangaId == id)
+        (settings.chapterFilterDownloadedList
+                    ?.where((e) => e.mangaId == id)
                     .firstOrNull ??
                 ChapterFilterDownloaded(mangaId: id, type: 0))
             .type!;
@@ -145,7 +157,7 @@ extension MangaExtensions on Manga {
     final settings = settingsRepository.current;
 
     final sortChapterEntry =
-        settings.sortChapterList!.where((e) => e.mangaId == id).firstOrNull ??
+        settings.sortChapterList?.where((e) => e.mangaId == id).firstOrNull ??
         SortChapter(mangaId: id, index: 1);
     final sortIndex = sortChapterEntry.index!;
     final reverse = sortChapterEntry.reverse!;

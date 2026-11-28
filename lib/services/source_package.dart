@@ -18,6 +18,7 @@ class SourcePackage {
   final int size;
   final List<String> requestHosts;
   final List<String> requires;
+  final List<String> capabilities;
 
   SourcePackage._(
     this.repositoryId,
@@ -26,6 +27,7 @@ class SourcePackage {
     this.size,
     this.requestHosts,
     this.requires,
+    this.capabilities,
   );
 
   static SourcePackage? of(Source source) {
@@ -34,6 +36,7 @@ class SourcePackage {
       final m = jsonDecode(source.packageInfoJson!) as Map<String, dynamic>;
       final hosts = (m['requestHosts'] as List).cast<String>();
       final required = (m['requires'] as List).cast<String>();
+      final capabilities = m['capabilities'];
       if (m['schema'] != 1 ||
           m['repositoryId'] != nodeLaneRepositoryId ||
           !RegExp(r'^[a-z][a-z0-9-]{1,39}$').hasMatch(m['slug'] as String) ||
@@ -56,6 +59,9 @@ class SourcePackage {
         m['size'],
         hosts,
         required,
+        capabilities is List
+            ? capabilities.whereType<String>().toList()
+            : const [],
       );
     } catch (_) {
       throw StateError('插件分发元数据无效，已保留已安装版本');

@@ -422,6 +422,7 @@
   "set_categories": "Ustaw kategorie",
   "edit": "Edytuj",
   "in_library": "W bibliotece",
+  "not_in_library": "Poza biblioteką",
   "filter_scanlator_groups": "Filtruj grupy skanerów",
   "reset": "Resetuj",
   "by_chapter_number": "Według numeru rozdziału",

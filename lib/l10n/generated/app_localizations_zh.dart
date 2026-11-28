@@ -922,6 +922,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get in_library => '已在书架';
 
   @override
+  String get not_in_library => '未在书架';
+
+  @override
   String get filter_scanlator_groups => '汉化组';
 
   @override
@@ -6193,6 +6196,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get in_library => '已在書架';
+
+  @override
+  String get not_in_library => '未在書架';
 
   @override
   String get filter_scanlator_groups => '漢化組';

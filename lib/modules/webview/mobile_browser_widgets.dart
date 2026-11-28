@@ -199,6 +199,7 @@ class MobileBrowserToolbar extends StatelessWidget {
     this.inline = false,
     this.tabsKey,
     this.controlsKey,
+    this.mangaButton,
   });
   final int tabCount;
   final bool showTranslation;
@@ -206,6 +207,7 @@ class MobileBrowserToolbar extends StatelessWidget {
   final ValueChanged<BuildContext> onTabs;
   final VoidCallback onNew;
   final Key? tabsKey, controlsKey;
+  final Widget? mangaButton;
   final VoidCallback? onBack;
   final ValueChanged<BuildContext>? onControls;
   final ValueChanged<bool>? onDisplayChanged;
@@ -215,7 +217,11 @@ class MobileBrowserToolbar extends StatelessWidget {
     final controls = SizedBox(
       height: NodeLaneTokens.minTapTarget,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: NodeLaneTokens.space16),
+        padding: EdgeInsets.symmetric(
+          horizontal: mangaButton == null
+              ? NodeLaneTokens.space16
+              : NodeLaneTokens.space4,
+        ),
         child: LayoutBuilder(
           builder: (context, constraints) {
             final narrow = constraints.maxWidth < 328;
@@ -227,11 +233,14 @@ class MobileBrowserToolbar extends StatelessWidget {
                   style: _barIconStyle(t.ink),
                   icon: Icon(icons.back),
                 ),
-                SizedBox(
-                  width: narrow
-                      ? NodeLaneTokens.space8
-                      : NodeLaneTokens.space24,
-                ),
+                if (mangaButton != null)
+                  mangaButton!
+                else
+                  SizedBox(
+                    width: narrow
+                        ? NodeLaneTokens.space8
+                        : NodeLaneTokens.space24,
+                  ),
                 Expanded(
                   child: Center(
                     child: ConstrainedBox(
@@ -272,11 +281,12 @@ class MobileBrowserToolbar extends StatelessWidget {
                   style: _barIconStyle(t.ink),
                   icon: Icon(icons.add, size: NodeLaneTokens.iconSize),
                 ),
-                SizedBox(
-                  width: narrow
-                      ? NodeLaneTokens.space8
-                      : NodeLaneTokens.space20,
-                ),
+                if (mangaButton == null)
+                  SizedBox(
+                    width: narrow
+                        ? NodeLaneTokens.space8
+                        : NodeLaneTokens.space20,
+                  ),
                 MobileBrowserTabsButton(
                   key: tabsKey,
                   count: tabCount,

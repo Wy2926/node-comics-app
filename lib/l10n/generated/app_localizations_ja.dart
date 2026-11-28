@@ -934,6 +934,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get in_library => 'ライブラリに追加済み';
 
   @override
+  String get not_in_library => 'ライブラリに未追加';
+
+  @override
   String get filter_scanlator_groups => 'スキャンレータグループをフィルター';
 
   @override

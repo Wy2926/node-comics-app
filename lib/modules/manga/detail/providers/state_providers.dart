@@ -89,8 +89,8 @@ class IsExtendedState extends _$IsExtendedState {
 class SortChapterState extends _$SortChapterState {
   @override
   SortChapter build({required int mangaId}) {
-    return settingsRepository.current.sortChapterList!
-            .where((element) => element.mangaId == mangaId)
+    return settingsRepository.current.sortChapterList
+            ?.where((element) => element.mangaId == mangaId)
             .toList()
             .firstOrNull ??
         SortChapter(mangaId: mangaId, index: 1, reverse: false);

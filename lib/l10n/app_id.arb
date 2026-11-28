@@ -422,6 +422,7 @@
   "set_categories": "Tetapkan kategori",
   "edit": "Edit",
   "in_library": "Di perpustakaan",
+  "not_in_library": "Tidak ada di perpustakaan",
   "filter_scanlator_groups": "Saring grup scanlator",
   "reset": "Atur ulang",
   "by_chapter_number": "Berdasarkan nomor bab",

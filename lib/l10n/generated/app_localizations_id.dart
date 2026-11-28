@@ -953,6 +953,9 @@ class AppLocalizationsId extends AppLocalizations {
   String get in_library => 'Di perpustakaan';
 
   @override
+  String get not_in_library => 'Tidak ada di perpustakaan';
+
+  @override
   String get filter_scanlator_groups => 'Saring grup scanlator';
 
   @override

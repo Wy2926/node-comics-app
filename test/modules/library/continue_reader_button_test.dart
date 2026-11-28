@@ -3,9 +3,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:isar_community/isar.dart';
+import 'package:mangayomi/eval/model/m_chapter.dart';
+import 'package:mangayomi/eval/model/m_manga.dart';
 import 'package:mangayomi/l10n/generated/app_localizations.dart';
 import 'package:mangayomi/main.dart' as app;
 import 'package:mangayomi/models/chapter.dart';
@@ -15,6 +18,8 @@ import 'package:mangayomi/models/settings.dart';
 import 'package:mangayomi/models/source.dart';
 import 'package:mangayomi/modules/library/widgets/continue_reader_button.dart';
 import 'package:mangayomi/modules/library/widgets/mobile_bookshelf_card.dart';
+import 'package:mangayomi/modules/webview/browser_manga_widgets.dart';
+import 'package:mangayomi/services/get_detail.dart';
 import 'package:mangayomi/modules/manga/reader/providers/reader_controller_provider.dart';
 import 'package:mangayomi/repositories/chapter_repository.dart';
 import 'package:mangayomi/utils/extensions/chapter_extensions.dart';
@@ -104,6 +109,7 @@ void main() {
   Future<void> mount(
     WidgetTester tester, {
     Widget Function(BuildContext)? action,
+    List<Override> overrides = const [],
   }) async {
     final router = GoRouter(
       routes: [
@@ -141,7 +147,7 @@ void main() {
                   .read(readerControllerProvider(chapter: chapter).notifier)
                   .getPageIndex();
               return Scaffold(
-                body: Text('Chapter ${chapter.id} / page ${index + 1}'),
+                body: Text('${chapter.name} / page ${index + 1}'),
               );
             },
           ),
@@ -150,6 +156,8 @@ void main() {
     );
     await tester.pumpWidget(
       ProviderScope(
+        overrides: overrides,
+        retry: (_, _) => null,
         child: MaterialApp.router(
           routerConfig: router,
           locale: const Locale('en'),
@@ -164,6 +172,92 @@ void main() {
     });
     await tester.pumpAndSettle();
   }
+
+  testWidgets(
+    'browser add persists when chapter lookup fails, retry opens the first chapter directly',
+    (tester) async {
+      const url = 'https://books.test/work';
+      const preview = (
+        sourceId: 75,
+        targetUrl: url,
+        link: url,
+        name: 'New book',
+        imageUrl: null,
+        author: null,
+        status: Status.ongoing,
+        chapterName: null,
+      );
+      final source = Source(
+        id: 75,
+        name: 'Books',
+        lang: 'en',
+        baseUrl: 'https://books.test',
+        isAdded: true,
+        sourceCode: 'fixture',
+        packageInfoJson: jsonEncode({
+          'schema': 1,
+          'repositoryId': 'net.nodelane.extensions',
+          'slug': 'books',
+          'size': 7,
+          'sha256': '0' * 64,
+          'requires': [],
+          'requestHosts': ['books.test'],
+          'capabilities': ['browser.manga-preview.v1'],
+        }),
+      )..sourceCodeLanguage = SourceCodeLanguage.javascript;
+      database.writeTxnSync(() {
+        database.sources.putSync(source);
+        // 全新书架尚未从详情页建立任何作品筛选偏好。
+        database.settings.putSync(Settings());
+      });
+      var calls = 0;
+      await tester.runAsync(() async {
+        await mount(
+          tester,
+          overrides: [
+            getDetailProvider.overrideWith((_, args) async {
+              expect(args.url, url);
+              if (++calls == 1) throw StateError('offline');
+              return MManga(
+                name: 'New book',
+                link: url,
+                chapters: [
+                  MChapter(name: 'New book chapter 2', url: '$url/2'),
+                  MChapter(name: 'New book chapter 1', url: '$url/1'),
+                ],
+              );
+            }),
+          ],
+          action: (context) => BrowserMangaButton(
+            preview,
+            openChapter: (id) => context.push('/mangaReaderView', extra: id),
+          ),
+        );
+        Future<void> visible(Finder target) async {
+          // Isar 的原生查询在真实事件循环上完成，等实际状态再点下一步。
+          final until = DateTime.now().add(const Duration(seconds: 4));
+          while (target.evaluate().isEmpty && DateTime.now().isBefore(until)) {
+            await tester.pump();
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+          expect(target, findsOneWidget);
+        }
+
+        await tester.tap(find.byTooltip('Manga · New book'));
+        await visible(find.text('Not in library'));
+        await tester.tap(find.text('Add to library'));
+        await visible(find.text('In library'));
+        final read = find.text('Open in the app reader');
+        await tester.tap(read);
+        final l = AppLocalizations.of(tester.element(read))!;
+        await visible(find.text(l.operation_retry));
+        expect(database.mangas.filter().favoriteEqualTo(true).countSync(), 1);
+        await tester.tap(read);
+        await visible(find.text('New book chapter 1 / page 1'));
+        expect(calls, 2);
+      });
+    },
+  );
 
   testWidgets(
     'finished book without history opens the first chapter at page one',

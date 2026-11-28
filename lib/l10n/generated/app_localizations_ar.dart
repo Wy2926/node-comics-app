@@ -955,6 +955,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get in_library => 'في المكتبة';
 
   @override
+  String get not_in_library => 'ليس في المكتبة';
+
+  @override
   String get filter_scanlator_groups => 'تصفية مجموعات المترجمين';
 
   @override

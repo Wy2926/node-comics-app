@@ -41,14 +41,7 @@ class MManga {
       description: json['description'],
       author: json['author'],
       artist: json['artist'],
-      status: switch (json['status'] as int?) {
-        0 => Status.ongoing,
-        1 => Status.completed,
-        2 => Status.onHiatus,
-        3 => Status.canceled,
-        4 => Status.publishingFinished,
-        _ => Status.unknown,
-      },
+      status: sourceStatus(json['status'] as int?),
       genre: (json['genre'] as List?)?.map((e) => e.toString()).toList() ?? [],
       chapters: json['chapters'] != null
           ? (json['chapters'] as List).map((e) => MChapter.fromJson(e)).toList()
@@ -57,6 +50,16 @@ class MManga {
           : [],
     );
   }
+
+  // 来源协议的枚举顺序与本地数据库不同；详情与浏览器摘要共用映射。
+  static Status sourceStatus(int? value) => switch (value) {
+    0 => Status.ongoing,
+    1 => Status.completed,
+    2 => Status.onHiatus,
+    3 => Status.canceled,
+    4 => Status.publishingFinished,
+    _ => Status.unknown,
+  };
   Map<String, dynamic> toJson() {
     return {
       'name': name,

@@ -952,6 +952,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get in_library => 'In der Bibliothek';
 
   @override
+  String get not_in_library => 'Nicht in der Bibliothek';
+
+  @override
   String get filter_scanlator_groups => 'Scanlator-Gruppen filtern';
 
   @override

@@ -13,6 +13,9 @@ import 'package:mangayomi/providers/storage_provider.dart';
 import 'package:mangayomi/services/http/m_client.dart';
 import 'package:mangayomi/utils/log/log.dart';
 
+bool _browserPreviewTask(String? task) =>
+    task == 'browserMangaScript' || task == 'resolveBrowserManga';
+
 class _IsolateData {
   final SendPort sendPort;
   final RootIsolateToken rootIsolateToken;
@@ -162,7 +165,8 @@ class GetIsolateService {
                   useLogger = useLoggerValue;
                 }
                 final service =
-                    serviceType == 'prepareInstallation' &&
+                    (serviceType == 'prepareInstallation' ||
+                            _browserPreviewTask(serviceType)) &&
                         source?.sourceCodeLanguage ==
                             SourceCodeLanguage.javascript
                     ? JsExtensionService(
@@ -174,6 +178,12 @@ class GetIsolateService {
                 try {
                   final result = await (() async {
                     switch (serviceType) {
+                      case 'browserMangaScript':
+                        return (service as JsExtensionService)
+                            .browserMangaScript;
+                      case 'resolveBrowserManga':
+                        return await (service as JsExtensionService)
+                            .resolveBrowserManga(url!);
                       case 'getDetail':
                         return await service.getDetail(url!);
                       case 'getPopular':
@@ -274,6 +284,7 @@ class GetIsolateService {
     bool? useLogger,
   }) async {
     if (serviceType != 'prepareInstallation' &&
+        !_browserPreviewTask(serviceType) &&
         source?.sourceCodeLanguage != SourceCodeLanguage.lnreader) {
       return withExtensionService(source!, proxyServer ?? '', (service) async {
         switch (serviceType) {

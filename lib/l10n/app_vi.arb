@@ -422,6 +422,7 @@
   "set_categories": "Đặt danh mục",
   "edit": "Chỉnh sửa",
   "in_library": "Trong thư viện",
+  "not_in_library": "Không có trong thư viện",
   "filter_scanlator_groups": "Nhóm máy quét bộ lọc",
   "reset": "Đặt lại",
   "by_chapter_number": "Theo số chương",

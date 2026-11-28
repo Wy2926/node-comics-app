@@ -963,6 +963,9 @@ class AppLocalizationsRu extends AppLocalizations {
   String get in_library => 'В библиотеке';
 
   @override
+  String get not_in_library => 'Нет в библиотеке';
+
+  @override
   String get filter_scanlator_groups => 'Фильтр групп переводчиков';
 
   @override

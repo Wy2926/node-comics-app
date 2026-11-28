@@ -947,6 +947,9 @@ class AppLocalizationsVi extends AppLocalizations {
   String get in_library => 'Trong thư viện';
 
   @override
+  String get not_in_library => 'Không có trong thư viện';
+
+  @override
   String get filter_scanlator_groups => 'Nhóm máy quét bộ lọc';
 
   @override

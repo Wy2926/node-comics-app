@@ -27,9 +27,10 @@ Android 本地使用 MuMu，按 [AGENTS](../AGENTS.md) 查询实际 ADB 地址�
 ## 运行边界
 
 - **原版 APK**：沿用 `m_extension_server` 与 Mihon 桥。上游 64 位 ID 以字符串保存在 `additionalParams.mihonSourceId`，安装与调用使用相同身份，本地数据库 ID 不变。Android 桥保留原包为单次 API、网页或图片请求设置的 `User-Agent`；没有指定时才使用默认值，已有验证会话按主机匹配。作品／章节网址由原扩展解析，图片沿用其拦截器及本地代理。含临时代理地址的页图清单不写磁盘；遇到旧缓存会重新向原包取整章清单。更换运行类型不保证旧 URL 可用，不自动增加站点映射或删除书籍。
-- **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 提供元数据；插件不在 Node 或 Firefox 标签中运行。插件调用 `Client`，由 App 宿主为当前请求选择浏览器会话或原有 HTTP 客户端。官方包的请求和重定向按声明的精确 HTTPS 主机校验，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
+- **JavaScript**：QuickJS 实例化 `DefaultExtension extends MProvider`，通过 `this.source` 提供元数据。搜索、目录和正文等普通漫画 JS 调用在调用方 isolate 按次执行并释放；安装初始化和浏览器摘要的 QuickJS 任务走限时工作线程。`Client` 由宿主按请求选择浏览器会话或原有 HTTP 客户端。官方包的请求和重定向按声明的精确 HTTPS 主机校验，现有预算见契约。释放运行时清理 JS 引用和定时器，宿主 HTTP／提取器／WebView 桥在调用者 Zone 中运行，不能误关阅读共享连接。
 - **网站会话**：在[支持 GeckoView 的 Android 设备](MOBILE_UI_DESIGN.md#多标签浏览器)上，所有已安装的 JS 来源（含第三方和 LNReader）访问本站时默认复用内置浏览器会话，无需声明会话能力或修改插件。从来源卡片打开网站并登录，返回来源重试即可，关闭标签不影响会话。原先仅在系统 WebView 登录的站点需在 Gecko 登录一次。官方目录沿用已有 `requestHosts`；其他 JS 来源按已有 `baseUrl` 的 HTTPS origin 精确匹配。`Client`、LNReader 的 `fetchApi`、漫画正文和下载按实际目标请求；显式提供 Cookie／Authorization 的 HTTP 请求保留插件自己的身份。宿主不导出 Cookie，不向 JS 回传 `Set-Cookie`，也不将 Gecko 凭据写入 App 的 Cookie 表。站外 CDN 仍可取图，不继承来源站点的凭据。网站 Cookie 变化后，新打开的在线章节不复用旧会话的清单或原图缓存；已下载内容保留。
 - **网页脚本与验证**：同站 `evaluateJavascriptViaWebview` 使用临时的独立标签，保留 `setResponse` 接口；脚本不在用户正在阅读的标签中执行。普通 HTTP 不会替网站生成存在 `localStorage`／页面脚本中的令牌。系统 WebView 设备、原版 APK 等继续使用原有验证会话；不把所有 403 当作 Cloudflare。日志隐藏凭据和查询值。
+- **可见页漫画预览**：声明[浏览器漫画预览契约](https://github.com/Wy2926/nodelane-comics-extensions/blob/main/docs/CONTRACT.md#浏览器漫画预览)的 JS 来源可在匹配的当前文档读取作品或实际长按的卡片。Gecko 复用内置扩展的文档端口，在用户脚本世界运行单个页面方法；系统 WebView 走内容世界。仅长按缺少卡片信息时由目标来源在 QuickJS 按 URL 补全。导航与后台开标签由宿主管理。
 - **图片处理**：`PageUrl.imageProcessing` 声明通用操作，具体参数留插件。支持 `image.tile-shuffle.v1` 网格还原、`image.tile-transpose.v1` 对齐图块转置（右、下余边保留）与 `image.strip-reverse.v1` 横向条带倒序（余数归首条）；阅读、下载、翻译共用结果，缓存身份包含处理参数，成功才缓存。既有像素处理每张限 12 MiB、800 万像素、256 块、单帧，后台串行处理且最多排队 4 项。条带操作可由插件声明 `skipGif: true` 原样保留 GIF 动画，下载保留 PNG／GIF 扩展名。这是处理边界，不是普通图片准入规则。
 - **通用密码工具**：`crypto.md5.v1` 提供同步 UTF-8 `md5(text)`；`crypto.aes-ecb.v1` 提供同步 `decryptAESECB(base64, keyHex)`（AES-ECB／PKCS7，16／24／32 字节密钥）。使用现有 crypto／encrypt 依赖，非法密钥、密文和解码失败抛错；网站协议常量与签名规则留插件。
 

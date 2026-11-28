@@ -11,6 +11,7 @@ import 'package:mangayomi/eval/javascript/source_runtime.dart';
 import 'package:mangayomi/eval/javascript/utils.dart';
 import 'package:mangayomi/models/manga.dart';
 import 'package:mangayomi/models/page.dart';
+import 'package:mangayomi/modules/webview/browser_manga_preview.dart';
 import 'package:mangayomi/modules/webview/gecko_browser_page.dart';
 import 'package:mangayomi/modules/widgets/custom_extended_image_provider.dart';
 import 'package:mangayomi/services/download_manager/download_isolate_pool.dart';
@@ -90,17 +91,52 @@ void main() async {
     Directionality(
       textDirection: TextDirection.ltr,
       child: GeckoBrowserPage.view(key, (id) async {
-        final doc = Completer<void>();
+        final doc = Completer<void>(), section = Completer<void>();
         final page = GeckoBrowserPage(id, (e) async {
           if (e.method == 'document' &&
               e.arguments == '$origin/login' &&
               !doc.isCompleted) {
             doc.complete();
           }
+          if (e.method == 'document' &&
+              e.arguments == '$origin/login#section' &&
+              !section.isCompleted) {
+            section.complete();
+          }
         });
         try {
           await page.attach('$origin/login', true);
           await doc.future.timeout(const Duration(seconds: 60));
+          var url = '$origin/login';
+          await page.install(url, key, () => true);
+          final context = await page.call(url, key, 'mangaContext', const {});
+          final timeOrigin = context['value']['timeOrigin'] as num;
+          Future<Object?> preview(String target, num document) async =>
+              (await page.call(url, key, 'browserMangaPreview', {
+                'program': browserMangaProgram(
+                  "browserMangaPreview({document}) { return {name:document.title, privileged:typeof browser !== 'undefined' && !!browser.runtime?.connectNative}; }",
+                  url,
+                  target,
+                  null,
+                  document,
+                ),
+              }))['value'];
+          final summary = await preview(url, timeOrigin);
+          if (summary is! Map ||
+              summary['name'] != 'Ready' ||
+              summary['privileged'] != false ||
+              await preview('$other/login', timeOrigin) != null ||
+              await preview(url, timeOrigin - 1) != null) {
+            throw StateError('Visible source document isolation');
+          }
+          // 锚点导航仍是同一 DOM；按新 URL 识别，不能丢掉工具栏上的漫画。
+          url += '#section';
+          await page.load(url);
+          await section.future.timeout(const Duration(seconds: 10));
+          final sectionPreview = await preview(url, timeOrigin);
+          if (sectionPreview is! Map || sectionPreview['name'] != 'Ready') {
+            throw StateError('Same-document source preview');
+          }
           page.detach();
           await GeckoBrowserPage.release(key);
           // The other site has its own login as well; the redirect must not use either identity.
@@ -120,8 +156,9 @@ void main() async {
             sessionOrigins: scope,
           );
           final reader = await provider.getNetworkImageData();
-          if (reader == null || base64Encode(reader) != base64Encode(pixel))
+          if (reader == null || base64Encode(reader) != base64Encode(pixel)) {
             throw StateError('reader image');
+          }
           final temp = await Directory.systemTemp.createTemp('source_session_');
           try {
             final file = '${temp.path}/page';
@@ -139,8 +176,9 @@ void main() async {
             );
             await done.future.timeout(const Duration(seconds: 35));
             if (base64Encode(await File('$file.png').readAsBytes()) !=
-                base64Encode(pixel))
+                base64Encode(pixel)) {
               throw StateError('downloaded image');
+            }
           } finally {
             await temp.delete(recursive: true);
           }
@@ -169,7 +207,7 @@ void main() async {
             throw StateError('logout retained the reader cache scope');
           }
           debugPrint(
-            'GECKO_SOURCE_PASS: closed tab, HttpOnly, reader and download, hidden pages, redirect, logout and cache scope',
+            'GECKO_SOURCE_PASS: scoped visible preview, closed tab, HttpOnly, reader and download, hidden pages, redirect, logout and cache scope',
           );
         } catch (e) {
           debugPrint('GECKO_SOURCE_FAIL: ${e.runtimeType} $e');

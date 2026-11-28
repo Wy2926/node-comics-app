@@ -422,6 +422,7 @@
   "set_categories": "Ajouter une catégorie",
   "edit": "Modifier",
   "in_library": "Dans la bibliothèque",
+  "not_in_library": "Pas dans la bibliothèque",
   "filter_scanlator_groups": "Filtrer les groupes des traducteurs",
   "reset": "Réinitialiser",
   "by_chapter_number": "Par numéro de chapitre",

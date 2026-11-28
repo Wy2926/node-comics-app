@@ -86,11 +86,13 @@ void main() {
     List<MChapter> entries, {
     int mangaId = 1,
     bool fail = false,
+    void Function()? duringFetch,
   }) async {
     final container = ProviderContainer(
       overrides: [
         getDetailProvider.overrideWith((ref, args) async {
           if (fail) throw StateError('incomplete source response');
+          duringFetch?.call();
           return MManga(name: 'Fixture', chapters: entries);
         }),
       ],
@@ -124,6 +126,24 @@ void main() {
     manga.chapters.loadSync();
     return manga.getChapterListForReading();
   }
+
+  test('a pending catalog refresh preserves a new favorite and its reading progress', () async {
+    final entries = [entry('Chapter 1', 'one')];
+    final chapter = (await refresh(entries)).single;
+    await refresh(
+      entries,
+      duringFetch: () {
+        database.writeTxnSync(
+          () => database.mangas.putSync(
+            database.mangas.getSync(1)!..favorite = true,
+          ),
+        );
+        saveProgress(chapter);
+      },
+    );
+    expect(database.mangas.getSync(1)!.favorite, isTrue);
+    expect(database.chapters.getSync(chapter.id!)!.lastPageRead, '7');
+  });
 
   test('hidden read chapters do not become missing catalog chapters', () async {
     final chapters = await refresh([

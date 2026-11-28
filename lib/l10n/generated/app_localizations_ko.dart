@@ -927,6 +927,9 @@ class AppLocalizationsKo extends AppLocalizations {
   String get in_library => '보관함에 있음';
 
   @override
+  String get not_in_library => '보관함에 없음';
+
+  @override
   String get filter_scanlator_groups => '번역 그룹 필터';
 
   @override

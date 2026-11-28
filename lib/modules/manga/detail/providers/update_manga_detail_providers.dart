@@ -23,25 +23,23 @@ Future<dynamic> updateMangaDetail(
   bool showToast = true,
 }) async {
   try {
-    final manga = mangaRepository.findById(mangaId!);
-    if (manga == null) return;
+    final initial = mangaRepository.findById(mangaId!);
+    if (initial == null) return;
 
-    manga.chapters.loadSync();
-
-    if ((manga.isLocalArchive ?? false) ||
-        (manga.chapters.isNotEmpty && isInit)) {
+    if ((initial.isLocalArchive ?? false) ||
+        (isInit && initial.chapters.isNotEmpty)) {
       return;
     }
     final source = getSource(
-      manga.lang!,
-      manga.source!,
-      manga.sourceId,
+      initial.lang!,
+      initial.source!,
+      initial.sourceId,
       installedOnly: true,
     );
     if (source == null) return;
 
     final getManga = await ref.read(
-      getDetailProvider(url: manga.link!, source: source).future,
+      getDetailProvider(url: initial.link!, source: source).future,
     );
 
     final genre =
@@ -52,38 +50,46 @@ Future<dynamic> updateMangaDetail(
             .toList() ??
         [];
 
-    final imgUrl = getManga.imageUrl.trimmedOrDefault(manga.imageUrl);
-    final now = DateTime.now().millisecondsSinceEpoch;
-
-    manga
-      ..imageUrl = imgUrl == null
-          ? null
-          : imgUrl.startsWith('http')
-          ? imgUrl
-          : '${source.baseUrl ?? ''}/${imgUrl.getUrlWithoutDomain}'
-      ..name = getManga.name.trimmedOrDefault(manga.name)
-      ..genre = (genre.isEmpty ? null : genre) ?? manga.genre ?? []
-      ..author = getManga.author.trimmedOrDefault(manga.author) ?? ""
-      ..artist = getManga.artist.trimmedOrDefault(manga.artist) ?? ""
-      ..status = getManga.status == Status.unknown
-          ? manga.status
-          : getManga.status ?? Status.unknown
-      ..description =
-          getManga.description.trimmedOrDefault(manga.description) ?? ""
-      ..link = getManga.link.trimmedOrDefault(manga.link)
-      ..source = manga.source
-      ..lang = manga.lang
-      ..itemType = source.itemType
-      ..lastUpdate = now
-      ..updatedAt = now;
-
-    final chaps = getManga.chapters;
-
     await mangaRepository.writeTransactionAsync(() async {
+      // 网络请求期间可能已收藏、翻页、迁移或删除；只在原作品上合并最新数据。
+      final manga = await mangaRepository.findByIdAsync(mangaId);
+      if (manga == null ||
+          manga.sourceId != initial.sourceId ||
+          manga.source != initial.source ||
+          manga.lang != initial.lang ||
+          manga.link != initial.link) {
+        return;
+      }
+      final imgUrl = getManga.imageUrl.trimmedOrDefault(manga.imageUrl);
+      final now = DateTime.now().millisecondsSinceEpoch;
+
+      manga
+        ..imageUrl = imgUrl == null
+            ? null
+            : imgUrl.startsWith('http')
+            ? imgUrl
+            : '${source.baseUrl ?? ''}/${imgUrl.getUrlWithoutDomain}'
+        ..name = getManga.name.trimmedOrDefault(manga.name)
+        ..genre = (genre.isEmpty ? null : genre) ?? manga.genre ?? []
+        ..author = getManga.author.trimmedOrDefault(manga.author) ?? ""
+        ..artist = getManga.artist.trimmedOrDefault(manga.artist) ?? ""
+        ..status = getManga.status == Status.unknown
+            ? manga.status
+            : getManga.status ?? Status.unknown
+        ..description =
+            getManga.description.trimmedOrDefault(manga.description) ?? ""
+        ..link = getManga.link.trimmedOrDefault(manga.link)
+        ..itemType = source.itemType
+        ..lastUpdate = now
+        ..updatedAt = now;
+
+      final chaps = getManga.chapters;
+
       final savedMangaId = await mangaRepository.putAsync(manga);
 
       if (chaps == null || chaps.isEmpty) return;
 
+      await manga.chapters.load();
       final existingChapters = manga.chapters.toList();
       final recognition = ChapterRecognition();
 

@@ -1770,6 +1770,12 @@ abstract class AppLocalizations {
   /// **'In library'**
   String get in_library;
 
+  /// No description provided for @not_in_library.
+  ///
+  /// In en, this message translates to:
+  /// **'Not in library'**
+  String get not_in_library;
+
   /// No description provided for @filter_scanlator_groups.
   ///
   /// In en, this message translates to:
